@@ -1,0 +1,217 @@
+package com.business.entity.notice;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.GenericGenerator;
+
+import com.business.entity.User;
+import com.business.entity.contract.ContractInfo;
+import com.business.entity.cust.CustInfo;
+import com.kernal.annotation.FieldName;
+
+@Entity
+@FieldName(name = "短信表")
+@Table(name = "T_SMS_NOTICE_TASKS")
+public class SmsNotice {
+	
+	@Id
+	@GeneratedValue(generator = "paymentableGenerator")
+	@GenericGenerator(name = "paymentableGenerator", strategy = "uuid")
+	@Column(name = "ID_", length = 32)
+	private String id;
+
+	@ManyToOne(targetEntity = ContractInfo.class, fetch = FetchType.LAZY)
+	@FieldName(name = "合同号")
+	@JoinColumn(name = "CONTRACT_ID")
+	private ContractInfo contractInfo;
+	
+	@ManyToOne(targetEntity = CustInfo.class, fetch = FetchType.LAZY)
+	@FieldName(name = "客户编号")
+	@JoinColumn(name = "CUST_ID")
+	private CustInfo custInfo;
+
+	@FieldName(name = "电话号码")
+	@Column(name = "PHONE_NUMBER", length = 20, nullable = false)
+	private String phoneNumber;
+
+	@FieldName(name = "内容")
+	@Column(name = "SMS_CONTENT", length = 1000, nullable = false)
+	private String smsContent;
+	
+	@FieldName(name = "短信发送反馈信息")
+	@Column(name = "SEND_RESULT", length = 256)
+	private String sendResult;
+
+	@FieldName(name = "指定发送时间")
+	@Column(name = "NOTICE_TIME", length = 20)
+	private String noticeTime;
+	
+	@FieldName(name = "实际发送时间")
+	@Column(name = "SEND_TIME", length = 20)
+	private String sendTime;
+
+	@FieldName(name = "类型 : DELAYED：延时，IMMEDIATELY：立即")
+	@Column(name = "SMS_TYPE", length = 20)
+	private String smsType;
+
+	@FieldName(name = "发送状态：0待发送，1已发送，2已取消发送")
+	@Column(name = "SEND_FLAG", length = 5)
+	private int sendFlag = 0;
+
+	@FieldName(name = "备注")
+	@Column(name = "REMARK", length = 256)
+	private String remark;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@FieldName(name = "创建人")
+	@JoinColumn(name = "CREATOR_")
+	private User creator;
+
+	@FieldName(name = "创建时间")
+	@Column(name = "CREATE_DATE_", length = 20)
+	private String createDate;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@FieldName(name = "修改人")
+	@JoinColumn(name = "MODIFICATOR_")
+	private User modificator;
+
+	@FieldName(name = "修改时间")
+	@Column(name = "MODIFY_DATE_", length = 20)
+	private String modifyDate;
+
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	public ContractInfo getContractInfo() {
+		return contractInfo;
+	}
+
+	public void setContractInfo(ContractInfo contractInfo) {
+		this.contractInfo = contractInfo;
+	}
+
+	public String getPhonenumber() {
+		return phoneNumber;
+	}
+
+	public void setPhonenumber(String phonenumber) {
+		this.phoneNumber = phonenumber;
+	}
+
+	public String getSmsContent() {
+		return smsContent;
+	}
+
+	public void setSmsContent(String smsContent) {
+		this.smsContent = smsContent;
+	}
+
+	public String getRemark() {
+		return remark;
+	}
+
+	public void setRemark(String remark) {
+		this.remark = remark;
+	}
+
+	public User getCreator() {
+		return creator;
+	}
+
+	public void setCreator(User creator) {
+		this.creator = creator;
+	}
+
+	public String getCreateDate() {
+		return createDate;
+	}
+
+	public void setCreateDate(String createDate) {
+		this.createDate = createDate;
+	}
+
+	public User getModificator() {
+		return modificator;
+	}
+
+	public void setModificator(User modificator) {
+		this.modificator = modificator;
+	}
+
+	public String getModifyDate() {
+		return modifyDate;
+	}
+
+	public void setModifyDate(String modifyDate) {
+		this.modifyDate = modifyDate;
+	}
+
+	public String getPhoneNumber() {
+		return phoneNumber;
+	}
+
+	public void setPhoneNumber(String phoneNumber) {
+		this.phoneNumber = phoneNumber;
+	}
+
+	public String getSendResult() {
+		return sendResult;
+	}
+
+	public void setSendResult(String sendResult) {
+		this.sendResult = sendResult;
+	}
+
+	public String getNoticeTime() {
+		return noticeTime;
+	}
+
+	public void setNoticeTime(String noticeTime) {
+		this.noticeTime = noticeTime;
+	}
+
+	public String getSendTime() {
+		return sendTime;
+	}
+
+	public void setSendTime(String sendTime) {
+		this.sendTime = sendTime;
+	}
+
+	public String getSmsType() {
+		return smsType;
+	}
+
+	public void setSmsType(String smsType) {
+		this.smsType = smsType;
+	}
+
+	public int getSendFlag() {
+		return sendFlag;
+	}
+
+	public void setSendFlag(int sendFlag) {
+		this.sendFlag = sendFlag;
+	}
+
+	public CustInfo getCustInfo() {
+		return custInfo;
+	}
+
+	public void setCustInfo(CustInfo custInfo) {
+		this.custInfo = custInfo;
+	}
+}

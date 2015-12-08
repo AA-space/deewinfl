@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+开票明细
+
+-->
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+     <alldb>
+      <table_sql> 
+	        <![CDATA[
+	      SELECT  P.ID  as equipid, 
+              p.PROJ_ID as projid ,
+              p.EQIP_ID as eqipid , 
+              p.EQIP_NAME as eqipname,
+              p.EQUIP_PLACE as equipplace,
+              P.DICT2.NAME_ as equiptypename,
+              p.DICT2.ID_ as equiptype,
+              P.DICT3.NAME_ as equipclassname,
+              p.DICT3.ID_ as equipclass,
+              P.EQUIP_CONTRACT_NUM as equipcontractnum,
+              P.CHASSIS_NUM as chassisnum,
+              P.CHASSIS_NUMBER as  chassiisnumber,
+              p.model_ as modelname,
+              p.model_ as model,
+              P.GARAGE_DATE as garagedate,
+              P.SALE_DATE as saledate,
+              p.EQUIP_NUM as equipnum , 
+              P.PURCHASE_PRICE as purchaseprice,
+              P.SALE_PRICE as saleprice,
+              P.SALE_PRICE-P.PURCHASE_PRICE as differential_swap,
+              P.PURCHASE_TAX as purchasetax,
+              P.INSURE_MONEY as insuremoney,
+              P.LEASING_MONEY as leasingmoney,
+              p.DICT.NAME_ as devicetypename, 
+              p.DICT.ID_ as devicetype,
+              CI2.CUST_NAME as manufacturername ,
+              p.manufacturer as manufacturer, 
+              decode(p.IS_AFFILIATED,'0',p.AFFILIATED_INFO,ci.cust_name) as purchaseunit,
+              iifo.ID_CARD as idcard,      -- 身份证号码/组织机构代码
+              iifo.CAR_NAME as carname,     -- 机动车辆生产企业名称
+              iifo.BRAND_MODEL as brandmodel,    --厂牌型号
+              iifo.CERTIFICATE as certificate,    --合格证号
+              iifo.INLET_CERTIFICATE as inletcertificate,   --进口证明书号
+              iifo.MOTOR_NUMBER as motornumber,    --发动机号码
+              iifo.LOCALITY as locality,       --产地
+              iifo.INSPECTION as inspection,     --商检单号
+              iifo.PRICE_TOTAL as pricetotal,     --价税合计
+              iifo.TONNAGE as tonnage,       --吨位
+              iifo.CONFINED_NUM as confinednum  --限乘人数
+              FROM proj_info pi
+         left join PROJ_EQUIP P on p.proj_id=pi.id
+         left join cust_info ci on ci.id=pi.cust_id
+         LEFT JOIN CUST_INFO CI2 ON P. MANUFACTURER = CI2.ID
+         LEFT JOIN CUST_INFO CI3 ON P. VNDR = CI3.ID
+         LEFT JOIN T_DICTS_DATAS DICT ON P.DEVICE_TYPE = DICT.ID_
+         LEFT JOIN T_DICTS_DATAS DICT2 ON P.EQUIP_TYPE=DICT2.ID_
+         LEFT JOIN T_DICTS_DATAS DICT3 ON P.EQUIP_CLASS=DICT3.ID_
+         left join invoice_apply_info iifo on iifo.equip_id=p.id
+        WHERE P.PROJ_ID='{proj_id}'
+               and iifo.ID_CARD is null
+	        
+			       
+				
+				 ]]> 
+	  </table_sql>
+	   </alldb>
+      <dataSource>dataSource</dataSource>
+      <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

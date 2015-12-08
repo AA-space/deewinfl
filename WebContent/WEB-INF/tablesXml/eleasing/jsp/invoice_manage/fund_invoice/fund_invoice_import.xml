@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+    <alldb>
+      <table_sql> 
+	        <![CDATA[
+	        select ttt.* from (
+	           SELECT ID as id, 
+	           invoice_no as invoiceno,  --发票号
+	           contract_id as contractid, --合同编号
+	           vndr_name as vndrname, 
+	           corpus_tax_money as corpustaxmoney, --含税金额
+	           tax_rate as taxrate,--税率  
+	           tax_money as taxmoney, --税额
+	           tax_type as taxtype, --费用类型
+	           cust_name as custname, --客户名称
+	           model as model, --设备名称
+	           invoice_date as invoicedate, --开票日期
+	           create_date as createdate, --创建日期
+	           modify_date as modifydate, --修改日期
+	           creator_ as creator, --创建人
+	           modificator_ as modificator, --修改人
+	           out_no as outno, --供应商名称
+	           income_date as incomedate, --收款日期
+	           income_money as incomemoney, --收款金额
+	           invoice_money as invoicemoney, --开票金额
+	           invoice_type as invoicetype, --开票类型
+	           tax_bank as taxbank, --开户行
+	           tax_acc as taxacc, --开户帐号
+	           tax_tel as taxtel, --电话
+	           tax_reg_code as taxregcode, --邮编
+	           tax_addr as taxaddr, --地址
+	           ems_no as emsno, --快递单号
+	           exp_user as exportuser, --导出人
+	           export_date as exportdate, --导出日期
+	           case nvl(hc_status,'1') when '1' then '已红冲'
+	           when '2' then '红冲发票'
+	           else '其他' end as hcstatus
+	           FROM tax_fund_upload_info
+	           WHERE 1=1 
+				  /~contractid: and contract_id like '%{contractid}%' ~/
+				  /~custname: and cust_name like '%{custname}%' ~/
+				  /~incomedate_start: and income_date>='{incomedate_start}' ~/
+          /~incomedate_end: and income_date<='{incomedate_end}' ~/
+          ) ttt
+          where 1=1
+          /~hcstatus: and hcstatus like '%{hcstatus}%' ~/
+			  
+			 ]]> 
+	  </table_sql>
+	  </alldb>
+      <dataSource>dataSource</dataSource>
+      <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

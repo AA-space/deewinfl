@@ -1,0 +1,205 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>发票信息维护</title>
+	<link href="${pageContext.request.contextPath}/css/dtree/dtree.css" rel="stylesheet" type="text/css">
+	<link href="${pageContext.request.contextPath}/css/jquery-easyui/easyui.css" rel="stylesheet" type="text/css">
+	<link href="${pageContext.request.contextPath}/css/jquery-easyui/icon.css" rel="stylesheet" type="text/css">
+	<link href="${pageContext.request.contextPath}/css/tracywindy/tracywindy.css" rel="stylesheet" type="text/css">
+	<link href="${pageContext.request.contextPath}/css/tracywindy/button.css" rel="stylesheet" type="text/css">
+	<link href="${pageContext.request.contextPath}/css/tracywindy/workFlowUtil.css" rel="stylesheet" type="text/css">
+	<script type="text/javascript" src="${pageContext.request.contextPath}/js/tracywindy/workFlowUtil.js"></script>
+	<script type="text/javascript" src="${pageContext.request.contextPath}/js/tracywindy/tracywindyUtils.js"></script>
+	<script type="text/javascript" src="${pageContext.request.contextPath}/js/tracywindy/tracywindyJsonUtil.js"></script>
+	<script type="text/javascript" src="${pageContext.request.contextPath}/js/tracywindy/tracywindyAjax.js"></script>
+	<script type="text/javascript" src="${pageContext.request.contextPath}/js/jquery/jquery.min.js"></script>
+	<script type="text/javascript" src="${pageContext.request.contextPath}/js/jquery/jquery.easyui.min.js"></script>
+	<script type="text/javascript" src="${pageContext.request.contextPath}/js/jquery/easyui-lang-zh_CN.js"></script>
+	<script type="text/javascript" src="${pageContext.request.contextPath}/js/tracywindy/tracywindyLoadMask.js"></script>
+	<script type="text/javascript" src="${pageContext.request.contextPath}/js/tracywindy/tracywindyTable.js"></script>
+	<script type="text/javascript" src="${pageContext.request.contextPath}/js/tracywindy/tracywindyComboBox.js"></script>
+	<script type="text/javascript" src="${pageContext.request.contextPath}/js/tracywindy/tracywindySerializeFormToJsonObject.js"></script>
+	<script type="text/javascript" src="${pageContext.request.contextPath}/js/my97DatePicker/WdatePicker.js"></script>
+	<script type="text/javascript" src="${pageContext.request.contextPath}/js/validator.js"></script>
+	<script type="text/javascript" src="${pageContext.request.contextPath}/js/tracywindy/tracywindyOperationTable.js"></script>
+	<style type="text/css"> 
+		html,body{overflow:hidden;}
+		.required-content{color:red}
+	</style>
+<script type="text/javascript">
+	var pageWidth  = document.documentElement.clientWidth-2;
+	var pageHeight = document.documentElement.clientHeight-2;
+	jQuery(function(){
+   	 var table = new tracywindyOperationTable({   		 
+   		 windowTop:20,
+   		 constantFlagTable:'InvoiceWHInfo',
+   	     border:true,
+         renderTo:'id_tableContainer',
+         title:'发票信息维护',
+         tableComment:'[发票信息维护]',
+         width:parseInt("${param.tableWidth}")||pageWidth,
+         height:parseInt("${param.tableHeight}")||pageHeight,
+         xmlFileName:'/eleasing/workflow/invoice/invoice_info_list.xml',
+         loadMode:'ajax',
+         operButtons:'修改',
+         lazyLoad: false,
+         isPage:true,
+         id:'id_table',
+         isAutoBreakContent: false,
+         isExcel:true,
+         isFit: true,
+         beforeShowWindowCallBack:function(operType,thisForm,operType){
+	    	 if(operType=="update"){
+	    		 var status = $('input[name="invoicetype"]').val();
+	    		 if(status == "invoicetype1"){
+	    			 getTracywindyObject("id_combo_id_status").setRawValue("增值税专用发票");
+	    		 }else{
+	    			 getTracywindyObject("id_combo_id_status").setRawValue("增值税普通发票");
+	    		 }
+				 getTracywindyObject("id_combo_id_status").setValue(status);
+	    	 }
+	    	 return true;
+	     },
+         columns:
+         [
+	            {header:'id',name:'id',hidden: true},
+	            {header:'合同编号',name:'contractid',hidden: true},
+	            {header:'合同号',name:'contractnumber',queryConfig:{}},
+	            {header:'客户名',name:'custname',queryConfig:{}},
+	            {header:'经销商',name:'custdealer',queryConfig:{}},
+	            {header:'项目名称',name:'projectname',width:300,queryConfig:{isNewLine:true}},
+	            {header:'税号',name:'taxnumber'},
+	            {header:'开户行',name:'invoiceopenbank'},
+	            {header:'开户账号',name:'invoicenumber'},
+	            {header:'地址',name:'invoiceaddress'},
+	            {header:'电话',name:'invoicetel'}, 
+	            {header:'合同提报日',name:'contractdate'},
+	            {header:'修改日期',name:'modifydate',type:'date',isRange:true,queryConfig:{}},
+	            {header:'开票类型',name:'invoicetypename',type:'combobox',queryConfig:{
+	            	isNewLine:true,
+	            	type:'combobox',
+	            	loadMode:'local',
+	            	displayField:'text',
+				    valueField:'id',
+				    datas:[{id:'增值税专用发票',text:'增值税专用发票'},{id:'增值税普通发票',text:'增值税普通发票'}]
+	            	
+	            }},
+	            {header:'附件',name:'projid',
+	            	renderer:function(value,tableObj,columnName,columnIndex,rowData){
+	                return "<a href='javascript:void(0);' onclick='viewProjSummary(\""+rowData["projid"]+"\")'>"+"附件"+"</a>";
+	    	       }
+		         }
+	     ]
+   	 });
+   });
+	function viewProjSummary(keyOne){
+	    var URL = "${pageContext.request.contextPath}/jbpm/getProjSummaryHistoryInfos.action?keyOne="+keyOne;
+	    openFullScreenWindow(URL);
+	}
+</script>
+
+</head>
+<body>
+<!-- 加载table 内容div -->
+<div id="id_tableContainer"></div>
+
+<!-- 画弹出框内容 -->	
+<center>
+<div id="id_detailInfoWindowContainer"  title="关账日信息" style="display:none;width:550px;height:300px">
+        <center>
+	        <form id="id_detailInfoForm">
+		        <table style="width:90%">
+		            <tr style="display:none">
+		            <td><input name="id" id="id" type="hidden" value=""/></td>
+		            <td><input name="contractid" id="contractid" type="hidden" value=""/></td> 
+		            </tr>
+		           <tr >
+						   <td class="td-content-title">合同号：</td>
+						   <td class="td-content"><input name="contractnumber" readOnly class="td-content-input td-content-readonly" type="text" require="true" label="合同号" /></td>
+				           <td class="td-content-title">税号：</td>
+				           <td class="td-content"><input name="taxnumber" id="taxnumber" class="td-content-input"  label="税号"   type="text"  value="${requestScope['taxnumber'] }"></td>
+						</tr>
+			            <tr >
+						   <td class="td-content-title">开户行：</td>
+						   <td class="td-content"><input name="invoiceopenbank" id="invoiceopenbank" class="td-content-input" type="text" require="true" label="开户行" /></td>
+				           <td class="td-content-title">开户账号：</td>
+				           <td class="td-content"><input name="invoicenumber" id="invoicenumber" class="td-content-input"  label="开户账号"   type="text"  value="${requestScope['invoicenumber'] }"></td>
+						</tr>
+			            <tr >
+						   <td class="td-content-title">地址：</td>
+						   <td class="td-content"><input name="invoiceaddress" id="invoiceaddress" class="td-content-input" type="text"  label="地址" /></td>
+				           <td class="td-content-title">电话：</td>
+				           <td class="td-content"><input name="invoicetel" id="invoicetel" class="td-content-input"  label="电话"   type="text"  value="${requestScope['invoicetel'] }"></td>
+						</tr>
+			             <tr >
+						   <td class="td-content-title">开票类型：</td>
+						   <td class="td-content">
+						   <div class="leftComboContainer" id="id_status"></div></td>
+						   </td>
+						</tr>
+					<br/>
+		            <tr class="content-separator">
+			            <td colspan='4'>
+			                 <a  style="margin-left:20px;" href="javascript:void(0);" class="btn btn-primary"onclick='submitInfo()'><span>确定</span></a>
+					         <a  style="margin-left:20px;" href="javascript:void(0);" class="btn btn-primary" onclick='jQuery("#id_detailInfoWindowContainer").window("close");'><span>取消</span></a>
+			            </td>
+		            </tr>
+		        </table>
+	        </form> 
+        </center>
+	</div>
+</center>
+<script>
+function submitInfo(){
+	var idstatus = getTracywindyObject("id_combo_id_status").getValue();
+	var attrs =["taxnumber","invoiceopenbank","invoicenumber","invoiceaddress","invoicetel"];
+	if(idstatus=="invoicetype1"){
+		for(var i=0;i<attrs.length;i++){
+			$("#"+attrs[i]).attr("require",true);
+		}
+	}else{
+		for(var i=0;i<attrs.length;i++){
+			$("#"+attrs[i]).attr("require",false);
+		}
+	}
+	return getTracywindyObject("id_table").operationTable();
+}
+
+jQuery(function(){
+	new tracywindyComboBox({
+		lazyLoad:true,
+		id : 'id_combo_id_status',
+		width : 167,
+		renderTo : 'id_status',
+		datas:[{value:'invoicetype1',name:'增值税专用发票'},{value:'invoicetype2',name:'增值税普通发票'}],
+		loadMode : 'local',
+		readOnly : false,
+		isAjaxLenovo : true,
+		readOnly:true,
+		otherAttributes:'require="true"  label="开票类型"',
+		topAdd : 0,
+		leftAdd : 0,
+		positionDropIconLeftAdd : -1,
+		name : 'invoicetype',
+		displayField : 'name',
+		valueField : 'value',
+		value:'${requestScope["invoicetype"]}',
+		rawValue:'${requestScope["rawValue_invoicetype"]}',
+		onSelected:function(combo,rowData,me,columnConfig){
+			 for(var i=0;i<me.comboboxs.length;i++){
+		    	   var combo =me.comboboxs[i];
+		    	   var ivValue  = combo.getValue();
+		    	   alert(ivValue);
+			 }
+			
+		}
+		
+	});
+	
+});
+
+</script>
+</body>
+</html>

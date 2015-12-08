@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- id实体英文名 -->
+<!-- name实体中文名 -->
+<!-- dataUrl实体controllurl -->
+<module-info>
+	<entity id="com.business.entity.AreaInfo" name="区域信息" dataUrl="AreaInfo.action">
+		<columns id="areaInfos" name="区域子信息" attribute="set">
+
+		</columns>
+		<columns id="areaName" name="zzz名称" attribute="">
+		</columns>
+	</entity>
+	<entity id="com.business.entity.AreaInfo" name="区域信息" dataUrl="house/areainfo.action" type="findById">
+		<columns id="areaInfos" name="区域子信息xxxxxxxxx">
+			<type name="set" url="areainfo.xml,findPageList" />
+		</columns>
+		<columns id="areaName" name="zzz名称" attribute="">
+		</columns>
+	</entity>
+	<entity id="com.business.entity.AreaInfo" name="添加区域信息" dataUrl="house/areainfo.action"  groupStyle="entityTest" type="updata">
+		<columns id="id" name="信息" attribute="none">
+		</columns>
+		<columns id="areaName" name="zzz名称" attribute="" columnsStyle="columnTest" columnValidation="web,number;server:url">
+		</columns>
+
+	</entity>
+	<entity id="com.business.entity.AreaInfo" name="xxxx" dataUrl="house/areainfo.action" type="fuzzy">
+		<columns id="id" name="fuzzy">
+		</columns>
+		<columns id="areaName" name="findFuzzy " attribute="">
+		</columns>
+		<columns id="areaInfo">
+			<columns id="id" name="123" attribute="hidden" />
+			<type name="xx" url="abc" />
+			<columns id="areaName" name="子名称">
+			</columns>
+		</columns>
+
+	</entity>
+	<entity id="com.business.entity.AreaInfo" name="xxxxxxxxx" dataUrl="house/areainfo.action" type="add_test" typeModel="openNewWindow" groupStyle="span4" >
+		<columns id="areaInfos" name="区域子信息">
+			<type name="set" url="com.business.entity.AreaInfo" />
+		</columns>
+		<columns id="test" name="测试">
+			<type name="set" url="com.business.entity.AreaInfo" />
+		</columns>
+
+		<columns id="areaName" name="区域名称xx" attribute="" columnsStyle="{'group':'sapn4','label':'1','input':'1'}" columnValidation="web:{'require':true};server:url">
+		</columns>
+	</entity>
+	
+	
+	<entity id="com.business.entity.AreaInfo" name="xxxxxxxxx" dataUrl="house/areainfo.action" type="add" typeModel="openNewWindow" groupStyle="span4" >
+		<columns id="areaInfos" name="区域子信息">
+			<type name="set" url="com.business.entity.AreaInfo" />
+		</columns>
+		<columns id="test" name="测试">
+			<type name="set" url="com.business.entity.AreaInfo" />
+		</columns>
+
+		<columns id="areaName" name="区域名称xx" attribute="" columnsStyle="{'group':'sapn4','label':'1','input':'1'}" columnValidation="web:{'require':true};server:url">
+		</columns>
+	</entity>
+</module-info>

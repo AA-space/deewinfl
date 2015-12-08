@@ -1,0 +1,50 @@
+package com.business.serviceImpl.fundPayForRent;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+
+import org.springframework.stereotype.Service;
+
+import com.business.dao.BaseDao;
+import com.business.entity.User;
+import com.business.entity.contract.fund.ContractFundFundPayCollect;
+import com.business.entity.contract.fund.ContractFundFundPayForRent;
+import com.business.service.TableService;
+import com.business.service.fundPayForRent.FundForRentService;
+import com.business.serviceImpl.AbstractBaseServiceImpl;
+import com.business.util.WorkflowUtil;
+import com.kernal.utils.DateUtil;
+import com.kernal.utils.SecurityUtil;
+import com.kernal.utils.UUIDUtil;
+@Service(value="fundForRentService")
+public class FundForRentServiceIpml extends AbstractBaseServiceImpl implements FundForRentService {
+
+	@Resource
+    private BaseDao baseDao;
+	@Resource(name = "tableService")
+	private TableService tableService;
+	@Override
+	public BaseDao getBussinessDao() throws Exception {
+		return baseDao;
+	}
+	@Override
+	public void submitFundForRent(Map<String, String> model) throws Exception {
+		String[] idsArray = model.get("ids").split(",");
+		List<ContractFundFundPayForRent> list = new ArrayList<ContractFundFundPayForRent>();
+		User user = (User) SecurityUtil.getPrincipal();
+		String createDate = DateUtil.getSystemDateTime();
+		List<ContractFundFundPayCollect> listpay=this.tableService.findEntityByIDArray(ContractFundFundPayCollect.class, idsArray);
+		for (ContractFundFundPayCollect pay : listpay) {
+			ContractFundFundPayForRent info=new ContractFundFundPayForRent();
+			info.setContractId(pay.getContractId());
+			info.setCreator(user);
+			info.setCreateDate(createDate);
+			list.add(info);
+		}
+		this.baseDao.saveOrUpdateAllEntities(list);
+	}
+}

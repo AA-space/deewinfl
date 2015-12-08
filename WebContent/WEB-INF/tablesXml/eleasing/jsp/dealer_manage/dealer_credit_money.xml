@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<table-root
+ xmlns="http://www.tracywindy.org/table"
+ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+    <table>
+        <data>
+            <alldb>
+                <table_sql>
+                    <![CDATA[									
+						select tab7.creditmoney-(tab1.projmoney1+tab2.projmoney2+tab3.contractmoney1+tab4.contractmoney2+tab5.chargemoney1+tab6.chargemoney2) as lastcreditmoney 
+						from 
+						(select '{deptid}' pd , nvl(sum(pc.equip_amt),0)/2.0 projmoney1 from proj_info pi 
+						left join  proj_condition pc on pi.id =pc.proj_id
+						where pi.proj_dept='{deptid}'
+						and pi.proj_status>=11 and pi.proj_status<16
+						and pc.is_guaranty=0
+						) tab1
+						left join 
+						
+						(select '{deptid}' pd , nvl(sum(pc.equip_amt),0) projmoney2 from proj_info pi 
+						left join  proj_condition pc on pi.id =pc.proj_id
+						where pi.proj_dept='{deptid}'
+						and pi.proj_status>=11 and pi.proj_status<16
+						and pc.is_guaranty=1
+						) tab2
+						on tab1.pd=tab2.pd
+						left join 
+						(select '{deptid}' cd, nvl(sum(cc.equip_amt),0)/2.0 contractmoney1 from contract_info ci 
+						left join contract_condition cc on ci.id=cc.contract_id
+						where ci.proj_dept='{deptid}'
+						and ci.contract_status>=16 and ci.contract_status<31
+						and cc.is_guaranty=0
+						) tab3
+						on tab1.pd=tab3.cd
+						left join 
+						(select '{deptid}' cd, nvl(sum(cc.equip_amt),0) contractmoney2 from contract_info ci 
+						left join contract_condition cc on ci.id=cc.contract_id
+						where ci.proj_dept='{deptid}'
+						and ci.contract_status>=16 and ci.contract_status<31
+						and cc.is_guaranty=1
+						) tab4
+						
+						on tab3.cd=tab4.cd
+						left join 
+						
+						(select '{deptid}' cd, (nvl(sum(cp.rent),0)-nvl(sum(cin.rent),0))/2.0 as chargemoney1 from contract_info ci 
+						left join contract_condition cc on ci.id=cc.contract_id
+						left join contract_fund_rent_plan cp on ci.id=cp.contract_id
+						left join contract_fund_rent_income cin on ci.id=cin.contract_id
+						where ci.proj_dept='{deptid}'
+						and ci.contract_status>=31 
+						and cc.is_guaranty=0
+						) tab5
+						on tab3.cd=tab5.cd
+						left join 
+						(select '{deptid}' cd, nvl(sum(cp.rent),0)-nvl(sum(cin.rent),0) as chargemoney2 from contract_info ci 
+						left join contract_condition cc on ci.id=cc.contract_id
+						left join contract_fund_rent_plan cp on ci.id=cp.contract_id
+						left join contract_fund_rent_income cin on ci.id=cin.contract_id
+						where ci.proj_dept='{deptid}'
+						and ci.contract_status>=31 
+						and cc.is_guaranty=1
+						) tab6
+						on tab5.cd=tab6.cd
+						left join 
+						
+						(select '{deptid}' dd,nvl(sum(dci.credit_money),0) creditmoney  from DEALER_DEPT_INFO di 
+						left join cust_info cinfo on di.cust_id=cinfo.id
+						left join DEALER_CREDIT_INFO dci on cinfo.id=dci.cust_id
+						where di.dealer_dept='{deptid}'
+						) tab7
+						on tab6.cd=tab7.dd
+
+			 ]]>
+                </table_sql>
+            </alldb>
+            <dataSource>
+                dataSource
+            </dataSource>
+			<show_sql>true</show_sql>
+        </data>
+    </table>
+</table-root>

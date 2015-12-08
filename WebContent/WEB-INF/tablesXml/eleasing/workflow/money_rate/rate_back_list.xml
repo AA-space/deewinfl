@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+     <alldb>
+      <table_sql> 
+	        <![CDATA[
+	     SELECT 
+       cust.ID as id, --id
+       CUST.CUST_NAME as custname,--客户名称
+       CI.CONTRACT_ID as contractid, --合同编号
+       CI.PROJECT_NAME as projectname,--项目名称
+	   faic.START_LIST as startlist, --调息开始期项
+       faic.RATE_ORIGINAL as rateoriginal, --调整前利率
+       faic.RATE_ADJUST as rateadjust, --调整后利率
+       faic.OLD_IRR as oldirr, --旧的合同IRR
+       faic.NEW_IRR as newirr, --新的合同IRR
+       faic.OLD_PLAN_IRR as oldplanirr, --旧会计IRR
+       faic.NEW_PLAN_IRR as newplanirr, --新会计IRR
+       faic.DOC_ID as docid, --测算编号(流水号)
+       faic.ADJUST_DATE as adjustdate, --调息时间
+       faic.MOD_REASON as modreason, --修改原因
+       faic.STATUS_ as status, --状态
+       faic.PROCESSID as processid, --操作ID
+       faic.CREATE_DATE as createdate, --创建时间
+       faic.MODIFY_DATE as modifydate, --修改时间
+       faic.ADJUST_ID as adjustid, --央行调息编号
+       faic.CREATOR_ as creator, --创建人
+       faic.MODIFICATOR_ as  modificator --修改人
+       FROM FUND_ADJUST_INTEREST_CONTRACT faic
+       left join contract_info ci on ci.id = faic.CONTRACT_ID
+       left join cust_info cust on cust.id = ci.cust_id 
+       where 1=1 
+    	 ]]> 
+	  </table_sql>
+	   </alldb>
+      <dataSource>dataSource</dataSource>
+      <show_sql>true</show_sql>
+      <!-- and (faic.ADJUST_ID <>'' or faic.ADJUST_ID <> null) and (faic.STATUS_ = '1' or faic.STATUS_ = '是')  -->
+    </data>
+  </table>
+</table-root>

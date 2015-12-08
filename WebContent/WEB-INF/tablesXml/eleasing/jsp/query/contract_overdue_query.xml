@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+    <alldb>
+      <table_sql> 
+	        <![CDATA[
+	        select * from (
+				SELECT dict.name_ district,
+       users.realname_ proj_manage,
+       info.contract_number,
+       NVL (ci2.cust_name, dept.name_) dealername,
+       ci.cust_name custname,
+       case when person.phone_ is null then  person.mobile_number 
+         when person.mobile_number is null then   person.phone_
+           else person.phone_ ||'/'||person.mobile_number end phonexx,
+       con.start_date_ startdate,
+       round(NVL (pla.rent, 0) - NVL (inx.rent, 0) - NVL (inx.rentadjust, 0),2)
+          y_rent,
+       (  NVL (plax.corpus, 0)
+        - NVL (inx.corpus, 0)
+        )
+          y_corpus,
+       round((  (  NVL (pla.rent, 0)
+           - NVL (inx.rent, 0)
+           - NVL (inx.rentadjust, 0))
+        / mrent),2)
+          yrentlist,
+       (  NVL (plax.rent, 0)
+        - NVL (inx.rent, 0)
+        - NVL (inx.rentadjust, 0))
+          sy_rent,
+       NVL (pen.penalty, 0) sypen,
+       (  (  NVL (pla.rent, 0)
+           - NVL (inx.rent, 0)
+           - NVL (inx.rentadjust, 0))
+        + NVL (pen.penalty, 0))
+          allpen,
+       NVL (con.nominal_price/100,0) equipcount,
+       equip.model_,
+       con.lease_term   rent_list,
+      minplan_date,
+decode(card.is_card,0,'是','否')  is_card
+,case when info.contract_status='71' then '是' else '否' end susong
+  FROM contract_info info
+       LEFT JOIN contract_condition con ON con.contract_id = info.id
+       LEFT JOIN
+       (  SELECT *
+  FROM (SELECT ROW_NUMBER () OVER (PARTITION BY contract_id ORDER BY id DESC) rn,
+               contract_equip.*
+          FROM (SELECT contract_id, equip.id, equip.model_ as model_
+    FROM contract_equip equip
+       
+   WHERE EQUIP_CLASS <> 'equip_class_2') contract_equip)
+ WHERE rn = 1) equip
+          ON info.id = equip.contract_id
+       LEFT JOIN (  SELECT contract_id,
+                           SUM (rent) rent,
+                           SUM (corpus) corpus,
+                           max (rent) mrent
+                      FROM contract_fund_rent_plan
+                     WHERE TO_DATE (plan_date, 'YYYY-MM-DD') <= SYSDATE
+                  GROUP BY contract_id) pla
+          ON info.id = pla.contract_id
+          LEFT JOIN (  SELECT contract_id,
+                           SUM (rent) rent,
+                           SUM (corpus) corpus,
+                           max (rent) mrent
+                      FROM contract_fund_rent_plan
+                  GROUP BY contract_id) plax
+          ON info.id = plax.contract_id
+          LEFT JOIN (  SELECT contract_id,
+                           SUM (rent) rent,
+                           SUM (corpus) corpus,
+                           SUM (rent_adjust) rentadjust,
+                           SUM (corpus_adjust) corpusadjust,
+                           SUM (penalty) penalty
+                      FROM contract_fund_rent_income
+                  GROUP BY contract_id) inx
+          ON inx.contract_id = info.id
+       LEFT JOIN cust_info ci ON ci.id = info.cust_id
+       left join cust_info_person person on person.cust_id=ci.id
+       LEFT JOIN cust_info ci2 ON ci2.id = info.cust_dealer
+       LEFT JOIN t_depts dept ON info.proj_dept = dept.id_
+       LEFT JOIN cust_info_dealer dealer ON info.cust_dealer = dealer.cust_id
+       LEFT JOIN t_dicts_datas dict ON dict.id_ = dealer.owner_district
+       LEFT JOIN (SELECT *
+                    FROM manager_district
+                   WHERE manager_role = '402881824094f54f01409551aff2002c') t
+          ON dealer.owner_district = t.district_
+       LEFT JOIN t_users users ON t.manager_ = users.id_
+       LEFT JOIN (  SELECT contract_id, SUM (penalty) penalty
+                      FROM vi_contract_penalty
+                  GROUP BY contract_id
+                 ) pen
+          ON pen.contract_id = info.id   
+          left join  contract_card_for_rent  card on card.contract_id=info.id
+       left join (select contract_fund_rent_plan.contract_id,min(plan_date) as minplan_date from contract_fund_rent_plan left join (select contract_id,plan_list,sum(nvl(rent,0)) as sumrent
+        from  contract_fund_rent_income group by contract_id,plan_list ) income_rent  on contract_fund_rent_plan.contract_id=income_rent.contract_id
+        and contract_fund_rent_plan.rent_list=income_rent.plan_list where TO_DATE (plan_date, 'YYYY-MM-DD') <= SYSDATE and rent-nvl(sumrent,0)>0 group by contract_fund_rent_plan.contract_id) con_minplan_date
+        on info.id=con_minplan_date.contract_id
+ 		where (NVL (pla.rent, 0) - NVL (inx.rent, 0) - NVL (inx.rentadjust, 0))>0
+          and info.contract_status <> '201'
+          and info.contract_status <> '111'
+		 and users.id_='{user_id}'
+		 )rs where 1=1
+	 	/~district: and rs.district like '%{district}%'~/
+	 	/~proj_manage: and rs.proj_manage like '%{proj_manage}%'~/
+	 	/~contract_number: and rs.contract_number like '%{contract_number}%'~/
+	 	/~dealername: and rs.dealername like '%{dealername}%'~/
+		/~custname: and rs.custname like '%{custname}%'~/
+		/~yrentlist: and rs.yrentlist like '%{yrentlist}%'~/
+		/~minplan_date_start: and rs.minplan_date >='{minplan_date_start}'~/
+		/~minplan_date_end: and rs.minplan_date <= '{minplan_date_end}'~/
+		/~susong: and rs.susong like '%{susong}%'~/
+		/~startdate: and rs.startdate like '%{startdate}%'~/
+				 	
+			 ]]> 
+	  </table_sql>
+	  </alldb>
+      <dataSource>dataSource</dataSource>
+	  <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

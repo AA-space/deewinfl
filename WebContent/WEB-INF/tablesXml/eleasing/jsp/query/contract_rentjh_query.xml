@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+    <alldb>
+      <table_sql> 
+	        <![CDATA[
+		select * from (
+				SELECT 
+				info.id,
+				info.contract_number,
+				dis.name_ qy,
+				bsc.name_ bsc,
+				      nvl(cust2.cust_name,t_depts.name_) AS proj_dept,
+				       users.realname_ AS proj_manage,
+				       cust.cust_name,
+				       plans.rent_list,
+				       plans.plan_date,
+				       NVL (plans.rent, 0) AS rent,
+				       NVL (plans.corpus, 0) AS corpus,
+				       NVL (plans.interest, 0) AS interest,
+				       NVL (incomes.rent, 0) AS income_rent,
+				       NVL (incomes.corpus, 0) AS income_corpus,
+				       NVL (incomes.interest, 0) AS income_interest,
+				      round(NVL (plans.rent, 0) - NVL (incomes.rent, 0),2) AS s_rent,
+				       NVL (plans.corpus, 0) - NVL (incomes.corpus, 0) AS s_corpus,
+				       NVL (plans.interest, 0) - NVL (incomes.interest, 0) AS s_interest,
+				       NVL (VI_CONTRACT_PENALTY.PLAN_PENALTY, 0) AS penalty,
+				       NVL (VI_CONTRACT_PENALTY.income_penalty, 0) AS income_penalty,
+				       NVL (VI_CONTRACT_PENALTY.penalty, 0) AS s_penalty,
+				decode(cad.is_card,0,'是','否') iscard,
+				round(nvl(incomes.penaltyadjust,0),2) penaltyadjust
+				,case when info.contract_status='71' then '是' else '否' end susong
+				  FROM contract_fund_rent_plan plans
+				       LEFT JOIN vi_contract_penalty
+				          ON     plans.contract_id = VI_CONTRACT_PENALTY.CONTRACT_ID
+				             AND PLANS.RENT_LIST = VI_CONTRACT_PENALTY.RENT_LIST
+				       LEFT JOIN contract_info info ON plans.contract_id = info.id
+				       LEFT JOIN cust_info cust ON cust.id = info.cust_id
+				left join cust_info cust2 on cust2.id=info.cust_dealer
+				       LEFT JOIN (  SELECT contract_id,
+				                           plan_list,
+				                           SUM (NVL (rent, 0)) AS rent,
+				                           SUM (NVL (corpus, 0)) AS corpus,
+				                           SUM (NVL (interest,0)) AS interest,
+				                           sum(nvl(penalty_adjust,0)) penaltyadjust
+				                      FROM contract_fund_rent_income
+				                  GROUP BY contract_id, plan_list) incomes
+				          ON     plans.contract_id = incomes.contract_id
+				             AND plans.rent_list = incomes.plan_list
+				       LEFT JOIN t_depts ON t_depts.id_ = info.proj_dept
+				       LEFT JOIN cust_info_dealer dealer ON info.cust_dealer = dealer.cust_id
+				left join t_dicts_datas dis on dis.code_ = dealer.owner_district
+				                   left join t_dicts_datas bsc on bsc.code_ = dealer.owner_office
+				       LEFT JOIN (SELECT *
+				                    FROM manager_district
+				                   WHERE manager_role = '402881824094f54f01409551aff2002c') t
+				          ON dealer.owner_district = t.district_
+				       LEFT JOIN t_users users ON t.manager_ = users.id_
+				left join contract_card_for_rent cad on info.id=cad.contract_id
+				 where  info.contract_status<>'201'  
+				   and info.contract_status<>'111'  
+				   and users.id_ ='{user_id}'   
+				order by  plans.contract_id ,plans.rent_list 
+	   )rs
+	   where 1=1
+	  /~contract_number: and rs.contract_number like '%{contract_number}%'~/
+	  /~proj_dept: and rs.proj_dept like '%{proj_dept}%'~/
+	  /~cust_name: and rs.cust_name like '%{cust_name}%'~/
+	  /~plan_date: and rs.plan_date like '%{plan_date}%'~/
+	  /~s_rent: and rs.s_rent like '%{s_rent}%'~/
+	  /~s_corpus: and rs.s_corpus like '%{s_corpus}%'~/
+	  /~s_penalty: and rs.s_penalty like '%{s_penalty}%'~/
+	  /~iscard: and rs.iscard like '%{iscard}%'~/
+	  /~susong: and rs.susong like '%{susong}%'~/
+                   
+				 	
+			 ]]> 
+	  </table_sql>
+	  </alldb>
+      <dataSource>dataSource</dataSource>
+	  <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

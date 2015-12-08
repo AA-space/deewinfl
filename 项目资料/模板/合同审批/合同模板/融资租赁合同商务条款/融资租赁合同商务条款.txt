@@ -1,0 +1,9 @@
+﻿${contract_infocontractnumber} 数据类型：字段；数据来源：页面；
+${contract_infocustname}       数据类型：字段；数据来源：页面；
+framework_condition            数据类型：列表；数据来源：数据库；
+			       数据列名：equip_amt,lease_term,is_registration,year_rate,first_payment_ratio,
+                               first_payment,caution_money_ratio,caution_money,handling_charge_money_ratio,
+                               handling_charge_money,nominal_price,insure_money,gps_money,other_income,first_payment_total,lease_money；
+			       数据sql：select equip_amt,lease_term,is_registration,year_rate,first_payment_ratio,first_payment,
+                               caution_money_ratio,caution_money,handling_charge_money_ratio,handling_charge_money,nominal_price,
+                               insure_money,gps_money,other_income,first_payment_total,lease_money from proj_condition where proj_id = '{project_info.id}'

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+合同登记信息专用，必须传入contract_id参数
+
+ -->
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+     <alldb>
+      <table_sql> 
+	        <![CDATA[
+			select bi.id as id,
+			       ci.contract_id as contractid,
+			       ci.contract_number as contractnumber,
+			       dict.name_ as docname,
+			       cust.cust_name as custname,
+			       bi.borrow_send_no as borrowsendno,
+			       bi.borrow_date as borrowdate,
+			       bi.date_limit datelimit,
+			       bi.borrow_user brrowuser
+			  from contract_doc_borrow_info bi
+			  left join contract_doc_send_info di
+			    on di.id = bi.contract_doc
+			  left join contract_info ci 
+			  on ci.id = di.contract_id
+			  left join cust_info cust
+			  on cust.id = ci.cust_id
+			  left join t_dicts_datas dict
+			  on dict.id_ = di.doc_name
+			  left join t_users u
+			  on u.id_ = bi.borrow_user
+			  
+			  where  bi.return_date is null
+			  
+			  /~contractid: and ci.contract_id like '%{contractid}%'~/
+			  /~contractnumber: and ci.contract_number   like '%{contractnumber}%'~/
+			  /~custname: and cust.cust_name like '%{custname}%'~/
+			  /~datelimit_start: and bi.date_limit  >='{datelimit_start}'~/
+			  /~datelimit_end: and bi.date_limit <= '{datelimit_end}'~/
+
+			 ]]> 
+	  </table_sql>
+	   </alldb>
+      <dataSource>dataSource</dataSource>
+      <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

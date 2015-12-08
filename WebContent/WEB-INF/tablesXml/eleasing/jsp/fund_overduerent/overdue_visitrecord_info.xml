@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+    <alldb>
+      <table_sql> 
+	        <![CDATA[
+					   SELECT 
+                  A.ID,
+                  A.CUST_ID AS CUSTID,
+                   SUBSTR(A.CONTACT_DATE,0,10) AS CONTACTDATE,
+                  SUBSTR(A.CREATE_DATE,0,10) AS CREATEDATE,
+                  SUBSTR(A.MODIFY_DATE,0,10) AS MODIFYDATE,
+                  A.CUST_EXP AS CUSTEXP,
+                  A.CUST_REQUIRE AS CUSTREQUIRE,
+                  A.CONTACT_PERSON AS CONTACTPERSON,
+                  A.CONTACT_TYPE AS CONTACTTYPE,
+                  F1.NAME_ CONTACTTYPENAME,
+                  B.CUST_NAME AS CUSTNAME,
+                  NVL(EQUIP_AMTS.EQUIP_AMT,0.00)  AS EQUIPAMT,
+                  NVL(RENTPLANCORPUS.LEASE_MONEY,0.00) AS RENT,
+                   (NVL(RENTPLANCORPUS.LEASE_MONEY,0.00) - NVL(INCOMECORPUS.RENT,0.00)) AS CORPUS
+                   
+                  FROM CUST_CONTACT A 
+                  LEFT JOIN CUST_INFO B ON A.CUST_ID=B.ID 
+                LEFT JOIN (SELECT INFO.CUST_ID,SUM(CONDITION.EQUIP_AMT) EQUIP_AMT  FROM CONTRACT_INFO INFO 
+                LEFT JOIN CONTRACT_CONDITION CONDITION ON INFO.ID=CONDITION.CONTRACT_ID GROUP BY INFO.CUST_ID) EQUIP_AMTS ON EQUIP_AMTS.CUST_ID=B.ID
+                LEFT JOIN T_DICTS_DATAS F1 ON A.CONTACT_TYPE=F1.ID_ 
+                LEFT JOIN (
+                 SELECT CINFO.CUST_ID,CONDITON.CONTRACT_ID, CONDITON.LEASE_MONEY FROM CONTRACT_CONDITION CONDITON
+                 LEFT JOIN CONTRACT_INFO CINFO ON CONDITON.CONTRACT_ID=CINFO.ID
+                  WHERE CINFO.CONTRACT_ID='{CONTRACT_ID}'
+                ) RENTPLANCORPUS ON RENTPLANCORPUS.CUST_ID=B.ID
+                LEFT JOIN (
+                SELECT CIN1.CUST_ID,TAB.CONTRACT_ID,TAB.RENT FROM 
+               (SELECT CINCOME.CONTRACT_ID,SUM(CINCOME.RENT) RENT FROM CONTRACT_FUND_RENT_INCOME CINCOME
+                GROUP BY CINCOME.CONTRACT_ID) TAB
+                LEFT JOIN CONTRACT_INFO CIN1 ON TAB.CONTRACT_ID=CIN1.ID
+                WHERE CIN1.CONTRACT_ID='{CONTRACT_ID}'
+                
+                 ) INCOMECORPUS ON INCOMECORPUS.CUST_ID=B.ID
+           WHERE 1=1 
+           
+					 /~CUST_ID: AND A.CUST_ID LIKE '%{CUST_ID}%'~/
+					ORDER BY B.CUST_NUMBER ASC
+					
+			 ]]> 
+	  </table_sql>
+	  </alldb>
+      <dataSource>dataSource</dataSource>
+    </data>
+  </table>
+</table-root>

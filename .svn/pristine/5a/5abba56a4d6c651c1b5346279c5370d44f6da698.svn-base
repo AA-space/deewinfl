@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+项目立项清单列表
+
+-->
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+     <alldb>
+      <table_sql> 
+	        <![CDATA[
+			      SELECT 
+              DISTINCT
+          CF.ID                                       AS        custid,
+          CF.CUST_NAME                                AS        custname,
+          DICT.NAME_                                  AS        custclass,
+          DICT2.NAME_                                 AS        taxlevel,
+          DICT3.NAME_                                 AS        custkind,
+                TU.REALNAME_||XU.REALNAME_||HU.REALNAME_    AS        regname,
+                TDP.NAME_ || TDC.NAME_                      AS        deptname,
+                TDP.id_ || TDC.id_                      AS        deptid,
+          CIP.ORG_CODE||CCP.ID_CARD_NO                AS        orgcodecardno,
+                CIP1.CUST_NAME || CIP2.CUST_NAME            AS        dealer ,
+                CCID.DEALER_ZANT_STATUS||CCID2.DEALER_ZANT_STATUS as  dealerstauts ,
+                cust.cust_name || cust2.cust_name as onelevelname,
+                ccid.one_level || ccid2.one_level as onelevelname2,
+                ccid2.two_level_status || ccid.two_level_status twolevelstatus,
+                ccid2.two_level_status twolevelstatus2,
+                ccid.two_level_status twolevelstatus3, 
+                case when ccid.two_level_status ='1' then '否' 
+                when ccid.two_level_status='0' then '是'
+                when ccid2.two_level_status='1' then '否' 
+                when ccid2.two_level_status='0' then '是'
+                else ''
+                end twolevelstatusname
+                
+          FROM CUST_INFO CF 
+          LEFT JOIN CUST_TYPE_INFO CTI ON(CF.ID=CTI.CUST_ID)
+              LEFT JOIN CUST_INFO_COMPANY CIP ON CIP.CUST_ID=CF.ID
+              LEFT JOIN CUST_INFO_PERSON CCP ON CCP.CUST_ID=CF.ID
+              LEFT JOIN  CUST_INFO_DEALER CCID ON CCID.CUST_ID=cip.dealer_company  
+              LEFT JOIN  CUST_INFO_DEALER CCID2 ON CCID2.CUST_ID=  ccp.dealer_company
+              LEFT JOIN T_DICTS_DATAS DICT ON DICT.ID_=CF.CUST_CLASS 
+              LEFT JOIN T_DICTS_DATAS  DICT2 ON DICT2.ID_=CIP.TAX_LEVEL 
+              LEFT JOIN T_DICTS_DATAS  DICT3 ON DICT3.ID_=CIP.CUST_KIND 
+              left join cust_info cust on cust.id=ccid.one_level
+              left join cust_info cust2 on cust2.id=ccid2.one_level
+                LEFT JOIN T_DEPTS TDP ON TDP.ID_ = CCP.CREATOR_DEPT
+                LEFT JOIN T_DEPTS TDC ON TDC.ID_ = CIP.CREATOR_DEPT
+                LEFT JOIN CUST_INFO CIP1 ON CIP1.ID=CCP.DEALER_COMPANY
+                LEFT JOIN CUST_INFO CIP2 ON CIP2.ID=CIP.DEALER_COMPANY
+            LEFT JOIN T_USERS TU ON CIP.CREATOR_=TU.ID_
+                    LEFT JOIN T_USERS XU ON CCP.CREATOR_=XU.ID_
+                    LEFT JOIN T_USERS HU ON CCID.CREATOR_=HU.ID_
+				    WHERE 1=1
+					--剔除
+				    AND Upper(CF.CUST_CLASS) <> Upper('CUST_INFO_DEALER') and Upper(CTI.CUST_TYPE)='CUST_TYPE.CUST'
+				    AND CF.INVALID_ = '1'
+				    AND CF.DRAFT_ = '1'
+					--全局搜索
+				  /~queryText: 
+				            AND( 
+				                  UPPER(CF.CUST_NAME) LIKE '%{queryText}%' 
+				               OR UPPER(DICT.NAME_) LIKE '%{queryText}%' 
+				               OR UPPER(DICT2.NAME_) LIKE '%{queryText}%' 
+							   OR UPPER(DICT3.NAME_) LIKE '%{queryText}%' 
+				               OR UPPER(TDP.NAME_ || TDC.NAME_) LIKE '%{queryText}%' 
+				               OR UPPER(TDP.DESCRIPTION_ || TDC.DESCRIPTION_) LIKE '%{queryText}%'
+							   OR UPPER(CIP.ORG_CODE||CCP.ID_CARD_NO) LIKE '%{queryText}%' 
+							   OR UPPER( CIP1.CUST_NAME || CIP2.CUST_NAME) LIKE '%{queryText}%'
+				            )
+				 ~/
+				   ------------经销商初始权限判断----------------
+			      --注：传入当前userid，不做其他关联
+			      --员工在经销部门里, 如果是经销商则是1，如果不是则为0
+			      AND (1 =
+			       --员工在经销部门里, 如果是经销商则是1，如果不是则为0
+			       (SELECT DECODE(NUM, 0, 0, 1)
+			           FROM (SELECT COUNT(*) AS NUM
+			                    FROM DUAL
+			                   WHERE
+			                  --用户部门是经销商部门
+			                   (SELECT DEPT_ID_
+			                      FROM T_USERS_DEPTS
+			                     WHERE USER_ID_ = '{user_id}') IN
+			                   (SELECT D.ID_
+			                      FROM T_DEPTS D
+			                     START WITH D.PID_ = '402881ef409b4bfa01409b9ce7fb01e6'
+			                    CONNECT BY PRIOR D.ID_ = D.PID_)
+			                  --经销商用户对应的部门在<经销商用户对应表>里为不为空
+			                AND (SELECT DEALER_DEPT D1
+			                      FROM DEALER_DEPT_INFO T
+			                     WHERE DEALER_DEPT IN
+			                           (SELECT DEPT_ID_
+			                              FROM T_USERS_DEPTS
+			                             WHERE USER_ID_ = '{user_id}')
+			                             AND ENABLE_ = '0') IS NOT NULL
+			                  
+			                  )) OR
+			       0 =
+			       --不是经销部门
+			       (SELECT COUNT(*) AS NUM
+			           FROM DUAL
+			          WHERE
+			         --用户部门是经销商部门
+			          (SELECT DEPT_ID_
+			             FROM T_USERS_DEPTS
+			            WHERE USER_ID_ = '{user_id}') IN
+			          (SELECT D.ID_
+			             FROM T_DEPTS D
+			            START WITH D.PID_ = '402881ef409b4bfa01409b9ce7fb01e6'
+			           CONNECT BY PRIOR D.ID_ = D.PID_))
+			       
+			       )
+			
+			       ------------经销商初始权限判断结束----------------
+				 
+				/~currentDealerCustInfoId: AND NVL(CCP.DEALER_COMPANY,CIP.DEALER_COMPANY) = '{currentDealerCustInfoId}'~/
+							
+				
+				 ]]> 
+	  </table_sql>
+	   </alldb>
+      <dataSource>dataSource</dataSource>
+      <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

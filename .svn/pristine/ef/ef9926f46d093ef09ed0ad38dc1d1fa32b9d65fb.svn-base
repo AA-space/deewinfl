@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+     <alldb>
+      <table_sql> 
+	        <![CDATA[
+			 SELECT  
+			     CI.ID ID,
+			     CC1.Cust_Name custname,
+				 CC.CUST_NAME dealername,
+				 CI.CONTRACT_NUMBER contractnumber,
+				 CI.CONTRACT_ID contractid,
+				 TAB.MONEY limitmoney,
+				 TAB1.PMONEY pmoney
+			FROM  
+            (select C.CONTRACT_ID CONTRACTID,SUM(C.LIMIT_MONEY) MONEY
+            FROM CONTRACT_LIMIT_INFO C
+            GROUP BY C.CONTRACT_ID) TAB 
+                 
+			LEFT JOIN CONTRACT_INFO CI ON TAB.CONTRACTID=CI.ID
+            LEFT JOIN CUST_INFO CC ON CI.CUST_DEALER=CC.ID
+            LEFT JOIN CUST_INFO CC1 ON CI.Cust_Id=CC1.ID
+            LEFT JOIN (
+                SELECT CF.CONTRACT_ID ID,SUM(CF.PLAN_MONEY) PMONEY FROM  CONTRACT_FUND_FUND_PLAN CF
+                WHERE CF.invalid='0' and CF.FEE_TYPE='feetype10' 
+                GROUP BY CF.CONTRACT_ID
+                ) TAB1 ON TAB.CONTRACTID=TAB1.ID
+        
+				 WHERE 1=1
+				 /~contractid: and CI.CONTRACT_ID like '%{contractid}%' ~/
+				 /~contractnumber: and CI.CONTRACT_NUMBER like '%{contractnumber}%' ~/
+				 /~custname: and CC1.Cust_Name like '%{custname}%' ~/  
+				
+				 ORDER BY TAB.CONTRACTID
+			 ]]> 
+	  </table_sql>
+	   </alldb>
+      <dataSource>dataSource</dataSource>
+      <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

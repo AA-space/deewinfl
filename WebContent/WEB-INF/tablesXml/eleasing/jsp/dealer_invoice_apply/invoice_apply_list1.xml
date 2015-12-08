@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+     <alldb>
+      <table_sql> 
+	        <![CDATA[
+			 SELECT  ce.ID  as equipid, 
+              ce.contract_id as contractid ,
+             ce.EQIP_ID as eqipid , 
+             ce.EQIP_NAME as eqipname,
+              ce.EQUIP_PLACE as equipplace,
+              ce.DICT2.NAME_ as equiptypename,
+             ce.DICT2.ID_ as equiptype,
+               ce.DICT3.NAME_ as equipclassname,--车辆分类名
+              ce.DICT3.ID_ as equipclass,--车辆分类Id
+             ce.EQUIP_CONTRACT_NUM as equipcontractnum,
+             ce.CHASSIS_NUM as chassisnum,--车辆识别代号/车架号码
+              ce.CHASSIS_NUMBER as  chassiisnumber,
+              ce.model_ as modelname,
+              ce.model_ as model,
+              ce.GARAGE_DATE as garagedate,
+              ce.SALE_DATE as saledate,
+              ce.EQUIP_NUM as equipnum , 
+              p.DICT.NAME_ as devicetypename, 
+              ce.DICT.ID_ as devicetype,
+              ci.cust_name custname,--承租人
+              coi.contract_number contractnumber,--合同号
+               ce.agent as agent ,--购货人（代理商）
+              decode(ce.IS_AFFILIATED,'0',ce.AFFILIATED_INFO,ci.cust_name) as purchaseunit,
+               case
+              when iifo.ID_CARD is not null then iifo.ID_CARD 
+              else cic.id_card_no end idcard,
+              --iifo.ID_CARD as idcard,      -- 身份证号码/组织机构代码
+             -- cic.id_card_no idcardno,--身份证号码/组织机构代码(承租人)
+              iifo.CAR_NAME as carname,     -- 机动车辆生产企业名称
+              iifo.BRAND_MODEL as brandmodel,    --厂牌型号
+              iifo.CERTIFICATE as certificate,    --合格证号
+              iifo.INLET_CERTIFICATE as inletcertificate,   --进口证明书号
+              iifo.MOTOR_NUMBER as motornumber,    --发动机号码
+              iifo.LOCALITY as locality,       --产地
+              iifo.INSPECTION as inspection,     --商检单号
+              iifo.PRICE_TOTAL as pricetotal,     --价税合计
+              iifo.PRICE_TOTAL_UPPER as pricetotalupper,--价税大写
+              iifo.TONNAGE as tonnage,       --吨位
+              iifo.CONFINED_NUM as confinednum , --限乘人数
+              1 ishaveinvoice--是否已开发票，1是已开过的发票，0未开的发票（或待开发票）
+              FROM contract_info coi
+         left join CONTRACT_EQUIP ce on ce.contract_id=coi.id
+         left join cust_info ci on ci.id=coi.cust_id
+           left join CUST_INFO_COMPANY cic on cic.cust_id=ci.id
+         LEFT JOIN T_DICTS_DATAS DICT ON ce.DEVICE_TYPE = DICT.ID_
+         LEFT JOIN T_DICTS_DATAS DICT2 ON ce.EQUIP_TYPE=DICT2.ID_
+         LEFT JOIN T_DICTS_DATAS DICT3 ON ce.EQUIP_CLASS=DICT3.ID_
+         right join invoice_apply_info iifo on iifo.equip_id=ce.id
+         WHERE ce.contract_id='{contract_id}'
+            and iifo.ID_CARD is not null
+         
+			 ]]> 
+	  </table_sql>
+	   </alldb>
+      <dataSource>dataSource</dataSource>
+	  <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

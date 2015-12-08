@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+  <!--卡扣下载
+    custname[承租人],custid[承租人id],dealername[经销商],dealerid[经销商ID],contract_id[合同号],contractnumber[租赁合同号],contractstatusname[合同状态],cardnum[卡号]
+    rentlist[期次],plandate[计划日期],rent[计划金额],ovrent[余额],memo[备注]
+    -->
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+
+  <table>
+    <data>
+    <alldb>
+      <table_sql> 
+	        <![CDATA[
+		 select rownum,rs.* from (
+            select cust.cust_name custname,
+            '7' paytype
+            ,'1' transactiontype
+            ,'03301800040018863' accountno
+            ,'德银融资租赁有限公司'  accountname
+            ,'农业银行'  payeebank
+            ,'批量扣款'  usage
+            ,'01'  fencode
+            ,'0' currflag
+            ,cust.id custid,dealer.cust_name dealername,DICT.NAME_ blankname,DICT.ID_ blank,
+               dealer.id dealerid,ci.contract_id contractid,ci.id,ci.contract_number contractnumber,
+               status.status_name contractstatusname,card.card_num cardnum,
+               fp.rent_list rentlist,fp.plan_date plandate,fp.rent,round(fp.ovrent,2)ovrent,fp.feetype,ci.contract_id||'/'||fp.rent_list||'/'||fp.feetype||'/租金代扣' memo
+             from CONTRACT_CARD_FOR_RENT card
+              LEFT JOIN T_DICTS_DATAS DICT
+          	 ON DICT.ID_ = CARD.BANK_NAME
+             left outer join
+             contract_info ci
+             on card.contract_id=ci.id
+             left outer join
+               (  select id,cp.contract_id,cp.rent_list,cp.plan_date,rent,cp.rent-nvl(cf.fact_rent,0)-nvl(cf.fact_rent_adjust,0) ovrent
+                  ,'租金' feetype
+                  from contract_fund_rent_plan cp
+                  left outer join(
+                  select  PLAN_ID,sum(nvl(rent,0)) fact_rent,sum(nvl(rent_adjust,0)) fact_rent_adjust from CONTRACT_FUND_RENT_INCOME
+                  group by PLAN_ID
+                  ) cf on cf.plan_id=cp.id
+                  where cp.rent-nvl(cf.fact_rent,0)-nvl(cf.fact_rent_adjust,0)>0
+                  AND NVL(CP.CARD_EXPORT_STATUS, '0') = '0'
+                  union
+                  select id,cp.contract_id,cp.rent_list,cp.plan_date,vp.plan_penalty rent,vp.penalty ovrent,'罚息' feetype
+                  from contract_fund_rent_plan cp
+                  left outer join vi_contract_penalty vp
+                  on vp.contract_id=cp.contract_id and vp.rent_list=cp.rent_list
+                 where vp.penalty>0
+                 AND NVL(CP.CARD_EXPORT_STATUS, '0') = '0'
+                 ) fp
+              on fp.contract_id=ci.id
+              left outer join base_contract_status status
+        on status.status_code = ci.contract_status
+        left join contract_condition con
+        on con.contract_id = ci.id
+              left join cust_info cust
+          on cust.id = ci.cust_id
+              left join cust_info dealer
+        on dealer.id = ci.cust_dealer
+         where  card.IS_CARD=0 
+         /~CONTRACT_STATUS_LessThan:  and ci.contract_status < '{CONTRACT_STATUS_LessThan}'~/
+		 /~CONTRACT_STATUS_GreaterThan:  and ci.contract_status > '{CONTRACT_STATUS_GreaterThan}'~/
+         and nvl(fp.rent,0)>0
+         order by dealer.cust_name ,cust.cust_name,ci.contract_id, fp.rent_list, FP.FEETYPE
+      )rs where 1=1
+      		 AND RS.ID NOT IN (
+		         SELECT WF.WORK_NUMBER
+		          FROM T_WORK_FLOW_FLAG WF
+		          LEFT JOIN T_EXCLUSION_INFO EI
+		            ON WF.WORK_FLOW_NAME = EI.WORK_FLOW_NAME_B
+		         WHERE EI.WORK_FLOW_NAME_A = '租金批量核销(卡扣)'
+		         )
+	  /~plandate_start: and rs.plandate>='{plandate_start}' ~/
+      /~plandate_end: and rs.plandate<='{plandate_end}' ~/
+      /~custname: and rs.custname  like '%{custname}%'~/
+      /~blankname: and rs.blank = '{blankname}'~/
+      /~dealername: and rs.dealername like '%{dealername}%'~/
+      /~rentlist: and rs.rentlist like '%{rentlist}%'~/
+      /~feetype: and rs.feetype = '{feetype}'~/
+	  ]]> 
+			 </table_sql>
+	  </alldb>
+      <dataSource>dataSource</dataSource>
+      <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

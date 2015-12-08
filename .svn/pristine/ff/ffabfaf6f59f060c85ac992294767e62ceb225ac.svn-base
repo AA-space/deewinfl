@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+     <alldb>
+      <table_sql> 
+	        <![CDATA[
+	         SELECT DISTINCT
+             P.ID AS ID,
+        P.ID AS PID,
+        P.CUST_ID AS CUSTID,
+        P.PROJ_ID AS  PROJID,
+        P.PROJ_STATUS AS PROJSTATUSNUM,
+        CI1.CUST_NAME AS CUSTNAME,
+        CI2.CUST_NAME AS CUSTDEALER,
+        CI2.ID AS CUSTDEALERID,
+        P.PROJECT_NAME PROJNAME,
+        DICT3.NAME_ AS CUSTPROPERTY,
+        (CASE WHEN CI1.CUST_CLASS='CUST_INFO_PERSON' THEN 
+        (SELECT ID_CARD_NO FROM CUST_INFO_PERSON CIP WHERE CIP.CUST_ID=P.CUST_ID) 
+        WHEN CI1.CUST_CLASS='CUST_INFO_COMPANY' THEN 
+        (SELECT ORG_CODE FROM CUST_INFO_COMPANY CIP WHERE CIP.CUST_ID=P.CUST_ID) 
+        ELSE '无' END) AS ORGCODECARDNO,
+        (CASE WHEN CI1.CUST_CLASS='CUST_INFO_PERSON' THEN 
+        (SELECT DICT4.NAME_ FROM CUST_INFO_PERSON CIP 
+        LEFT JOIN T_DICTS_DATAS DICT4 ON CIP.TAX_LEVEL=DICT4.ID_ 
+        WHERE CIP.CUST_ID=P.CUST_ID) 
+        WHEN CI1.CUST_CLASS='CUST_INFO_COMPANY' THEN 
+        (SELECT DICT5.NAME_ FROM CUST_INFO_COMPANY CIP 
+        LEFT JOIN T_DICTS_DATAS DICT5 ON CIP.TAX_LEVEL=DICT5.ID_ 
+        WHERE CIP.CUST_ID=P.CUST_ID) 
+        ELSE '无' END) AS TAXPAYERTYPE,
+        BCS.STATUS_NAME AS PROJSTATUS ,
+        DICT1.NAME_ AS BUSINESSTYPE,
+        DICT2.NAME_ AS BUSINESSMODE,
+        T1.REALNAME_ AS PROJMANAGE,
+        D_.NAME_ AS PROJDEPT,
+        T2.REALNAME_ AS PROJASSISTANT,
+        PC.EQUIP_AMT AS PROJMONEY,
+        (SELECT SUM(CC.EQUIP_AMT) FROM CONTRACT_INFO CI 
+         LEFT JOIN CONTRACT_CONDITION CC ON CC.CONTRACT_ID=CI.ID 
+         WHERE CI.PROJ_ID=P.ID AND CI.CONTRACT_STATUS > '20' AND 
+         CI.CONTRACT_STATUS < '100') AS CONTRACTMONEY,
+         DICT4.Name_ leasform,
+         p.contract_number contractnumber
+         FROM PROJ_INFO P
+         LEFT JOIN CUST_INFO CI1 ON CI1.ID = P.CUST_ID
+         LEFT JOIN CUST_INFO CI2 ON CI2.ID = P.CUST_DEALER
+         LEFT JOIN BASE_CONTRACT_STATUS BCS ON BCS.STATUS_CODE = P.PROJ_STATUS
+         LEFT JOIN PROJ_CONDITION PC ON PC.PROJ_ID = P.ID
+         LEFT JOIN T_DICTS_DATAS DICT1 ON P.BUSINESS_TYPE=DICT1.ID_
+         LEFT JOIN T_DICTS_DATAS DICT2 ON P.BUSINESS_MODE=DICT2.ID_
+         LEFT JOIN T_DICTS_DATAS DICT3 ON CI1.CUST_CLASS=DICT3.ID_
+         LEFT JOIN T_DICTS_DATAS DICT4 ON p.leas_form=DICT4.ID_
+         LEFT JOIN T_USERS T1 ON P.PROJ_MANAGE=T1.ID_
+         LEFT JOIN T_USERS T2 ON P.PROJ_ASSIST=T2.ID_
+         LEFT JOIN  T_DEPTS D_ ON P.PROJ_DEPT=D_.ID_
+         WHERE P.WORK_FLAG <> '1' AND P.PROJ_STATUS < '20'
+               AND P.PROJ_STATUS > '0' and p.proj_id not like '%P%'
+	             
+	              ------------经销商初始权限判断----------------
+			      --注：传入当前userid，不做其他关联
+			      --员工在经销部门里, 如果是经销商则是1，如果不是则为0
+			      AND (1 =
+			       --员工在经销部门里, 如果是经销商则是1，如果不是则为0
+			       (SELECT DECODE(NUM, 0, 0, 1)
+			           FROM (SELECT COUNT(*) AS NUM
+			                    FROM DUAL
+			                   WHERE
+			                  --用户部门是经销商部门
+			                   (SELECT DEPT_ID_
+			                      FROM T_USERS_DEPTS
+			                     WHERE USER_ID_ = '{user_id}') IN
+			                   (SELECT D.ID_
+			                      FROM T_DEPTS D
+			                     START WITH D.PID_ = '402881ef409b4bfa01409b9ce7fb01e6'
+			                    CONNECT BY PRIOR D.ID_ = D.PID_)
+			                  --经销商用户对应的部门在<经销商用户对应表>里为不为空
+			                AND (SELECT DEALER_DEPT D1
+			                      FROM DEALER_DEPT_INFO T
+			                     WHERE DEALER_DEPT IN
+			                           (SELECT DEPT_ID_
+			                              FROM T_USERS_DEPTS
+			                             WHERE USER_ID_ = '{user_id}')
+			                             AND ENABLE_ = '0') IS NOT NULL
+			                  
+			                  )) OR
+			       0 =
+			       --不是经销部门
+			       (SELECT COUNT(*) AS NUM
+			           FROM DUAL
+			          WHERE
+			         --用户部门是经销商部门
+			          (SELECT DEPT_ID_
+			             FROM T_USERS_DEPTS
+			            WHERE USER_ID_ = '{user_id}') IN
+			          (SELECT D.ID_
+			             FROM T_DEPTS D
+			            START WITH D.PID_ = '402881ef409b4bfa01409b9ce7fb01e6'
+			           CONNECT BY PRIOR D.ID_ = D.PID_))
+			       
+			       )
+			
+			       ------------经销商初始权限判断结束----------------
+				/~currentDealerCustInfoId: AND P.CUST_DEALER = '{currentDealerCustInfoId}'~/	 
+				/~custdealer: and CI2.CUST_NAME like '%{custdealer}%'  ~/
+				 /~custname: and CI1.CUST_NAME like '%{custname}%' ~/
+				 /~projname: and P.PROJECT_NAME like '%{projname}%' ~/
+				 /~projid:  AND P.PROJ_ID like '%{projid}%'~/
+				 /~leasform:  AND DICT4.Name_  like '%{leasform}%'~/
+				 ------合同审批列表过滤-----
+				 /~cApproval:
+				 AND P.ID NOT IN 
+				 (
+				 	SELECT CI.PROJ_ID FROM CONTRACT_INFO CI LEFT JOIN 
+				 	(SELECT CONTRACT_ID,SUM(EQUIP_AMT)EQUIP_AMT FROM CONTRACT_CONDITION GROUP BY CONTRACT_ID) CC ON (CI.ID=CC.CONTRACT_ID)
+				 	LEFT JOIN PROJ_CONDITION PC ON (CI.PROJ_ID=PC.PROJ_ID)
+				 	WHERE CI.CONTRACT_STATUS>11 AND CI.CONTRACT_STATUS<100 
+				 )
+				 	--edit by jaosn 2013-12-21，添加流程中的数据 
+				 AND P.ID NOT IN 
+				 (
+          			SELECT WORK_NUMBER FROM T_WORK_FLOW_FLAG WHERE WORK_FLOW_NAME = '合同审批流程'
+				 )
+				 ~/
+			 ]]> 
+	  </table_sql>
+	   </alldb>
+      <dataSource>dataSource</dataSource>
+      <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

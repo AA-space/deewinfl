@@ -1,0 +1,166 @@
+package com.business.entity.project_nocar.credit_nocar;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.GenericGenerator;
+
+import com.business.entity.proj.ProjInfo;
+import com.kernal.annotation.FieldName;
+@Entity
+@FieldName(name = "董事会记录")
+@Table(name="PROJ_DIRECTOR_RECORD")
+public class ProjDirectorRecord {
+	@Id
+    @GeneratedValue(generator = "paymentableGenerator")     
+    @GenericGenerator(name = "paymentableGenerator", strategy = "uuid") 
+    @Column(length=32)
+	private String id;
+	
+	@FieldName(name="项目编号")
+	@OneToOne(targetEntity=ProjInfo.class)
+	@JoinColumn(name="PROJ_ID")
+	private ProjInfo projId;
+	
+	@FieldName(name = "上会时间")
+	@Column(name="UP_DATE", length = 20)
+	private String upDate;
+	
+	@FieldName(name = "上会地点")
+	@Column(name="UP_ADDRESS", length = 600)
+	private String upAddress;
+	
+	@FieldName(name = "主持人")
+	@Column(name="COMPERE", length = 200)
+	private String compere;
+	
+	@FieldName(name = "会议方式")
+	@Column(name="MEETING_WAY", length = 600)
+	private String meetingWay;
+	
+	@FieldName(name = "审批内容")
+	@Column(name="EXAMINE_CONTENT", length = 600)
+	private String examineContent;
+	
+	@FieldName(name = "参加审批人员")
+	@Column(name="EXAMINE_PERSON", length = 600)
+	private String examinePerson;
+	
+	@FieldName(name = "列席会议人员")
+	@Column(name="HAS_MEETING_PERSON", length = 600)
+	private String hasMeetingPerson;
+	
+	@FieldName(name = "缺席会议人员")
+	@Column(name="ABSENT_MEETING_PERSON", length = 600)
+	private String absentMeetingPerson;
+	
+	@FieldName(name = "会议记录")
+	@Column(name="MEETING_RECORD", length = 600)
+	private String meetingRecord;
+	
+	@FieldName(name = "会议结论")
+	@Column(name="MEETING_CONCLUSION", length = 600)
+	private String meetingConclusion;
+
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	public ProjInfo getProjId() {
+		return projId;
+	}
+
+	public void setProjId(ProjInfo projId) {
+		this.projId = projId;
+	}
+
+	public String getUpDate() {
+		return upDate;
+	}
+
+	public void setUpDate(String upDate) {
+		this.upDate = upDate;
+	}
+
+	public String getUpAddress() {
+		return upAddress;
+	}
+
+	public void setUpAddress(String upAddress) {
+		this.upAddress = upAddress;
+	}
+
+	public String getCompere() {
+		return compere;
+	}
+
+	public void setCompere(String compere) {
+		this.compere = compere;
+	}
+
+	public String getMeetingWay() {
+		return meetingWay;
+	}
+
+	public void setMeetingWay(String meetingWay) {
+		this.meetingWay = meetingWay;
+	}
+
+	public String getExamineContent() {
+		return examineContent;
+	}
+
+	public void setExamineContent(String examineContent) {
+		this.examineContent = examineContent;
+	}
+
+	public String getExaminePerson() {
+		return examinePerson;
+	}
+
+	public void setExaminePerson(String examinePerson) {
+		this.examinePerson = examinePerson;
+	}
+
+	public String getHasMeetingPerson() {
+		return hasMeetingPerson;
+	}
+
+	public void setHasMeetingPerson(String hasMeetingPerson) {
+		this.hasMeetingPerson = hasMeetingPerson;
+	}
+
+	public String getAbsentMeetingPerson() {
+		return absentMeetingPerson;
+	}
+
+	public void setAbsentMeetingPerson(String absentMeetingPerson) {
+		this.absentMeetingPerson = absentMeetingPerson;
+	}
+
+	public String getMeetingRecord() {
+		return meetingRecord;
+	}
+
+	public void setMeetingRecord(String meetingRecord) {
+		this.meetingRecord = meetingRecord;
+	}
+
+	public String getMeetingConclusion() {
+		return meetingConclusion;
+	}
+
+	public void setMeetingConclusion(String meetingConclusion) {
+		this.meetingConclusion = meetingConclusion;
+	}
+}

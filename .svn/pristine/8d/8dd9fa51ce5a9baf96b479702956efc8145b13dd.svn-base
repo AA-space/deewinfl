@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+   使用地方。租金回笼
+   cust_id(承租人id),cust_name(承租人名称),dealer_id(经销商id),dealer_cust_name(经销商名称),
+   id(租金计划id),contract_id(合同号id),CONTRACT_NUMBER(租赁合同号),rent_list(期次),plan_date(计划日期),
+   rent(计划租金),corpus(计划本金),interest(计划租息),penalty(罚息)
+   fact_rent(实收租金),fact_rent_adjust(租金减免)
+   fact_corpus(实收本金),fact_corpus_adjust(本金减免)
+   fact_interest(实收租息),fact_interest_adjust(租息减免)
+   fact_penalty(实收罚息),fact_penalty_adjust(租息减免)
+   ov_rent(租金余额),ov_corpus(本金余额),ov_interest(租息余额),vo_penalty(罚息余额)
+ -->
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+     <alldb>  
+      <table_sql> 
+	        <![CDATA[
+	           select * from (
+	              select  cust_info.id cust_id,cust_info.cust_name
+	              ,decode(card.is_card,'0','是','否') is_card
+                        ,cust_dealer.id dealer_id,cust_dealer.cust_name dealer_cust_name
+                        ,cp.id,contract_info.id contract_id,contract_info.CONTRACT_NUMBER,contract_info.contract_status
+                        ,cp.rent_list,cp.plan_date,cp.rent,cp.corpus,cp.interest,vp.plan_penalty penalty
+                        ,nvl(cf.fact_rent,0) fact_rent
+                        ,nvl(cf.fact_rent_adjust,0) fact_rent_adjust
+                        ,nvl(cf.fact_corpus,0) fact_corpus
+                        ,nvl(cf.fact_corpus_adjust,0) fact_corpus_adjust
+                        ,nvl(cf.fact_interest,0) fact_interest
+                        ,nvl(cf.fact_interest_adjust,0) fact_interest_adjust
+                        ,nvl(cf.fact_penalty,0) fact_penalty
+                        ,nvl(cf.fact_penalty_adjust,0) fact_penalty_adjust
+                        ,cp.rent-nvl(cf.fact_rent,0)-nvl(cf.fact_rent_adjust,0) ov_rent
+                        ,cp.corpus-nvl(cf.fact_corpus,0)-nvl(cf.fact_corpus_adjust,0) ov_corpus
+                        ,cp.interest-nvl(cf.fact_interest,0)-nvl(cf.fact_interest_adjust,0) ov_interest
+                        ,vp.plan_penalty-nvl(cf.fact_penalty,0)-nvl(cf.fact_penalty_adjust,0) vo_penalty,
+                       (case 
+                       when cp.rent-nvl(cf.fact_rent,0)-nvl(cf.fact_rent_adjust,0)=0 then '已回笼'
+                       when cp.rent-nvl(cf.fact_rent,0)-nvl(cf.fact_rent_adjust,0)=cp.rent then '未回笼'   
+                       else '部分回笼' end) rent_status,
+                       case when cp.card_export_status is null then '不处于卡扣状态'
+                            when cp.card_export_status ='0' then  '不处于卡扣状态'
+                            when cp.card_export_status ='2' then  '不处于卡扣状态'
+                            else '3' end incomecard
+                  from CONTRACT_FUND_RENT_PLAN cp
+                  left outer join(
+                       select  contract_fund_rent_income.PLAN_ID,sum(nvl(contract_fund_rent_income.rent,0)) fact_rent,sum(nvl(contract_fund_rent_income.rent_adjust,0)) fact_rent_adjust,sum(nvl(contract_fund_rent_income.corpus,0)) fact_corpus
+                       ,sum(nvl(contract_fund_rent_income.corpus_adjust,0)) fact_corpus_adjust,sum(nvl(contract_fund_rent_income.interest,0)) fact_interest,sum(nvl(contract_fund_rent_income.interest_adjust,0)) fact_interest_adjust
+                       ,sum(nvl(contract_fund_rent_income.penalty,0)) fact_penalty,sum(nvl(contract_fund_rent_income.penalty_adjust,0)) fact_penalty_adjust
+                       from CONTRACT_FUND_RENT_INCOME
+                       group by PLAN_ID
+                  ) cf on cf.plan_id=cp.id
+                 left  join
+                 (
+                  select pl.contract_id
+                  ,pl.rent_list
+                  ,round(sum(case when inc.hire_date-to_date(pl.plan_date,'yyyy-mm-dd')<=nvl(con.free_defa_inter_day,3) then 0 else nvl(inc.rent,0)*(inc.hire_date-to_date(pl.plan_date,'yyyy-mm-dd'))*nvl(pena_rate,10)/10000.0 end),0) plan_penalty
+                  ,round(sum(inc.penalty),0) income_penalty
+                  ,round(sum(case when (inc.hire_date-to_date(pl.plan_date,'yyyy-mm-dd'))<=nvl(con.free_defa_inter_day,3) then 0 else nvl(inc.rent,0)*(inc.hire_date-to_date(pl.plan_date,'yyyy-mm-dd'))*nvl(pena_rate,10)/10000.0 end)-sum(inc.penalty)-sum(inc.penalty_adjust),0) penalty
+                  from contract_fund_rent_plan pl
+                  left join contract_condition  con on (pl.contract_id=con.contract_id)
+                  left join
+                  (
+                  select contract_id,plan_list,nvl(rent,0)+nvl(rent_adjust,0) rent ,nvl(penalty,0)penalty,nvl(penalty_adjust,0) penalty_adjust,to_date(substr(hire_date,0,10),'yyyy-mm-dd') hire_date from contract_fund_rent_income
+                  union all
+                  select pll.contract_id,rent_list,pll.rent-nvl(incc.rent,0) rent,0 penalty,0 penalty_adjust,to_date('{calcdate}','yyyy-mm-dd') hire_date from contract_fund_rent_plan pll
+                  left join (
+                  select contract_id,plan_list,nvl(sum(rent),0)+nvl(sum(rent_adjust),0)rent from contract_fund_rent_income  group by  contract_id,plan_list
+                  ) incc on (pll.contract_id=incc.contract_id and pll.rent_list=incc.plan_list) where pll.rent-nvl(incc.rent,0)>0
+                  ) inc on (pl.contract_id=inc.contract_id and pl.rent_list=inc.plan_list)
+                  group by  pl.contract_id,pl.rent_list
+                  order by pl.contract_id,pl.rent_list
+                 ) vp on vp.contract_id=cp.contract_id and vp.rent_list=cp.rent_list
+                 
+                 left outer join contract_info 
+                 on contract_info.id=cp.contract_id
+                 left outer join cust_info 
+                 on contract_info.cust_id=cust_info.id
+                 left outer join cust_info cust_dealer
+                 on contract_info.CUST_DEALER=cust_dealer.id
+                 left outer join contract_card_for_rent card on cp.contract_id=card.contract_id
+                 order by cust_info.id,contract_id,plan_date asc
+	           ) cfp
+               where 1=1 
+               and cfp.contract_status in ('31','71')  
+               /~cust_number: and cfp.cust_id='{cust_number}'~/
+              /~dealer_number: and cfp.dealer_id='{dealer_number}'~/
+              /~plan_date_start: and cfp.plan_date>'{plan_date_start}'~/
+              /~plan_date_end: and cfp.plan_date<'{plan_date_end}'~/
+              /~contract_id: and cfp.CONTRACT_ID='{contract_id}'~/
+              /~hasmoney: and cfp.ov_rent + vo_penalty > 0~/
+              /~haspenalty: and cfp.vo_penalty>0 ~/
+              /~noload: and 1=-1~/
+			 ]]> 
+	  </table_sql>
+	   </alldb>
+      <dataSource>dataSource</dataSource>
+      <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

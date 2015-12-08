@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+    <alldb>
+      <table_sql> 
+	        <![CDATA[
+					select
+					 ci.id  as id,
+					 ci.cust_id as custid,
+					 cinfo.cust_name as custname,
+					 ci.contract_id  as contractid,
+					 ci.contract_number as contractnumber,
+					 ci.contract_status as contractstatusvalue,
+					 bcs.status_name  as contractstatus
+					 from contract_info ci
+					 left join cust_info cinfo on ci.cust_id=cinfo.id
+					 left join base_contract_status bcs on ci.contract_status=bcs.status_code
+		             WHERE 1=1
+				 	/~CUST_ID: AND ci.CUST_ID LIKE '%{CUST_ID}%'~/
+			 ]]> 
+	  </table_sql>
+	  </alldb>
+      <dataSource>dataSource</dataSource>
+      <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

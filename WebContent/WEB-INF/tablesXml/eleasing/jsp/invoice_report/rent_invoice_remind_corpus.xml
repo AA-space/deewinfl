@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+    <alldb>
+      <table_sql> 
+	        <![CDATA[
+			select ci.id,                
+			ci.contract_id contractid,                
+			ci.contract_number contractnumber,                
+			dict.name_ invoicetype,                
+			equip.model_ model,                
+			cust.cust_name custname,                
+			frp.allcorpus,                
+			frp.plandate,                
+			nvl(tax.invoicecorpus,0) invoicecorpus,               
+			 nvl(upload.invoicemoney,0) invoicemoney,                
+			upload.invoiceno,                
+			case nvl(tax.invoice_status,0) when 0 then '未生成' when 1 then '确认中' when 2 then '已导出' when 3 then '已退回' end invoicestatus                 
+			from contract_info ci               
+			left join contract_invoice_type cit on ci.id = cit.contract_id               
+			left join t_dicts_datas dict on cit.rentinvoicetype = dict.code_               
+			left join (select contract_id,wmsys.wm_concat(  model_ ) model_ from contract_equip group by contract_id) equip on ci.id=equip.contract_id               
+			left join (select contract_id,invoice_status,sum(corpus) invoicecorpus, out_no from tax_rent_info where tax_type='plan' and rent_type='corpus' and operate_type='invoice' group by contract_id,invoice_status,out_no) tax on    ci.id=tax.contract_id                
+			left join cust_info cust on ci.cust_id=cust.id               
+			left join (select contract_id,sum(corpus) allcorpus,min(plan_date) plandate from contract_fund_rent_plan cfrp group by contract_id) frp on frp.contract_id=ci.id               
+			 left join(select out_no,sum(invoice_money) invoicemoney,wmsys.wm_concat(invoice_no) invoiceno from  tax_rent_upload_info where rent_type='本金' group by out_no) upload on tax.out_no=upload.out_no   
+			where ci.contract_status <= 31    and cit.rentinvoicetype = 'invoice_type02'
+			/~contractid: and ci.contract_id like '%{contractid}%' ~/
+            /~contractnumber: and ci.contract_number like '%{contractnumber}%' ~/
+			 ]]> 
+	  </table_sql>
+	  </alldb>
+      <dataSource>dataSource</dataSource>
+      <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

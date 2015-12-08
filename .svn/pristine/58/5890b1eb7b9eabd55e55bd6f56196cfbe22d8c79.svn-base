@@ -1,0 +1,308 @@
+package com.business.entity.dealer;
+
+import java.math.BigDecimal;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.GenericGenerator;
+
+import com.business.entity.Department;
+import com.business.entity.DictionaryData;
+import com.business.entity.User;
+import com.business.entity.cust.CustInfo;
+import com.kernal.annotation.FieldName;
+
+/**
+ * 
+ * @author 孙传良
+ * @date 2013-7-28下午03:27:59
+ * @info 经销商准入合同记录(德银)
+ * @Copyright 
+ * Tenwa
+ */
+@Entity
+@FieldName(name = "经销商准入合同记录(德银)")
+@Table(name="DEALER_CONTRACT_INFO")
+public class DealerContractInfo {
+	@Id
+    @GeneratedValue(generator = "paymentableGenerator")     
+    @GenericGenerator(name = "paymentableGenerator", strategy = "uuid") 
+    @Column(length=32)
+	private String id;
+	
+	@FieldName(name="经销商ID")
+	@ManyToOne(fetch=FetchType.LAZY)
+	@JoinColumn(name="CUST_ID")
+	private CustInfo custId;
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@FieldName(name="经销商合同状态[D]")
+	@JoinColumn(name="dealer_Status")
+	private DictionaryData dealerStatus;
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@FieldName(name = "准入评审编号")
+	@JoinColumn(name="CREDIT_NUM")
+	private DealerApprovalInfo creditNum;
+		
+	@FieldName(name = "准入合同管理流程FLOW_UNID")
+	@Column(name="FLOW_UNID")
+	private String flowUnid;
+	
+	@FieldName(name = "考察报告得分")
+	@Column(name="REPORT_SCORE",precision=22,scale=2)
+	private BigDecimal reportScore;
+	
+	@FieldName(name="注册时间")
+	@Column(name="REG_DATE", length=20)
+	private String regDate;
+	
+	@FieldName(name="注册资本")
+	@Column(name="REG_CAPITAL", precision=22,scale=2)
+	private BigDecimal regCapital;
+	
+	@FieldName(name="实收资本")
+	@Column(name="INCOME_ASSETS", length=2000)
+	private String incomeAssets;
+	
+	@FieldName(name="应收保证金")
+	@Column(name="CAUTION_MONEY", length=2000)
+	private String cautionMoney;
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@FieldName(name="所属区域[D]")
+	@JoinColumn(name="OWNER_DISTRICT")
+	private DictionaryData ownerDistrict;
+	
+	@FieldName(name="净资产")
+	@Column(name="NET_ASSETS", length=2000)
+	private String netAssets;
+	
+	@FieldName(name="近三年销量")
+	@Column(name="THREE_YEAR_SALES", length=2000)
+	private String threeYearSales;
+	
+	@FieldName(name="是否4S")
+	@Column(name="is_4s", length=2)
+	private String is4s;
+	
+	@FieldName(name="与陕汽合作时间")
+	@Column(name="COOPERATION_DATE", length=20)
+	private String cooperationDate;
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@FieldName(name = "申请人")
+	@JoinColumn(name="APPROVAL_")
+	private User approval;
+	
+	@FieldName(name = "申请时间")
+	@Column(name="APPROVAL_TIME", length=20)
+	private String approvalTime;
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@FieldName(name="申请部门")
+	@JoinColumn(name="APPROVAL_DEPT")
+	private Department approvalDept;
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@FieldName(name = "登记人")
+	@JoinColumn(name="CREATOR_")
+	private User creator;
+	
+	@FieldName(name = "登记时间")
+	@Column(name="CREATE_DATE", length=20)
+	private String createDate;
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@FieldName(name = "更新人")
+	@JoinColumn(name="MODIFICATOR_")
+	private User modificator;
+	
+	@FieldName(name = "更新日期")
+	@Column(name="MODIFY_DATE")
+	private String modifyDate;
+
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	public CustInfo getCustId() {
+		return custId;
+	}
+
+	public void setCustId(CustInfo custId) {
+		this.custId = custId;
+	}
+
+	public DictionaryData getDealerStatus() {
+		return dealerStatus;
+	}
+
+	public void setDealerStatus(DictionaryData dealerStatus) {
+		this.dealerStatus = dealerStatus;
+	}
+
+	public DealerApprovalInfo getCreditNum() {
+		return creditNum;
+	}
+
+	public void setCreditNum(DealerApprovalInfo creditNum) {
+		this.creditNum = creditNum;
+	}
+
+	public String getFlowUnid() {
+		return flowUnid;
+	}
+
+	public void setFlowUnid(String flowUnid) {
+		this.flowUnid = flowUnid;
+	}
+
+	public User getApproval() {
+		return approval;
+	}
+
+	public void setApproval(User approval) {
+		this.approval = approval;
+	}
+
+	public String getApprovalTime() {
+		return approvalTime;
+	}
+
+	public void setApprovalTime(String approvalTime) {
+		this.approvalTime = approvalTime;
+	}
+
+	public Department getApprovalDept() {
+		return approvalDept;
+	}
+
+	public void setApprovalDept(Department approvalDept) {
+		this.approvalDept = approvalDept;
+	}
+
+	public String getRegDate() {
+		return regDate;
+	}
+
+	public void setRegDate(String regDate) {
+		this.regDate = regDate;
+	}
+
+	public BigDecimal getRegCapital() {
+		return regCapital;
+	}
+
+	public void setRegCapital(BigDecimal regCapital) {
+		this.regCapital = regCapital;
+	}
+
+	public BigDecimal getReportScore() {
+		return reportScore;
+	}
+
+	public void setReportScore(BigDecimal reportScore) {
+		this.reportScore = reportScore;
+	}
+
+	public String getIncomeAssets() {
+		return incomeAssets;
+	}
+
+	public void setIncomeAssets(String incomeAssets) {
+		this.incomeAssets = incomeAssets;
+	}
+
+	public DictionaryData getOwnerDistrict() {
+		return ownerDistrict;
+	}
+
+	public void setOwnerDistrict(DictionaryData ownerDistrict) {
+		this.ownerDistrict = ownerDistrict;
+	}
+
+	public String getNetAssets() {
+		return netAssets;
+	}
+
+	public void setNetAssets(String netAssets) {
+		this.netAssets = netAssets;
+	}
+
+	public String getThreeYearSales() {
+		return threeYearSales;
+	}
+
+	public void setThreeYearSales(String threeYearSales) {
+		this.threeYearSales = threeYearSales;
+	}
+
+	public String getIs4s() {
+		return is4s;
+	}
+
+	public void setIs4s(String is4s) {
+		this.is4s = is4s;
+	}
+
+	public String getCooperationDate() {
+		return cooperationDate;
+	}
+
+	public void setCooperationDate(String cooperationDate) {
+		this.cooperationDate = cooperationDate;
+	}
+
+	public User getCreator() {
+		return creator;
+	}
+
+	public void setCreator(User creator) {
+		this.creator = creator;
+	}
+
+	public String getCreateDate() {
+		return createDate;
+	}
+
+	public void setCreateDate(String createDate) {
+		this.createDate = createDate;
+	}
+
+	public User getModificator() {
+		return modificator;
+	}
+
+	public void setModificator(User modificator) {
+		this.modificator = modificator;
+	}
+
+	public String getModifyDate() {
+		return modifyDate;
+	}
+
+	public void setModifyDate(String modifyDate) {
+		this.modifyDate = modifyDate;
+	}
+
+	public String getCautionMoney() {
+		return cautionMoney;
+	}
+
+	public void setCautionMoney(String cautionMoney) {
+		this.cautionMoney = cautionMoney;
+	}
+  
+}

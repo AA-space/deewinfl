@@ -1,0 +1,135 @@
+/**
+ * 项目名称：    系统名称
+ * 包名：              com.business.job
+ * 文件名：         QuartzJobTest.java
+ * 版本信息：    1.0.0
+ * 创建日期：     2013-2-21-上午11:00:16
+ * Copyright：2013XX公司-版权所有
+ **/
+
+package com.business.job;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import org.quartz.Job;
+import org.quartz.JobExecutionContext;
+import org.quartz.JobExecutionException;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
+
+import com.business.entity.contract.reckon.fund.ContractFundRentPlan;
+import com.business.service.BaseService;
+import com.business.service.vouchersFactory.ContractOnHireService;
+import com.kernal.annotation.QuartzJob;
+import com.kernal.utils.DateUtil;
+import com.kernal.utils.WebUtil;
+
+/**
+ * 类名称： QuartzJobTest 类描述： 创建人： Administrator 修改人： Administrator 修改时间：2013-2-21 上午11:00:16 修改备注：
+ * 
+ * @version 1.0.0
+ **/
+@QuartzJob(description = "每日处理租金相关事宜")
+@Transactional
+public class RentInDay implements Job {
+
+	@Override
+	public void execute(JobExecutionContext arg0) throws JobExecutionException {
+		DataSourceTransactionManager transactionManager = (DataSourceTransactionManager) WebUtil.getApplicationContext().getBean("transactionManager");
+
+		List<String> errorList = new ArrayList<String>();
+		List<String> successList = new ArrayList<String>();
+		try {
+			System.out.println("租金利息凭证开始入口...");
+			BaseService baseService = (BaseService) WebUtil.getApplicationContext().getBean("baseService");
+			ContractOnHireService contractOnHireService = (ContractOnHireService) WebUtil.getApplicationContext().getBean("contractOnHireService");
+			// 使用springAOP事物管理的service做一些事情
+
+			// 租金凭证生成
+			String currentDate = DateUtil.getSystemDate();
+			//String currentDate = "2015-10-25";
+			//TODO
+			/*start 查出需要生成租金利息的租金计划的主键id */
+			String sql = "SELECT pln.id FROM Contract_Fund_Rent_Plan pln left join contract_info c on pln.contract_id=c.id "
+					+ " WHERE pln.plan_Date= '"+currentDate+"' and c.contract_Status not in  ('71','111')  "
+					+ "and pln.id not in (select a.vipid from VI_CONTRACT_PENALTY  a"
+					+ " left join VI_CONTRACT_OUT_LIST out on a.CONTRACT_ID=out.CONTRACT_ID "
+					+ " where penalty >0 and out.out_list>=3)" ;
+			
+			List<String> rentPlanIds = new ArrayList<String>();
+			List<Map<String,Object>> queryList = baseService.queryListBySql(sql);
+			for(Map<String,Object> map : queryList){
+				for(String key : map.keySet()){
+					rentPlanIds.add(map.get(key).toString());
+				}
+			}
+			/*end 查出需要生成租金利息的租金计划的主键id */
+			
+			/* start 获取已经生成的租金利息 作用排除重复生成 */
+			String sql3="select  c.id from  CONTRACT_FUND_RENT_PLAN c"
+					+ " left join INTEREAS_VOUCHERHEAD h on c.contract_id=h.contract_id"
+					+ " where  h.modleName='租金利息' and h.bookedDate='"+currentDate+"' "
+					+ " and c.plan_date='"+currentDate+"' ";
+			List<Map<String,Object>> listBySql = baseService.queryListBySql(sql3);
+			List<String> list_ad = new ArrayList<String>();
+			for (Map<String,Object> m :listBySql){
+			  for (String k : m.keySet())  
+		      {  
+		        System.out.println("本月5 15 25 号已经产生的租金利息【租金计划表的主键id】"+k + " : '" + m.get(k)+"'");  
+		        list_ad.add(String.valueOf(m.get(k)));
+		      }  
+			}
+			/* end 获取已经生成的租金利息 作用排除重复生成 */
+			
+			/*start 处理符合条件的租金计划业务*/
+			for (String id : rentPlanIds) {
+			   if(!list_ad.contains(id)){
+				   successList.add("本月5 15 25 号将要产生的租金利息【租金计划表的主键id】"+"'"+id+"'");
+				DefaultTransactionDefinition def = new DefaultTransactionDefinition(); // new 一个事务
+				def.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED); // 初始化事务,参数定义事务的传播类型;
+				TransactionStatus status = transactionManager.getTransaction(def); // 获得事务状态
+				ContractFundRentPlan contractFundRentPlan = baseService.findEntityByID(ContractFundRentPlan.class, id);
+				try {
+					BigDecimal rent = contractFundRentPlan.getRent();
+					BigDecimal interest = contractFundRentPlan.getInterest();
+					contractOnHireService.createVoucherInterest(contractFundRentPlan, rent, interest);
+					transactionManager.commit(status); // 提交事务;
+				} catch (Exception e) {
+					transactionManager.rollback(status); // 回滚事务;
+					errorList.add("错误的合同为：" + contractFundRentPlan.getContractId().getId() + "||" + "错误的期次为：" + contractFundRentPlan.getRentList());
+					e.printStackTrace();
+					}
+				}//判断新的合同是否在已经生成的凭证里
+			}//传租金计划主键id进入凭证生成租金利息
+			/*end 处理符合条件的租金计划业务*/
+			
+			/*start 后台打印提示*/
+			System.out.println(currentDate+"合计合同数有:" + rentPlanIds.size());
+			System.out.println("本月5 15 25 号已经产生的合同数:"+list_ad.size());
+			System.out.println("########################错误信息########################");
+			if (errorList.size() > 0) {
+				
+				for (int i = 0; i < errorList.size(); i++) {
+					System.out.println(errorList.get(i));
+				}
+				
+			}
+			System.out.println(errorList);
+			System.out.println("########################错误信息########################");
+			System.out.println("########################成功生成凭证信息##################");
+			System.out.println(successList);
+			System.out.println("########################成功生成凭证信息##################");
+			/*end 后台打印提示*/
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	}
+
+}

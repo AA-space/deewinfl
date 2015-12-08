@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+    <alldb>
+      <table_sql> 
+	        <![CDATA[
+	        select
+		           decode(cii.INVOICE_TYPE,'invoicetype1','增值税专用发票','invoicetype2','增值税普通发票' )  taxlevel,
+		            tax.out_no outon,
+		            to_char(sysdate,'yyyy-mm-dd') outdate,
+		            dealer.cust_name dealername,
+		             cust.cust_name custname,
+			        cii.taxNumber taxregcode,
+			        cii.INVOICE_ADDRESS||' '||cii.invoice_tel taxregadd,
+			        cii.INVOICE_OPENBANK  ||' '||cii.INVOICENUMBER  as tax_bankandacc,
+		            ''  as memo,
+		            ''  as notenum,
+		            ''  as commoncode,
+		            ''  as commonnum,
+		            '{currentLoginRealName}' as exportperson,
+		            ''  as reviewperson,
+		            ''  as payee,
+		            ''  as cancelbank,
+		            ''  as canceladdr,
+		            ''  as goodsnum,
+		            
+		             case tax.rent_type when 'rent' then '租金' when 'corpus' then '本金' when 'interest' then '利息' when 'penalty' then '罚息' end feetype,
+		                   
+		            tax.plan_date||'第'||tax.rent_list||'期'||(case tax.rent_type when 'rent' then '租金' when 'corpus' then '本金' when 'interest' then '利息' when 'penalty' then '罚息' end)as modelname,
+	                ''  as unit,
+	                ''  as amount,
+	                tax.plan_date as p2,
+	                tax.rent_list as p1,
+		            tax.invoice_money as plan_money,
+		            '0.17' as taxrate,
+		            round((tax.invoice_money/1.17)*0.17,2) as  taxmoney,
+		            '' c1,
+		            '' c2,
+		            '' c3
+                    from tax_rent_info tax 
+                    left join contract_invoice_info cii on cii.contract_id = tax.contract_id
+                    left join contract_info ci on tax.contract_id=ci.id 
+                    left join contract_invoice_type cit on ci.id=cit.contract_id 
+                    left join cust_info cust on ci.cust_id=cust.id 
+                    left join cust_info dealer on ci.cust_dealer=dealer.id 
+                    left join cust_info_company cic on cic.cust_id=ci.id 
+                    left join t_dicts_datas dict on cit.rentinvoicetype=dict.code_
+	                where  tax.tax_type='income' and operate_type='invoice' and tax.id in ({ids})
+			 ]]> 
+	  </table_sql>
+	  </alldb>
+      <dataSource>dataSource</dataSource>
+    </data>
+  </table>
+</table-root>

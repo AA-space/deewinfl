@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+    <alldb>
+      <table_sql> 
+	        <![CDATA[
+			select * from (
+				select dict.name_ AS ssqy,
+		       bsc.name_ AS bansc,
+		       users.realname_ AS projmanage,
+		       users.id_ AS usid,
+		       tab1.contract_number AS contractid,
+		       status.status_name AS statusname,
+		       NVL (cust.cust_name, dept.name_) AS jxs,
+		       c_name.cust_name AS custname,
+		       CASE
+		          WHEN pc.is_registration = 0 THEN '是'
+		          WHEN pc.is_registration = 1 THEN '否'
+		          ELSE '无'
+		       END
+		          AS shangpai,
+		       CASE
+		          WHEN pc.is_guaranty = 0 THEN '是'
+		          WHEN pc.is_guaranty = 1 THEN '否'
+		          ELSE '无'
+		       END
+		          AS diya,
+		       pc.equip_amt AS equipamt,
+		       pc.lease_money AS leaseamt,
+		       NVL (pc.first_payment_ratio, 0) || '%' AS firstpaymentratio,
+		       pc.first_payment_total AS firsttotal,
+		       CASE
+		          WHEN pc.caution_money_ratio <= 0.5
+		          THEN
+		             NVL (pc.caution_money_ratio * 100, 0) || '%'
+		          ELSE
+		             NVL (pc.caution_money_ratio, 0) || '%'
+		       END
+		          AS cautionmoneyratio,
+		       pc.caution_money AS cautionmoney,
+		       NVL (pc.handling_charge_money_ratio, 0) || '%' AS handration,
+		       pc.handling_charge_money AS handmoney,
+		       pc.nominal_price AS nominalprice,
+		       pc.gps_money AS gpsmoney,
+		       pcr.proj_credit_pass_time AS is_pass,
+		       '' AS startdate,
+		       pc.first_payment AS firstpayment,
+		       '' AS indate,
+		       0 AS infirstmoney,
+		       '' AS outdate,
+		       0 AS outallmoney,
+		       0 AS nowmoney,
+		       0 AS limitmoney,
+		       NVL (pc.nominal_price / 100, 0) AS equipcount,
+		       y_rent.rent AS y_rents,
+		       pc.lease_term AS rentlist,
+		       rent.rent,
+		       '' AS dj,
+		       '' AS insname,
+		       0 as  sycaution
+		  FROM (SELECT pi.*
+		          FROM proj_info pi LEFT JOIN contract_info ci ON pi.id = ci.proj_id
+		         WHERE LENGTH (pi.id) > 10 AND pi.proj_status = 11 AND ci.id IS NULL)
+		       tab1
+		       LEFT JOIN proj_condition pc ON tab1.id = pc.proj_id
+		       LEFT JOIN (SELECT  proj_id,max(proj_credit_pass_time) as proj_credit_pass_time
+		                    FROM proj_credit_result
+		                   WHERE credit_result_type = 'credit_type_@11' group by proj_id ) pcr ON tab1.id = pcr.proj_id
+		       LEFT JOIN cust_info_dealer dea ON tab1.cust_dealer = dea.cust_id
+		       LEFT JOIN t_dicts_datas dict ON dict.code_ = dea.owner_district
+		       LEFT JOIN t_dicts_datas bsc ON bsc.code_ = dea.owner_office
+		       LEFT JOIN (SELECT *
+		                    FROM manager_district
+		                   WHERE manager_role = '402881824094f54f01409551aff2002c') t
+		          ON dea.owner_district = t.district_
+		       LEFT JOIN t_users users ON t.manager_ = users.id_
+		       LEFT JOIN t_depts dept ON dept.id_ = tab1.proj_dept
+		       LEFT JOIN base_contract_status status
+		          ON status.status_code = tab1.proj_status
+		       LEFT JOIN cust_info cust ON cust.id = dea.cust_id
+		       LEFT JOIN cust_info c_name ON c_name.id = tab1.cust_id
+		       LEFT JOIN (  SELECT proj_id, SUM (rent) rent
+		                      FROM proj_fund_rent_plan
+		                  GROUP BY proj_id) rent
+		          ON rent.proj_id = tab1.id
+		       LEFT JOIN (SELECT proj_id, rent
+		                    FROM proj_fund_rent_plan
+		                   WHERE rent_list = 1) y_rent
+		          ON y_rent.proj_id = tab1.id
+		UNION ALL
+		SELECT dict.name_ AS ssqy,
+		       bsc.name_ AS bansc,
+		       users.realname_ AS projmanage,
+		       users.id_ AS usid,
+		       info.contract_number AS contractid,
+		       status.status_name AS statusname,
+		       NVL (cust.cust_name, dept.name_) AS jxs,
+		       c_name.cust_name AS custname,
+		       CASE
+		          WHEN con.is_registration = 0 THEN '是'
+		          WHEN con.is_registration = 1 THEN '否'
+		          ELSE '无'
+		       END
+		          AS shangpai,
+		       CASE
+		          WHEN con.is_guaranty = 0 THEN '是'
+		          WHEN con.is_guaranty = 1 THEN '否'
+		          ELSE '无'
+		       END
+		          AS diya,
+		       con.equip_amt AS equipamt,
+		       con.lease_money AS leaseamt,
+		       NVL (con.first_payment_ratio, 0) || '%' AS firstpaymentratio,
+		       con.first_payment_total AS firsttotal,
+		       CASE
+		          WHEN con.caution_money_ratio <= 0.5
+		          THEN
+		             NVL (con.caution_money_ratio * 100, 0) || '%'
+		          ELSE
+		             NVL (con.caution_money_ratio, 0) || '%'
+		       END
+		          AS cautionmoneyratio,
+		       con.caution_money AS cautionmoney,
+		       NVL (con.handling_charge_money_ratio, 0) || '%' AS handration,
+		       con.handling_charge_money AS handmoney,
+		       con.nominal_price AS nominalprice,
+		       con.gps_money AS gpsmoney,
+		       rs.proj_credit_pass_time AS is_pass,
+		       CASE WHEN info.contract_status < 31 THEN '' ELSE con.start_date_ END
+		          AS startdate,
+		       con.first_payment AS firstpayment,
+		       charge.factdate AS indate,
+		       charge.factmoney AS infirstmoney,
+		       out_charge.outdate AS outdate,
+		       CASE WHEN charge.factdate IS NOT NULL THEN con.equip_amt ELSE 0 END
+		          AS outallmoney,
+		       CASE
+		          WHEN charge.factdate IS NOT NULL
+		          THEN
+		             (NVL (con.equip_amt, 0) - NVL (LIMIT.limitmoney, 0))
+		          ELSE
+		             0
+		       END
+		          AS nowmoney,
+		       NVL (LIMIT.limitmoney, 0) AS limitmoney,
+		       NVL (con.nominal_price / 100, 0) AS equipcount,
+		       NVL (y_rent.rent, y_rentbefore.rent) AS y_rents,
+		       NVL (rent.rentlist, rentbefore.rentlist) AS rentlist,
+		       NVL (rent.rent, rentbefore.rent) AS rent,
+		       '' AS dj,
+		       ins.name_ AS insname,
+		       con.caution_money-nvl(iu.sycaution,0) sycaution
+		  FROM contract_info info
+		       left join
+		          (
+		            select  sum(rent) sycaution ,contract_id  from  contract_fund_rent_income where balance_mode='PayFund7' group by contract_id
+		          )iu on iu.contract_id=info.id
+		       LEFT JOIN contract_equip_acceptance
+		          ON contract_equip_acceptance.contract_id = info.id
+		       LEFT JOIN contract_condition con ON info.id = con.contract_id
+		       LEFT JOIN cust_info_dealer dea ON dea.cust_id = info.cust_dealer
+		       LEFT JOIN t_dicts_datas dict ON dict.code_ = dea.owner_district
+		       LEFT JOIN t_dicts_datas bsc ON bsc.code_ = dea.owner_office
+		       LEFT JOIN cust_info_dealer dealer ON info.cust_dealer = dealer.cust_id
+		       LEFT JOIN (SELECT *
+		                    FROM manager_district
+		                   WHERE manager_role = '402881824094f54f01409551aff2002c') t
+		          ON dealer.owner_district = t.district_
+		       LEFT JOIN t_users users ON t.manager_ = users.id_
+		       LEFT JOIN t_depts dept ON dept.id_ = info.proj_dept
+		       LEFT JOIN base_contract_status status
+		          ON status.status_code = info.contract_status
+		       LEFT JOIN cust_info cust ON cust.id = dea.cust_id
+		       LEFT JOIN cust_info c_name ON c_name.id = info.cust_id
+		       LEFT JOIN
+		       (  SELECT contract_id,
+		                 SUM (NVL (fact_money, 0)) AS factmoney,
+		                 MAX (fact_date) AS factdate
+		            FROM contract_fund_fund_charge
+		           WHERE pay_type = 'pay_type_in' AND fee_type = 'feetype5'
+		        GROUP BY contract_id) charge
+		          ON charge.contract_id = info.id
+		       LEFT JOIN
+		       (  SELECT contract_id,
+		                 MAX (fact_date) AS outdate,
+		                 SUM (NVL (fact_money, 0)) AS outmoney
+		            FROM contract_fund_fund_charge
+		           WHERE pay_type = 'pay_type_out' AND fee_type = 'feetype10'
+		        GROUP BY contract_id) out_charge
+		          ON out_charge.contract_id = info.id
+		       LEFT JOIN
+		       (  SELECT contract_id, SUM (rent) rent, COUNT (contract_id) rentlist
+		            FROM contract_fund_rent_plan
+		        GROUP BY contract_id) rent
+		          ON rent.contract_id = info.id
+		       LEFT JOIN (SELECT contract_id, rent
+		                    FROM contract_fund_rent_plan
+		                   WHERE rent_list = 1) y_rent
+		          ON y_rent.contract_id = info.id
+		       LEFT JOIN
+		       (  SELECT contract_id, SUM (rent) rent, COUNT (contract_id) rentlist
+		            FROM contract_fund_rent_plan_before
+		        GROUP BY contract_id) rentbefore
+		          ON rentbefore.contract_id = info.id
+		       LEFT JOIN (SELECT contract_id, rent
+		                    FROM contract_fund_rent_plan_before
+		                   WHERE rent_list = 1) y_rentbefore
+		          ON y_rentbefore.contract_id = info.id
+		       LEFT JOIN (  SELECT contract_id, SUM (limit_money) limitmoney
+		                      FROM contract_limit_info
+		                  GROUP BY contract_id) LIMIT
+		          ON LIMIT.contract_id = info.id
+		       LEFT JOIN t_dicts_datas ins ON ins.code_ = con.insurer_type
+		       LEFT JOIN (SELECT  proj_id,max(proj_credit_pass_time) as proj_credit_pass_time
+		                    FROM proj_credit_result
+		                   WHERE credit_result_type = 'credit_type_@11' group by proj_id ) rs
+		          ON info.proj_id = rs.proj_id
+                   order by startdate  desc  
+                  )rs 
+                  where 1=1
+                  and  rs.usid='{user_id}'
+				  /~contractid: and rs.contractid like '%{contractid}%'~/
+				  /~statusname: and rs.statusname like '%{statusname}%'~/
+				  /~jxs: and rs.jxs like '%{jxs}%'~/
+				  /~custname: and rs.custname like '%{custname}%'~/
+				  /~is_pass_start: and rs.is_pass >= '{is_pass_start}'~/
+				  /~is_pass_end: and rs.is_pass <= '{is_pass_end}'~/
+				  /~startdate: and rs.startdate like '%{startdate}%'~/
+				 	 
+				 	
+			 ]]> 
+	  </table_sql>
+	  </alldb>
+      <dataSource>dataSource</dataSource>
+	  <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+    <alldb>
+      <table_sql> 
+	        <![CDATA[
+			SELECT    CI.CONTRACT_ID, CI.CONTRACT_NUMBER,  TDD.NAME_,   PC.plan_MONEY fact_MONEY,   PC.plan_DATE fact_date,   CII.CUST_NAME,   
+			 DECODE(CIC.TAX_LEVEL,'tax_level_name.1','增值税专用发票','增值税普通发票') TAX_TYPE,   
+			 decode(TFI.INVOICE_STATUS,'0','不生成',decode(TFI.INVOICE_STATUS,'1','确认中',
+			 decode(TFI.INVOICE_STATUS,'2','已导出',decode(TFI.INVOICE_STATUS,'3','已退回',
+			 decode(TFI.INVOICE_STATUS,null,'未生成','未知'))))) INVOICE_STATUS,   TFUI.INVOICE_NO,   
+			 TFUI.INVOICE_MONEY,   CIC.TAX_REG_CODE FROM (   
+			SELECT nvl(cffc.ID,cffp.id) id,cffp.CONTRACT_ID,cffp.FEE_TYPE,nvl(cffc.fact_money,cffp.PLAN_MONEY) PLAN_MONEY,
+			 nvl(cffc.fact_date,cffp.PLAN_DATE) PLAN_DATE,cffp.PAY_TYPE FROM CONTRACT_FUND_FUND_PLAN cffp left join 
+			  CONTRACT_FUND_FUND_CHARGE  cffc on cffp.id=cffc.payment_id 
+			  union all 
+			 
+			  SELECT cffp.id,cffp.CONTRACT_ID,cffp.FEE_TYPE,cffp.PLAN_MONEY-cffc.fact_money PLAN_MONEY, 
+			 cffp.PLAN_DATE,cffp.PAY_TYPE FROM CONTRACT_FUND_FUND_PLAN cffp right join 
+			( select  payment_id,fact_date,sum(fact_money) fact_money from  CONTRACT_FUND_FUND_CHARGE group by payment_id,fact_date)  cffc 
+			on cffp.id=cffc.payment_id where
+			  cffp.plan_money<>cffc.fact_money 
+			  ) PC LEFT JOIN CONTRACT_INFO CI ON PC.CONTRACT_ID=CI.ID 
+			  LEFT JOIN CUST_INFO CII ON CII.ID=CI.CUST_ID 
+			  LEFT JOIN CUST_INFO_COMPANY CIC ON CIC.CUST_ID=CI.CUST_ID 
+			  LEFT JOIN (select nvl(cffc_id,cffp_id) CFFP_ID,INVOICE_STATUS,out_no from  TAX_FUND_INFO ) TFI ON TFI.CFFP_ID=PC.ID 
+			  LEFT JOIN TAX_FUND_UPLOAD_INFO TFUI ON TFUI.out_no=tfi.out_no and nvl(hc_status,0)=0
+			  LEFT JOIN T_DICTS_DATAS TDD ON TDD.ID_=PC.FEE_TYPE 
+			  WHERE PC.PAY_TYPE='pay_type_in' AND FEE_TYPE IN('feetype1','feetype5','feetype4') 
+			  /~contract_id: and ci.contract_id like '%{contract_id}%' ~/
+            /~contract_number: and ci.contract_number like '%{contract_number}%' ~/
+			  ORDER BY CI.CONTRACT_ID,pc.FEE_TYPE
+						
+			 ]]> 
+	  </table_sql>
+	  </alldb>
+      <dataSource>dataSource</dataSource>
+      <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

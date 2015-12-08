@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+     <alldb>
+      <table_sql> 
+	        <![CDATA[
+				 SELECT 
+            C.ID AS id,
+            C.CONTRACT_ID AS contractid,
+            C.CONTRACT_NUMBER AS contractnumber,
+        C.CUST_ID AS custid,
+        C.PROJ_ID AS pid,
+        P.PROJ_ID AS  proj_id,
+        ci1.cust_name custname,
+        ci2.cust_name custdealer,
+        CI2.ID AS custdealerid,
+        C.PROJECT_NAME projname,
+        DICT.NAME_ AS projtype,
+        DICT2.NAME_ AS projsource,
+        DICT3.NAME_ AS projscale ,
+        DICT4.NAME_ AS industrytype,
+        DICT5.NAME_ AS  leasform ,
+        DICT6.NAME_ AS businesstype,
+        DICT7.NAME_ AS businessmode,
+        DICT8.NAME_ AS ownerdistrict,
+        T.REALNAME_ AS projmanage,
+       contract_fund_rent_plan1.plan_date incomeday,
+            nvl(payrent1,0.0)-nvl(payrent2,0.0) as receivablerent,
+            case when chag.fact_money is null  and chag.credit_money is not null then chag.credit_money
+                 when chag.fact_money is  not null  and chag.credit_money is  null then  chag.fact_money
+                 when chag.fact_money is   null  and chag.credit_money is  null then  0
+            else chag.credit_money+chag.fact_money  end shebeimoney
+         FROM CONTRACT_INFO C
+         left join cust_info ci1 on ci1.id = c.cust_id
+         left join cust_info ci2 on ci2.id = c.cust_dealer
+         LEFT JOIN CUST_INFO_DEALER CD  ON CI2.ID = CD.CUST_ID
+         LEFT JOIN T_DICTS_DATAS DICT ON C.PROJ_TYPE=DICT.ID_
+         LEFT JOIN T_DICTS_DATAS DICT2 ON C.PROJ_SOURCE=DICT2.ID_
+         LEFT JOIN T_DICTS_DATAS DICT3 ON C.PROJ_SCALE=DICT3.ID_
+         LEFT JOIN T_DICTS_DATAS DICT4 ON C.INDUSTRY_TYPE=DICT4.ID_
+         LEFT JOIN T_DICTS_DATAS DICT5 ON C.LEAS_FORM=DICT5.ID_
+         LEFT JOIN T_DICTS_DATAS DICT6 ON C.BUSINESS_TYPE=DICT6.ID_
+         LEFT JOIN T_DICTS_DATAS DICT7 ON C.BUSINESS_MODE=DICT7.ID_
+         LEFT JOIN T_DICTS_DATAS DICT8 ON CD.OWNER_DISTRICT=DICT8.ID_
+         LEFT JOIN T_USERS T ON C.PROJ_MANAGE=T.ID_
+         LEFT JOIN PROJ_INFO P ON P.ID=C.PROJ_ID
+         left join (select sum(chag.fact_money) fact_money,sum(chag.credit_money)credit_money,chag.contract_id from contract_fund_fund_charge chag where chag.fee_type='feetype10'
+         group by chag.contract_id
+         )chag
+         on c.id=chag.contract_id
+          LEFT JOIN 
+          (
+               select  crp.plan_date  plan_date,crp.contract_id contract_id  from  contract_fund_rent_plan crp where rent_list='1'
+           )contract_fund_rent_plan1 on c.id= contract_fund_rent_plan1.contract_id
+         
+         left join (select nvl(sum(rent), 0.00) + nvl(sum(RENT_ADJUST), 0.00) as payrent1 ,rentplan.contract_id
+               from contract_fund_rent_plan rentplan
+               left join contract_info info
+                 on rentplan.id = info.id
+              where PLAN_DATE <= to_char(sysdate, 'yyyy/mm/dd')
+              group by rentplan.contract_id) need_rent
+              on need_rent.contract_id = c.id
+        left join (select rentincome.contract_id,
+                    nvl(sum(rent), 0.00) + nvl(sum(RENT_ADJUST), 0.00) as payrent2
+               from contract_fund_rent_income rentincome
+               left join contract_info info
+                 on rentincome.id = info.id
+              where hire_date <= to_char(sysdate, 'yyyy/mm/dd')
+              group by rentincome.contract_id) has_rent
+        on has_rent.contract_id = c.id 
+        
+        /~total:
+        left join (
+        select ci.contract_id,nvl(nvl(tab1.pmoney,0)-nvl(tab2.cmoney,0),0) as money from contract_info ci
+        left join
+        (select cp.contract_id,sum(cp.plan_money) as pmoney from contract_fund_fund_plan cp
+         where cp.invalid=0 and cp.pay_type='pay_type_in'
+         group by cp.contract_id
+         ) tab1 on ci.id=tab1.contract_id
+         left join
+         (select cc.contract_id,sum(cc.fact_money) as cmoney from contract_fund_fund_charge cc
+          where cc.pay_type='pay_type_in'
+          group by cc.contract_id
+         ) tab2 on ci.id=tab2.contract_id
+        ) list1 on C.contract_id=list1.contract_id
+         ~/
+        
+        --and p.proj_status not in ('0')
+        
+      	------------第一步开始----------------
+		--增加区域管理 cust_info关联
+		--增加区域管理第一步 CUST2为经销商
+		--  LEFT JOIN CUST_INFO_DEALER CIDR
+		--   ON CIDR.CUST_ID = CUST2.ID
+		
+		  LEFT JOIN MANAGER_DISTRICT MD 
+		    ON MD.DISTRICT_ = CD.OWNER_DISTRICT AND MD.MANAGER_ = '{userId}'
+		------------第一结束步开始----------------
+        
+        where 1=1
+                 /~total: and list1.money>0 ~/
+         		 /~CONTRACT_STATUS_LessThan:  and C.CONTRACT_STATUS < '{CONTRACT_STATUS_LessThan}'~/
+		         /~CONTRACT_STATUS_GreaterThan:  and C.CONTRACT_STATUS > '{CONTRACT_STATUS_GreaterThan}'~/
+				 /~custdealer: and ci2.cust_name like '%{custdealer}%'  ~/
+				 /~custname: and ci1.cust_name like '%{custname}%' ~/
+				 /~contractid: and C.CONTRACT_ID like '%{contractid}%' ~/
+				 /~contractnumber: and C.CONTRACT_NUMBER like '%{contractnumber}%' ~/
+				 /~projname: and C.PROJECT_NAME like '%{projname}%' ~/
+				 /~incomeday: and contract_fund_rent_plan1.plan_date  like '%{incomeday}%' ~/
+				 /~projtype: and DICT.NAME_ = '{projtype}' ~/
+				------------第二步开始----------------
+				--增加区域管理第二步
+				/~userId: ~/
+				 AND ( MD.ID IN
+				     (SELECT ID FROM MANAGER_DISTRICT WHERE MANAGER_ = '{userId}')
+				         
+				     OR 1 =(SELECT DECODE((SELECT COUNT(ID) FROM MANAGER_DISTRICT WHERE MANAGER_ = '{userId}'),0,1,0) FROM DUAL)
+				  )
+			   ------------第二步结束----------------
+			   ------------经销商初始权限判断----------------
+			      --注：传入当前userid，不做其他关联
+			      --员工在经销部门里, 如果是经销商则是1，如果不是则为0
+			      AND (1 =
+			       --员工在经销部门里, 如果是经销商则是1，如果不是则为0
+			       (SELECT DECODE(NUM, 0, 0, 1)
+			           FROM (SELECT COUNT(*) AS NUM
+			                    FROM DUAL
+			                   WHERE
+			                  --用户部门是经销商部门
+			                   (SELECT DEPT_ID_
+			                      FROM T_USERS_DEPTS
+			                     WHERE USER_ID_ = '{userId}') IN
+			                   (SELECT D.ID_
+			                      FROM T_DEPTS D
+			                     START WITH D.PID_ = '402881ef409b4bfa01409b9ce7fb01e6'
+			                    CONNECT BY PRIOR D.ID_ = D.PID_)
+			                  --经销商用户对应的部门在<经销商用户对应表>里为不为空
+			                AND (SELECT DEALER_DEPT D1
+			                      FROM DEALER_DEPT_INFO T
+			                     WHERE DEALER_DEPT IN
+			                           (SELECT DEPT_ID_
+			                              FROM T_USERS_DEPTS
+			                             WHERE USER_ID_ = '{userId}')
+			                             AND ENABLE_ = '0') IS NOT NULL
+			                  
+			                  )) OR
+			       0 =
+			       --不是经销部门
+			       (SELECT COUNT(*) AS NUM
+			           FROM DUAL
+			          WHERE
+			         --用户部门是经销商部门
+			          (SELECT DEPT_ID_
+			             FROM T_USERS_DEPTS
+			            WHERE USER_ID_ = '{userId}') IN
+			          (SELECT D.ID_
+			             FROM T_DEPTS D
+			            START WITH D.PID_ = '402881ef409b4bfa01409b9ce7fb01e6'
+			           CONNECT BY PRIOR D.ID_ = D.PID_))
+			       
+			       )
+			
+                 /~currentDealerCustInfoId: AND P.CUST_DEALER = '{currentDealerCustInfoId}'~/     
+			 ]]> 
+	  </table_sql>
+	   </alldb>
+      <dataSource>dataSource</dataSource>
+      <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

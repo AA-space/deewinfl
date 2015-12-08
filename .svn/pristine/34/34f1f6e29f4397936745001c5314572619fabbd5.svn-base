@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+    <alldb>
+      <table_sql> 
+	        <![CDATA[
+	        select ttt.* from(
+		          select tax.id,ci.contract_id contractid,ci.contract_number contractnumber,cust.cust_name custname,tax.rent_list rentlist,
+	                 tax.invoice_money taxmoney,
+                    case tax.rent_type when 'rent' then '租金' when 'corpus' then '本金' when 'interest' then '利息' end renttype,
+	                  tax.plan_date plandate,
+	                  cust2.cust_name dealername,
+                      case nvl(cic.tax_level,'tax_level_name.2') when 'tax_level_name.1' 
+	                  then '增值税专用发票' else '增值税普通发票' end taxType,
+	                  cic.TAX_REG_CODE TAXREGCODE,
+                	  cic.tax_bank taxbank,
+                 	  cic.tax_acc taxacc,
+               	      cic.tax_phone taxphone,
+                      cic.tax_reg_add taxregadd,
+	                  dict.name_ rentInvoiceType,
+	                  case nvl(tax.invoice_status,0) when 0 then '未生成' when 1 then '确认中'
+                       when 2 then '已导出' when 3 then '已退回' end status 
+	                  from tax_rent_info tax 
+	                  left join contract_info ci on tax.contract_id=ci.id 
+	                  left join contract_invoice_type cit on ci.id=cit.contract_id 
+	                  left join cust_info cust on ci.cust_id=cust.id 
+	                  left join cust_info cust2 on ci.cust_dealer=cust2.id 
+	                  left join cust_info_company cic on cic.cust_id=cust.id 
+	                  left join t_dicts_datas dict on cit.rentinvoicetype=dict.code_ 
+                    where (cit.rentinvoicetype<>'invoice_type02' or (cit.rentinvoicetype='invoice_type02' and tax.rent_type='interest'))
+                     and tax.tax_type='plan' and operate_type='invoice'
+                    
+                    union all
+                    --本金一次性开具  金额 为融资额 +首付款
+   select ci.id,ci.contract_id contractid,ci.contract_number contractnumber,cust.cust_name custname,0 rentlist,
+	                  cc.equip_amt taxmoney,
+                    case tax.rent_type when 'rent' then '租金' when 'corpus' then '本金' when 'interest' then '利息' end renttype,
+	                  min(tax.plan_date) plandate,
+	                  cust2.cust_name dealername,
+                    case nvl(cic.tax_level,'tax_level_name.2') when 'tax_level_name.1' 
+	                  then '增值税专用发票' else '增值税普通发票' end taxType,
+	                  cic.TAX_REG_CODE TAXREGCODE,
+                	  cic.tax_bank taxbank,
+                 	  cic.tax_acc taxacc,
+               	      cic.tax_phone taxphone,
+                      cic.tax_reg_add taxregadd,
+                      dict.name_ rentInvoiceType,
+	                  case nvl(tax.invoice_status,0) when 0 then '未生成' when 1 then '确认中'
+                       when 2 then '已导出' when 3 then '已退回' end status
+	                  from tax_rent_info tax 
+	                  left join contract_info ci on tax.contract_id=ci.id 
+                    left join contract_condition cc on ci.id=cc.contract_id 
+	                  left join cust_info cust on ci.cust_id=cust.id 
+	                  left join cust_info cust2 on ci.cust_dealer=cust2.id 
+	                  left join cust_info_company cic on cic.cust_id=cust.id 
+	                  left join t_dicts_datas dict on tax.rent_invoice_type=dict.code_ 
+                    where  (tax.rent_invoice_type='invoice_type02' and tax.rent_type='corpus' and tax.tax_type='plan' and operate_type='invoice') 
+                             
+				  /~contractid: and ci.contract_id like '%{contractid}%' ~/
+				  /~contractnumber: and ci.contract_number like '%{contractnumber}%' ~/
+				  /~custname: and cust.cust_name like '%{custname}%' ~/
+				  
+				 
+				   group by ci.id,ci.contract_id,ci.contract_number,cust.cust_name,tax.rent_type,cic.tax_level,dict.name_,tax.invoice_status,
+				   cc.equip_amt,
+                    cic.TAX_REG_CODE,
+                    cic.tax_bank,
+                     cic.tax_acc,
+                       cic.tax_phone,
+                      cic.tax_reg_add,cust2.cust_name 
+                      ) ttt
+                      where 1=1
+                       /~status: and status like '%{status}%' ~/
+			 
+			 ]]> 
+	  </table_sql>
+	  </alldb>
+      <dataSource>dataSource</dataSource>
+      <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

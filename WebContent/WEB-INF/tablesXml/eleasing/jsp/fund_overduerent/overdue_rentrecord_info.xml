@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+    <alldb>
+      <table_sql> 
+	        <![CDATA[
+					SELECT 
+              DUNNING.ID,
+            DUNNING.CUST_ID AS CUSTID,
+            BASE.realname_ AS LIAISONER,
+            BASE.USERNAME_ AS LIAISONERNAME,
+            DUNNING.LIAISON_WAY AS LIAISONWAY,
+            D1.NAME_ LIAISONWAYNAME,
+           substr(DUNNING.LIAISON_DATE,0,10) AS LIAISONDATE,
+          substr(DUNNING.PAY_DATE,0,10) AS PAYDATE,
+          DUNNING.PAY_MONEY AS PAYMONEY,
+             substr(DUNNING.NEXTLIAISON_DATE,0,10) AS NEXTLIAISONDATE,
+            DUNNING.LIAISON_INFO AS LIAISONINFO,
+            SUBSTR(DUNNING.CREATE_DATE,0,10) AS CREATEDATE,
+            SUBSTR(DUNNING.MODIFY_DATE,0,10) AS MODIFYDATE,
+            CUST.CUST_NAME AS CUSTNAME,
+            CONTRACT.CONTRACT_ID CONTRACTID,--合同号
+            contract.contract_number contractnumber--合同名
+           FROM DUNNING_RECORD DUNNING 
+           LEFT JOIN CUST_INFO CUST ON DUNNING.CUST_ID=CUST.ID  
+           LEFT JOIN CONTRACT_INFO CONTRACT ON DUNNING.CONTRACT_ID=CONTRACT.ID
+           LEFT JOIN T_USERS   BASE ON DUNNING.Liaisoner=BASE.ID_ 
+           LEFT JOIN T_DICTS_DATAS D1 ON DUNNING.Liaison_Way=D1.ID_
+           WHERE 1=1
+					 /~CUST_ID: AND DUNNING.CUST_ID LIKE '%{CUST_ID}%'~/
+					ORDER BY CUST.CUST_NUMBER ASC
+			 ]]> 
+	  </table_sql>
+	  </alldb>
+      <dataSource>dataSource</dataSource>
+    </data>
+  </table>
+</table-root>

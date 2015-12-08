@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+    <alldb>
+      <table_sql> 
+	        <![CDATA[
+			select * from (	select temp.*,upload.invoicemoney,upload.invoiceno from 
+				(select frp.id,ci.contract_id contractid,ci.contract_number contractnumber,
+				cust.cust_name custname,frp.rent_list rentlist,frp.rent-nvl((select sum(rent) 
+				from contract_fund_rent_income where plan_id=frp.id),0) as rent,frp.corpus-nvl((select sum(corpus) 
+				from contract_fund_rent_income where plan_id=frp.id),0) as corpus,frp.interest,'租金' as moneyType,'rent' as typename,
+				frp.plan_date plandate,case nvl(cic.tax_level,'tax_level_name.2') when 'tax_level_name.1' then '增值税专用发票' else '增值税普通发票' end taxType,
+				dict.name_ rentInvoiceType,tri.out_no,                     
+				case nvl(tri.invoice_status,0) when 0 then '未生成' when 1 then'确认中' when 2  then '已导出' when 3  then '已退回' end status                     
+				from contract_fund_rent_plan frp                      left join contract_info ci on frp.contract_id=ci.id                      
+				left join contract_invoice_type cit on ci.id=cit.contract_id                      
+				left join cust_info cust on ci.cust_id=cust.id                      
+				left join cust_info_company cic on cic.cust_id=ci.id                      
+				left join t_dicts_datas dict on cit.rentinvoicetype=dict.code_                    
+				 left join tax_rent_info tri on tri.cfrp_id=frp.id and tri.rent_type='corpus'  
+				 where cit.rentinvoicetype ='invoice_type03'           
+				union all                      
+				select frp.id,ci.contract_id contractid,ci.contract_number contractnumber,cust.cust_name custname,frp.rent_list rentlist,
+				frp.interest as rent,0 as corpus,frp.interest,'利息' as moneyType,'interest' as typename,
+				frp.plan_date plandate,case nvl(cic.tax_level,'tax_level_name.2') when 'tax_level_name.1' then '增值税专用发票' else '增值税普通发票' end taxType,
+				dict.name_ rentInvoiceType,tri.out_no,                     
+				case nvl(tri.invoice_status,0) when 0 then '未生成' when 1 then'确认中' when 2  then '已导出' when 3  then '已退回' end status                     
+				 from contract_fund_rent_plan frp                
+				left join contract_info ci on frp.contract_id=ci.id                
+				left join contract_invoice_type cit on ci.id=cit.contract_id                
+				left join cust_info cust on ci.cust_id=cust.id                
+				left join cust_info_company cic on cic.cust_id=ci.id                
+				left join t_dicts_datas dict on cit.rentinvoicetype=dict.code_                
+				left join tax_rent_info tri on tri.cfrp_id=frp.id and tri.rent_type='interest'               
+				where ((cit.rentinvoicetype in('invoice_type01','invoice_type04','invoice_type06')) or(cit.rentinvoicetype ='invoice_type02' and tri.id is not null ))                      
+				union all                       
+				select frp.id,ci.contract_id contractid,ci.contract_number contractnumber,cust.cust_name custname,
+				frp.rent_list rentlist,frp.corpus as rent,frp.corpus as corpus, 0 as interest,               
+				'本金' as moneyType,'corpus' as typename,frp.plan_date plandate,case nvl(cic.tax_level,'tax_level_name.2') when 'tax_level_name.1' then '增值税专用发票' else '增值税普通发票' end taxType,dict.name_ rentInvoiceType,tri.out_no,                     
+				case nvl(tri.invoice_status,0) when 0 then '未生成' when 1 then'确认中' when 2  then '已导出' when 3  then '已退回' end status                      
+				from contract_fund_rent_plan frp                
+				left join contract_info ci on frp.contract_id=ci.id                
+				left join contract_invoice_type cit on ci.id=cit.contract_id                
+				left join cust_info cust on ci.cust_id=cust.id                
+				left join cust_info_company cic on cic.cust_id=ci.id                
+				left join t_dicts_datas dict on cit.rentinvoicetype=dict.code_               
+				left join tax_rent_info tri on tri.cfrp_id=frp.id and tri.rent_type='corpus' and tri.operate_type='invoice'                
+				where cit.rentinvoicetype ='invoice_type04') temp 
+				left join  (select out_no,sum(invoice_money) invoicemoney,wmsys.wm_concat(invoice_no) invoiceno 
+				from  tax_rent_upload_info  group by out_no) upload on temp.out_no=upload.out_no                       
+				where temp.out_no is not null or not exists (select id from contract_fund_rent_income where plan_id=temp.id)  ) ccc
+				where 1=1
+			/~contractid: and ccc.contractid like '%{contractid}%' ~/
+            /~contractnumber: and ccc.contractnumber like '%{contractnumber}%' ~/
+			/~custname: and ccc.custname like '%{custname}%' ~/
+			 ]]> 
+	  </table_sql>
+	  </alldb>
+      <dataSource>dataSource</dataSource>
+      <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

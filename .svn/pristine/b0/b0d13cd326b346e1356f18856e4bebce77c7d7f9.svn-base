@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+     <alldb>
+      <table_sql> 
+	        <![CDATA[
+		select * from (
+		 	select 
+			i.ID,
+			cust.CUST_NAME custname,
+			info.CONTRACT_NUMBER contractnumber,
+			info.id contractid,
+			info.PROJECT_NAME projectname,
+			info.create_date contractdate,
+			d.NAME_ deptname,
+			cust2.CUST_NAME custdealer,
+			i.TAXNUMBER taxnumber,
+			i.INVOICENUMBER ,
+			i.INVOICE_ADDRESS invoiceaddress,
+			i.INVOICE_TEL invoicetel,
+			i.INVOICE_OPENBANK invoiceopenbank,
+			i.INVOICE_MEMO,
+			i.INVOICE_REMARKS,
+			case 
+			when i.INVOICE_TYPE = 'invoicetype1' then '增值税专用发票'
+			when i.INVOICE_TYPE = 'invoicetype2' then '增值税普通发票'
+			else '' end invoicetypename,
+			i.INVOICE_TYPE invoicetype
+			 from CONTRACT_INVOICE_INFO  i
+			left join contract_info info on info.id = i.CONTRACT_ID
+			left join cust_info cust on cust.ID=info.CUST_ID
+			left join cust_info_dealer del on del.CUST_ID = info.CUST_DEALER
+			left join cust_info cust2 on cust2.ID = del.CUST_ID
+			left join t_depts d on d.ID_ = info.PROJ_DEPT 
+			where i.CONTRACT_ID is not null
+		)rs where 1=1
+		/~projectname: and projectname like '%{projectname}%' ~/
+		/~contractnumber: and contractnumber like '%{contractnumber}%' ~/
+		/~custdealer: and custdealer like '%{custdealer}%' ~/
+		/~custname: and custname like '%{custname}%' ~/
+			 ]]> 
+	  </table_sql>
+	   </alldb>
+      <dataSource>dataSource</dataSource>
+      <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

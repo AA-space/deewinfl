@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<module-info>
+	<entity id="com.business.entity.cust.CustInfoPerson" name="区域信息" dataUrl="CustInfoPerson.action">
+		<columns id="custId">
+			<columns id="custNumber" name="客户ID"></columns>
+			<columns id="custName" name="客户名称"></columns>
+		</columns>
+		<columns id="custType">
+			<columns id='id' name="客户类别" />
+		</columns>
+		<columns id="custScale">
+			<columns id="id" name="客户规模" />
+		</columns>
+		<columns id="taxLevel">
+			<columns id="id" name="纳税人类别" />
+		</columns>
+		<columns id="reditorRight">
+			<columns id="id" name="债权性质" />
+		</columns>
+		<columns id="assurorRight">
+			<columns id="id" name="担保性质" />
+		</columns>
+		<columns id="custKind">
+			<columns id="id" name="客户内部行业" />
+		</columns>
+		<columns id="ownership">
+			<columns id="id" name="企业性质" />
+		</columns>
+		<columns id="industry">
+			<columns id="totalName" name="行业"></columns>
+		</columns>
+		<columns id="country">
+			<columns id="name" name="行政区"/>
+		</columns>
+	</entity>
+	<entity id="com.business.entity.cust.CustInfoPerson" name="区域信息" dataUrl="house/areainfo.action" type="findById">
+	</entity>
+	<entity id="com.business.entity.cust.CustInfoPerson" name="xxxx" dataUrl="house/areainfo.action" type="fuzzy">
+	</entity>
+	<entity id="com.business.entity.cust.CustInfoPerson" type="add" typeModel="openNewWindow" groupStyle="span4">
+		<columns id="customerInfo">
+			<columns id="id" type="hidden" attribute="cascade=custInfo"></columns>
+			<columns id="custNumber" name="客户ID"></columns>
+			<columns id="custName" name="客户名称"></columns>
+			<columns id="cType" name="客户类别" type="hidden" attribute="value=1"></columns>
+		</columns>
+		<columns id="custName" columnValidation="require='true'" />
+		<columns id="orgCode" columnValidation="require='true'" />
+		<columns id="custType">
+			<columns id='id' name="客户类别" type="checkBox" attribute="dictdata:cust_type" columnValidation="require='true'" />
+		</columns>
+		<columns id="custScale">
+			<columns id="id" name="客户规模" type="select" attribute="dictdata:cust_scale" />
+		</columns>
+		<columns id="taxLevel">
+			<columns id="id" name="纳税人类别" type="select" attribute="dictdata:tax_level" />
+		</columns>
+		<columns id="reditorRight">
+			<columns id="id" name="债权性质" type="select" attribute="dictdata:reditor_right" />
+		</columns>
+		<columns id="assurorRight">
+			<columns id="id" name="担保性质" type="select" attribute="dictdata:assuror_right" />
+		</columns>
+		<columns id="custKind">
+			<columns id="id" name="客户内部行业" type="select" attribute="dictdata:cust_kind" columnValidation="require='true'" />
+		</columns>
+		<columns id="ownership">
+			<columns id="id" name="企业性质" type="select" attribute="dictdata:ownership" columnValidation="require='true'" />
+		</columns>
+
+		<columns id="isAssociated" type="select" attribute="objectData:['是','否']" />
+
+		<columns id="mailAdd" columnValidation="require='true'" />
+		<columns id="mobileNumber" columnValidation="require='true'" />
+		<columns id="postCode" columnValidation="require='true'" />
+		<columns id="bizMethod" type="textarea" />
+		<columns id="bizScopePrimary" type="textarea" />
+		<columns id="bizScopeSecondary" type="textarea" />
+		<columns id="cimemo" type="textarea" />
+
+		<columns id="invalid" type="select" attribute="objectData:['是','否']" />
+
+		<columns id="industry">
+			<columns id="id" type="hidden" attribute="objectType=Industry;parentColumn=parentIndustry" />
+			<columns id="name" name="总类名称" type="selfTree" attribute="objectType=com.business.entity.Industry;parentColumn=parentIndustry;index=0;value=null" />
+			<columns id="name" name="大类名称" type="selfTree" attribute="objectType=com.business.entity.Industry;parentColumn=parentIndustry;index=1" />
+			<columns id="name" name="中类名称" type="selfTree" attribute="objectType=com.business.entity.Industry;parentColumn=parentIndustry;index=2" />
+			<columns id="name" name="小类名称" type="selfTree" attribute="objectType=com.business.entity.Industry;parentColumn=parentIndustry;index=3;value=end" />
+		</columns>
+
+
+		<columns id="country">
+			<columns id="id" type="hidden" attribute="objectType=Industry;parentColumn=parentIndustry" />
+			<columns id="name" name="省份" type="selfTree" attribute="objectType=com.business.entity.District;parentColumn=parentDistrict;index=0;value=null" />
+			<columns id="name" name="市" type="selfTree" attribute="objectType=com.business.entity.District;parentColumn=parentDistrict;index=1" />
+			<columns id="name" name="县" type="selfTree" attribute="objectType=com.business.entity.District;parentColumn=parentDistrict;index=2" />
+		</columns>
+
+	</entity>
+
+	<entity id="com.business.entity.cust.CustInfoPerson" type="modify" typeModel="openNewWindow">
+		<columns id="customerInfo">
+			<columns id="custNumber" name="客户ID"></columns>
+			<columns id="custName" name="客户名称"></columns>
+			<columns id="cType" name="客户类别" type="hidden" attribute="value=1"></columns>		</columns>
+		<columns id="custName" columnValidation="require='true'" />
+		<columns id="orgCode" columnValidation="require='true'" />
+		<columns id="custType">
+			<columns id='code' name="客户类别" type="checkBox" attribute="dictdata:cust_type" columnValidation="require='true'" />
+		</columns>
+		<columns id="custScale">
+			<columns id="id" name="客户规模" type="select" attribute="dictdata:cust_scale" />
+		</columns>
+		<columns id="taxLevel">
+			<columns id="id" name="纳税人类别" type="select" attribute="dictdata:tax_level" />
+		</columns>
+		<columns id="reditorRight">
+			<columns id="id" name="债权性质" type="select" attribute="dictdata:reditor_right" />
+		</columns>
+		<columns id="assurorRight">
+			<columns id="id" name="担保性质" type="select" attribute="dictdata:assuror_right" />
+		</columns>
+		<columns id="custKind">
+			<columns id="id" name="客户内部行业" type="select" attribute="dictdata:cust_kind" columnValidation="require='true'" />
+		</columns>
+		<columns id="ownership">
+			<columns id="id" name="企业性质" type="select" attribute="dictdata:ownership" columnValidation="require='true'" />
+		</columns>
+
+		<columns id="isAssociated" type="select" attribute="objectData:['是','否']" />
+
+		<columns id="mailAdd" columnValidation="require='true'" />
+		<columns id="mobileNumber" columnValidation="require='true'" />
+		<columns id="postCode" columnValidation="require='true'" />
+		<columns id="bizMethod" type="textarea" />
+		<columns id="bizScopePrimary" type="textarea" />
+		<columns id="bizScopeSecondary" type="textarea" />
+		<columns id="cimemo" type="textarea" />
+
+		<columns id="invalid" type="select" attribute="objectData:['是','否']" />
+
+		<columns id="industry">
+			<columns id="id" type="hidden" attribute="objectType=Industry;parentColumn=parentIndustry" />
+			<columns id="name" name="总类名称" type="selfTree" attribute="objectType=com.business.entity.Industry;parentColumn=parentIndustry;index=0;value=null" />
+			<columns id="name" name="大类名称" type="selfTree" attribute="objectType=com.business.entity.Industry;parentColumn=parentIndustry;index=1" />
+			<columns id="name" name="中类名称" type="selfTree" attribute="objectType=com.business.entity.Industry;parentColumn=parentIndustry;index=2" />
+			<columns id="name" name="小类名称" type="selfTree" attribute="objectType=com.business.entity.Industry;parentColumn=parentIndustry;index=3;value=end" />
+		</columns>
+
+
+		<columns id="country">
+			<columns id="id" type="hidden" attribute="objectType=Industry;parentColumn=parentIndustry" />
+			<columns id="name" name="省份" type="selfTree" attribute="objectType=com.business.entity.District;parentColumn=parentDistrict;index=0;value=null" />
+			<columns id="name" name="市" type="selfTree" attribute="objectType=com.business.entity.District;parentColumn=parentDistrict;index=1" />
+			<columns id="name" name="县" type="selfTree" attribute="objectType=com.business.entity.District;parentColumn=parentDistrict;index=2" />
+		</columns>
+
+
+
+
+		<columns id="relatedPersons" name="重要个人" type="set" attribute="xml=CustInfoRelatedPerson.xml;type=findPageList,add,modify;relateColumn=custInfo" />
+		<columns id="accounts" name="银行账户" type="set" attribute="xml=CustomerInfoAccount.xml;type=findPageList,add,modify;relateColumn=custInfo" />
+		<columns id="creditRanks" name="信用等级" type="set" attribute="xml=CustomerInfoCreditRank.xml;type=findPageList,add,modify;relateColumn=custInfo" />
+		<columns id="contacts" name="走访调研" type="set" attribute="xml=CustomerInfoContact.xml;type=findPageList,add,modify;relateColumn=custInfo" />
+
+	</entity>
+
+</module-info>

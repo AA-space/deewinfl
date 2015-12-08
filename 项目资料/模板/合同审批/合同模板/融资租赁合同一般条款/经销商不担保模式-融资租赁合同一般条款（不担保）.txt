@@ -1,0 +1,7 @@
+﻿${contract_infocontractnumber}     数据类型：字段；数据来源：页面；
+${contract_signatoryclient}        数据类型：字段；数据来源：页面；
+${contract_signatoryclientperson}  数据类型：字段；数据来源：页面；
+${contract_signatoryclientaddress} 数据类型：字段；数据来源：页面；
+${contract_signatoryclientpostcode}数据类型：字段；数据来源：页面；
+${contract_signatoryclienttel}     数据类型：字段；数据来源：页面；
+${contract_signatoryclientfax}     数据类型：字段；数据来源：页面；

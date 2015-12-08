@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+     <alldb>
+      <table_sql> 
+	        <![CDATA[
+		select * from (
+		 select 
+		 info.id id,
+		info.contract_number,
+		cust.CUST_NAME custname,
+		info.project_name projectname,
+		dict.NAME_ taxlevel,
+		stu.STATUS_NAME statusname,
+		cust2.CUST_NAME custdealer,
+		dict2.NAME_ leasform,
+		vipng.projmanagename projmanage,
+		dpt.name_ projdept,
+		com.org_code orgcode,
+		pj.end_date enddate
+		 from contract_info info
+		left join cust_info cust on info.cust_id = cust.id
+		left join cust_info_company com on com.CUST_ID=cust.id
+		left join t_dicts_datas dict on dict.ID_= com.TAX_LEVEL
+		left join base_contract_status stu on stu.STATUS_CODE = info.contract_status
+		left join cust_info cust2 on cust2.ID=info.cust_dealer 
+		left join t_dicts_datas dict2 on dict2.id_=info.LEAS_FORM
+		left join proj_info pj on pj.ID=info.proj_id
+		left join vi_getprojmanage vipng on vipng.contractid = info.id
+		left join t_depts dpt on dpt.id_=info.PROJ_DEPT
+		where info.project_name not like '%P%'
+		)rs where 1=1
+		/~projectname: and projectname like '%{projectname}%' ~/
+		/~contract_number: and contract_number like '%{contract_number}%' ~/
+		/~custdealer: and custdealer like '%{custdealer}%' ~/
+		/~custname: and custname like '%{custname}%' ~/
+			 ]]> 
+	  </table_sql>
+	   </alldb>
+      <dataSource>dataSource</dataSource>
+      <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

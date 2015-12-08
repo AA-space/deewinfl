@@ -1,0 +1,239 @@
+package com.business.entity.contract.equip;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.GenericGenerator;
+
+import com.business.entity.User;
+import com.business.entity.contract.ContractInfo;
+import com.kernal.annotation.FieldName;
+
+/**
+ * 
+ * @author 孙传良
+ * @date 2013-3-6下午04:27:10
+ * @info 租赁物交付监控表(德银)
+ * @Copyright 
+ * Tenwa
+ */
+@Entity
+@FieldName(name = "租赁物交付监控表/权证登记(德银)")
+@Table(name="CONTRACT_EQUIP_DELIVERY")
+public class ContractEquipDelivery {
+	
+	@Id
+    @GeneratedValue(generator = "paymentableGenerator")     
+    @GenericGenerator(name = "paymentableGenerator", strategy = "uuid") 
+    @Column(length=32)
+	private String id;
+	
+	@FieldName(name="合同编号")
+	@ManyToOne(targetEntity=ContractInfo.class,fetch=FetchType.LAZY)
+	@JoinColumn(name="CONTRACT_ID")
+	private ContractInfo contractID;
+	
+	@FieldName(name="GPS安装")
+	@Column(name="GPS_INFO",length=20)
+	private String   gpsInfo;
+
+	@FieldName(name="车辆投保")
+	@Column(name="CAR_INSURE",length=20)
+	private String   carInsure;
+	
+	@FieldName(name="车辆上牌")
+	@Column(name="CAR_LICENSE",length=20)
+	private String   carLicense;
+	
+	@FieldName(name="车辆抵押")
+	@Column(name="CAR_GUARANTEE",length=20)
+	private String   carGuarantee;
+	
+	@FieldName(name="向客户交付租赁物")
+	@Column(name="CUST_DELIVERY",length=200)
+	private String   custDelivery;
+	
+	@FieldName(name="客户签收租赁物")
+	@Column(name="CUST_SIGN",length=200)
+	private String   custSign;
+	
+	@FieldName(name="车辆合格证原件")
+	@Column(name="CAR_CREDENTIALS",length=200)
+	private String   carCredentials;
+	
+	@FieldName(name="发票原件")
+	@Column(name="CAR_INVOICE",length=200)
+	private String   carInvoice;
+	
+	@FieldName(name="机动车辆登记证原件")
+	@Column(name="MOTOR_CREDENTIALS",length=200)
+	private String   motorCredentials;
+	
+	@FieldName(name="保单复印件")
+	@Column(name="INVOICE_COPY",length=200)
+	private String   invoiceCopy;
+	
+	@FieldName(name="行驶证复印件")
+	@Column(name="DRIVE_COPY")
+	private String   driveCopy;
+
+	@ManyToOne
+	@FieldName(name="创建人")
+	@JoinColumn(name="CREATOR_")
+	private User creator;
+	
+	@FieldName(name="创建时间")
+	@Column(name="CREATE_DATE", length=20)	
+	private String createDate;
+	
+	@ManyToOne
+	@FieldName(name="修改人")
+	@JoinColumn(name="MODIFICATOR_")
+	private User modificator;
+	
+	@FieldName(name="修改时间")
+	@Column(name="MODIFY_DATE", length=20)	
+	private String modifyDate;
+	
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	public ContractInfo getContractID() {
+		return contractID;
+	}
+
+	public void setContractID(ContractInfo contractID) {
+		this.contractID = contractID;
+	}
+
+	public String getGpsInfo() {
+		return gpsInfo;
+	}
+
+	public void setGpsInfo(String gpsInfo) {
+		this.gpsInfo = gpsInfo;
+	}
+
+	public String getCarInsure() {
+		return carInsure;
+	}
+
+	public void setCarInsure(String carInsure) {
+		this.carInsure = carInsure;
+	}
+
+	public String getCarLicense() {
+		return carLicense;
+	}
+
+	public void setCarLicense(String carLicense) {
+		this.carLicense = carLicense;
+	}
+
+	public String getCarGuarantee() {
+		return carGuarantee;
+	}
+
+	public void setCarGuarantee(String carGuarantee) {
+		this.carGuarantee = carGuarantee;
+	}
+
+	public String getCustDelivery() {
+		return custDelivery;
+	}
+
+	public void setCustDelivery(String custDelivery) {
+		this.custDelivery = custDelivery;
+	}
+
+	public String getCustSign() {
+		return custSign;
+	}
+
+	public void setCustSign(String custSign) {
+		this.custSign = custSign;
+	}
+
+	public String getCarCredentials() {
+		return carCredentials;
+	}
+
+	public void setCarCredentials(String carCredentials) {
+		this.carCredentials = carCredentials;
+	}
+
+	public String getCarInvoice() {
+		return carInvoice;
+	}
+
+	public void setCarInvoice(String carInvoice) {
+		this.carInvoice = carInvoice;
+	}
+
+	public String getMotorCredentials() {
+		return motorCredentials;
+	}
+
+	public void setMotorCredentials(String motorCredentials) {
+		this.motorCredentials = motorCredentials;
+	}
+
+	public String getInvoiceCopy() {
+		return invoiceCopy;
+	}
+
+	public void setInvoiceCopy(String invoiceCopy) {
+		this.invoiceCopy = invoiceCopy;
+	}
+
+	public String getDriveCopy() {
+		return driveCopy;
+	}
+
+	public void setDriveCopy(String driveCopy) {
+		this.driveCopy = driveCopy;
+	}
+
+	public User getCreator() {
+		return creator;
+	}
+
+	public void setCreator(User creator) {
+		this.creator = creator;
+	}
+
+	public String getCreateDate() {
+		return createDate;
+	}
+
+	public void setCreateDate(String createDate) {
+		this.createDate = createDate;
+	}
+
+	public User getModificator() {
+		return modificator;
+	}
+
+	public void setModificator(User modificator) {
+		this.modificator = modificator;
+	}
+
+	public String getModifyDate() {
+		return modifyDate;
+	}
+
+	public void setModifyDate(String modifyDate) {
+		this.modifyDate = modifyDate;
+	}
+}

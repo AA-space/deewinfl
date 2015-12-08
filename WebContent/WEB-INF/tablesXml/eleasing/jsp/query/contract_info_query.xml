@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+    <alldb>
+      <table_sql> 
+	        <![CDATA[
+		
+				select 
+            info.id cid,
+          pro.proj_id  projid,
+          pro.project_name projectname,
+          cust.cust_name custname,
+          info.contract_id contractid,
+          info.contract_number contractnumber,
+          info.contract_status contractstatus,
+          sta.status_name contractstatusname,
+          pro.proj_scale projscale,
+          d1.name_ projscalename,
+          CASE info.is_third_pay WHEN '0' THEN '是'  ELSE '否'  END  isthirdpay,
+          info.leas_type leastype,
+          d2.name_ leastypename,
+          info.business_type businesstype,
+          d3.name_ businesstypename,
+          info.business_mode businessmode,
+          d4.name_ businessmodename,
+          info.proj_manage projmanage,
+          u1.realname_ projmanagename,
+          info.proj_assist projassist,
+          u2.realname_ projassistname,
+          info.proj_dept projdept,
+          dept.name_ projdeptname,
+          app.accept_date acceptdate,
+          endlist.PROCESSEND as PROCESSEND,
+          cust2.cust_name custdealer
+           from contract_info info left join proj_info pro on info.proj_id=pro.id 
+           left join cust_info cust on cust.id=info.cust_id 
+           left join cust_info cust2 on cust2.id=info.cust_dealer
+           left join cust_info_dealer dealer on dealer.cust_id=cust.id
+           left join base_contract_status sta on sta.status_code=info.contract_status 
+           left join T_DICTS_DATAS d1 on pro.proj_scale=d1.id_  
+           left join T_DICTS_DATAS d2 on info.leas_type=d2.id_ 
+           left join T_DICTS_DATAS d3 on info.business_type=d3.id_ 
+           left join T_DICTS_DATAS d4 on info.business_mode=d4.id_
+           left join t_users u1 on info.proj_manage=u1.id_  
+           left join t_users u2 on info.proj_assist=u2.id_  
+           LEFT JOIN  T_DEPTS DEPT ON info.proj_dept =DEPT.ID_
+           left join contract_equip_acceptance app on info.id=app.contract_id
+           left join (
+           		SELECT 
+                   TO_CHAR(HP.END_  ,'YYYY-MM-DD HH24:MI:SS')            AS PROCESSEND, 
+                   WI.KEY_ONE_                                           AS SERIALNO 
+                   FROM(
+                         SELECT 
+                         ID_,KEY_ONE_,KEY_TWO_,KEY_THREE_,KEY_FOUR_,KEY_FIVE_,KEY_SIX_,KEY_SEVEN_,
+		                 KEY_EIGHT_,KEY_NINE_,KEY_TEN_,PROCESS_FORM_PATH_,PROCESS_FORM_TITLE_,
+		                 WORKFLOW_NAME_,WORKFLOW_DISPLAY_NAME_,DRAFT_UUID_,PROCESSINSTANCE_STATE_,
+		                 PROCESSDEFINITION_ID_,REQUEST_INITIATOR_,REQUEST_INITIATOR_REAL_NAME_,
+		                 FROM_BUTTONTEXT_TO_COME_,JBPM4_HIST_ACTINST_DBID_,PREV_JBPM4_HIST_ACTINST_DBID_,
+		                 JBPM4_HIST_PROCINST_DBID_,twork.JBPM4_DEPLOYMENT_DBID_,
+		                 REQUEST_INITIATOR_ID_,ACTIVITY_DETAIL_ID_,JBPM4_HIST_ACTINST_LAST_DBID_,HISTORY_ACTIVITY_NAME_,tab.realname
+		                 FROM T_JBPM_WORKFLOW_INFO twork
+	                     left join (
+		                     select tjpbpu.jbpmworkflowhistoryinfo_id_, WM_CONCAT(tu.realname_) as realname from 
+		                      T_JBPM_WORKFLOW_INFOS_USERS tjpbpu 
+		                     left join t_users tu on tjpbpu.plan_actor_user_id_=tu.id_
+		                     group by tjpbpu.jbpmworkflowhistoryinfo_id_
+	                     ) tab on twork.id_=tab.jbpmworkflowhistoryinfo_id_
+	                     
+	                     WHERE twork.JBPM4_HIST_ACTINST_DBID_ in
+	                     (
+	                      select max(JBPM4_HIST_ACTINST_DBID_)
+	                      from T_JBPM_WORKFLOW_INFO twork
+	                      group by twork.jbpm4_hist_procinst_dbid_
+	                      )
+	                      and twork.WORKFLOW_NAME_='合同结束流程'
+		                  ) WI
+		                  LEFT JOIN(
+		                     SELECT 
+		                        DBID_, DBVERSION_, ID_, PROCDEFID_, KEY_, START_, END_, 
+		                    DURATION_, STATE_, ENDACTIVITY_, NEXTIDX_  
+		                     FROM JBPM4_HIST_PROCINST
+		                  )HP ON   HP.DBID_ = WI.JBPM4_HIST_PROCINST_DBID_
+           
+           			) endlist on info.contract_id=endlist.SERIALNO
+					 where 1=1 
+					 /~projid: and pro.proj_id like '%{projid}%'~/
+				 	/~projectname: and pro.project_name like '%{projectname}%'~/
+				 	/~contractid: and info.contract_id like '%{contractid}%'~/
+				 	/~contractnumber: and info.contract_number like '%{contractnumber}%'~/
+				 	/~contractstatusname: and sta.status_name  like '%{contractstatusname}%'~/
+					 /~custname: and cust.cust_name like '%{custname}%'~/
+					 /~acceptdate: and app.accept_date  like '%{acceptdate}%'~/
+				 	
+			 ]]> 
+	  </table_sql>
+	  </alldb>
+      <dataSource>dataSource</dataSource>
+	  <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

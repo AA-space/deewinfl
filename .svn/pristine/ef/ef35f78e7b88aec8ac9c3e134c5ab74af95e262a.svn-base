@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+    <alldb>
+      <table_sql> 
+	        <![CDATA[
+		
+				select 
+				info.id,
+				info.cust_dealer dealerid,
+				info.contract_number contractnumber,
+				info.project_name projectname,
+				cust.cust_name custname,
+				cust2.cust_name dealername,
+				getprojmng(info.id) projmng,
+				dict.name_ bsc,
+				status.status_name
+				 from contract_info info
+				left join cust_info_dealer dealer on info.cust_dealer=dealer.cust_id
+				left join cust_info cust on info.cust_id=cust.id
+				left join cust_info cust2 on info.cust_dealer =cust2.id
+				left join t_dicts_datas dict on dealer.owner_office=dict.id_
+				left join base_contract_status status on status.status_code=info.contract_status
+				 where info.contract_status in ('21','31')
+				 /~projmng: and getprojmng(info.id) like '%{projmng}%'~/
+				 /~contractnumber: and info.contract_number  like '%{contractnumber}%'~/
+				 /~projectname: and info.project_name  like '%{projectname}%'~/
+				 /~dealername: and cust2.cust_name  like '%{dealername}%'~/
+			    /~currentDealerCustInfoId: and info.cust_dealer = '{currentDealerCustInfoId}'~/	 
+				 	
+			 ]]> 
+	  </table_sql>
+	  </alldb>
+      <dataSource>dataSource</dataSource>
+	  <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

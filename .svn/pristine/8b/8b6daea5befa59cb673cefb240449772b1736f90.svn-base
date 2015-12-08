@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+项目层的清单列表
+/~queryText://like全局搜索
+/~WORK_FLAG://判断是否在流程中
+/~user_id://传当前登录用户id 得到本账号挂名的经销商下面的自然人和法人 ；为经销商赋权限
+
+-->
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+     <alldb>
+      <table_sql> 
+	        <![CDATA[
+    SELECT *
+      FROM (SELECT DISTINCT P.ID ID,
+                            P.PROJ_ID PROJ_ID,
+                            P.PROJECT_NAME PROJNAME,
+                            P.END_DATE ENDDATE,
+                            BS.STATUS_NAME STATUSNAME,
+                            DICT10.NAME_ TAXLEVEL,
+                            DICT9.NAME_ CUSTKIND,
+                            DICT8.NAME_ CUSTCLASS,
+                            CUST1.CUST_NAME CUSTNAME,
+                            CUST1.ID CUSTID,
+                            CUST2.CUST_NAME CUSTDEALER,
+                            DICT.NAME_ PROJTYPE,
+                            DICT2.NAME_ PROJSOURCE,
+                            DICT3.NAME_ PROJSCALE,
+                            DICT4.NAME_ LEASTYPE,
+                            DICT5.NAME_ LEASFORM,
+                            DICT6.NAME_ BUSINESSTYPE,
+                            DICT6.CODE_ TYPECODE,
+                            DICT7.NAME_ BUSINESSMODE,
+                            DICT7.CODE_ MODECODE,
+                            D_.NAME_ PROJDEPT,
+                            NVL(IAI.ID_CARD, '') ID_CARD,
+                            U.REALNAME_ PROJMANAGE,
+                            U2.REALNAME_ PROJASSIST,
+                            PC.EQUIP_AMT EQUIPAMT,
+                            DECODE(PC.IS_REGISTRATION, '0', '是', '否') AS ISREGISTRACTION,
+                            CASE
+                              WHEN P.IS_THIRD_PAY = 0 THEN
+                               '是'
+                              WHEN P.IS_THIRD_PAY = 1 THEN
+                               '否'
+                              ELSE
+                               NULL
+                            END THIRDPAY,
+                            CIC.ORG_CODE || CIP.ID_CARD_NO ORGCODECARDNO
+              FROM PROJ_INFO P
+              LEFT JOIN T_DICTS_DATAS DICT
+                ON P.PROJ_TYPE = DICT.ID_
+              LEFT JOIN T_DICTS_DATAS DICT2
+                ON P.PROJ_SOURCE = DICT2.ID_
+              LEFT JOIN T_DICTS_DATAS DICT3
+                ON P.PROJ_SCALE = DICT3.ID_
+              LEFT JOIN T_DICTS_DATAS DICT4
+                ON P.LEAS_TYPE = DICT4.ID_
+              LEFT JOIN T_DICTS_DATAS DICT5
+                ON P.LEAS_FORM = DICT5.ID_
+              LEFT JOIN T_DEPTS D_
+                ON P.PROJ_DEPT = D_.ID_
+              LEFT JOIN T_USERS U
+                ON P.PROJ_MANAGE = U.ID_
+              LEFT JOIN T_USERS U2
+                ON P.PROJ_ASSIST = U2.ID_
+              LEFT JOIN T_DICTS_DATAS DICT6
+                ON P.BUSINESS_TYPE = DICT6.ID_
+              LEFT JOIN T_DICTS_DATAS DICT7
+                ON P.BUSINESS_MODE = DICT7.ID_
+              LEFT JOIN CUST_INFO CUST1
+                ON P.CUST_ID = CUST1.ID
+              LEFT JOIN T_DICTS_DATAS DICT8
+                ON DICT8.ID_ = CUST1.CUST_CLASS
+              LEFT JOIN CUST_INFO CUST2
+                ON CUST2.ID = P.CUST_DEALER
+              LEFT JOIN CUST_INFO_PERSON CIP
+                ON CUST1.ID = CIP.CUST_ID
+              LEFT JOIN CUST_INFO_COMPANY CIC
+                ON CUST1.ID = CIC.CUST_ID
+              LEFT JOIN T_DICTS_DATAS DICT9
+                ON (CIC.CUST_KIND = DICT9.ID_)
+              LEFT JOIN T_DICTS_DATAS DICT10
+                ON (CIC.TAX_LEVEL = DICT10.ID_)
+              LEFT JOIN PROJ_CONDITION PC
+                ON P.ID = PC.PROJ_ID
+              LEFT JOIN BASE_CONTRACT_STATUS BS
+                ON BS.STATUS_CODE = P.PROJ_STATUS
+              LEFT JOIN CONTRACT_INFO CI
+                ON CI.PROJ_ID = P.ID
+              RIGHT JOIN PROJ_EQUIP PE
+                ON PE.PROJ_ID = P.ID
+              LEFT JOIN INVOICE_APPLY_INFO IAI
+                ON PE.ID = IAI.EQUIP_ID
+             WHERE 1 = 1
+               AND DICT5.NAME_ = '直租'
+               AND P.PROJ_STATUS >= 11
+               AND P.PROJ_STATUS <= 31) A
+     WHERE A.ID_CARD IS NULL
+          
+		/~WORK_FLAG:  AND   WORK_FLAG = '{WORK_FLAG}'~/
+		/~projtype:  AND DICT.NAME_ = '{projtype}'~/
+		/~custClass: AND Upper(CUST1.CUST_CLASS) = Upper('{custClass}')~/
+		--项目状态
+		--/~PROJ_STATUS:  AND  PROJ_STATUS = {PROJ_STATUS}~/
+		--/~PROJ_STATUS2:  AND  PROJ_STATUS <> {PROJ_STATUS2}~/
+		--/~PROJ_STATUS_LessThan:  AND PROJ_STATUS < '{PROJ_STATUS_LessThan}'~/
+		-- /~PROJ_STATUS_GreaterThan:  AND PROJ_STATUS > '{PROJ_STATUS_GreaterThan}'~/
+		/~cust_dealer_id:
+		---客户经销商归属
+		AND CIC.DEALER_COMPANY||CIP.DEALER_COMPANY='{cust_dealer_id}'
+		~/
+		/~custdealer: and a.CUST_NAME like '%{custdealer}%'  ~/
+		/~projname: and a.PROJECT_NAME like '%{projname}%' ~/
+		/~proj_id:  AND a.PROJ_ID like '%{proj_id}%'~/
+		/~currentDealerCustInfoId: AND a.CUST_DEALER = '{currentDealerCustInfoId}'~/
+		/~dateComplete: AND NVL(P.DATA_COMPLETE, 0) != 1~/
+          
+          ------------经销商初始权限判断----------------
+          --注：传入当前userid，不做其他关联
+          --员工在经销部门里, 如果是经销商则是1，如果不是则为0
+       AND (1 =
+           --员工在经销部门里, 如果是经销商则是1，如果不是则为0
+           (SELECT DECODE(NUM, 0, 0, 1)
+               FROM (SELECT COUNT(*) AS NUM
+                        FROM DUAL
+                       WHERE
+                      --用户部门是经销商部门
+                       (SELECT DEPT_ID_
+                          FROM T_USERS_DEPTS
+                         WHERE USER_ID_ = '{user_id}') IN
+                       (SELECT D.ID_
+                          FROM T_DEPTS D
+                         START WITH D.PID_ = '402881ef409b4bfa01409b9ce7fb01e6'
+                        CONNECT BY PRIOR D.ID_ = D.PID_)
+                      --经销商用户对应的部门在<经销商用户对应表>里为不为空
+                    AND (SELECT DEALER_DEPT D1
+                          FROM DEALER_DEPT_INFO T
+                         WHERE DEALER_DEPT IN
+                               (SELECT DEPT_ID_
+                                  FROM T_USERS_DEPTS
+                                 WHERE USER_ID_ = '{user_id}')
+                           AND ENABLE_ = '0') IS NOT NULL
+                      
+                      )) OR
+           0 =
+           --不是经销部门
+           (SELECT COUNT(*) AS NUM
+               FROM DUAL
+              WHERE
+             --用户部门是经销商部门
+              (SELECT DEPT_ID_
+                 FROM T_USERS_DEPTS
+                WHERE USER_ID_ = '{user_id}') IN
+              (SELECT D.ID_
+                 FROM T_DEPTS D
+                START WITH D.PID_ = '402881ef409b4bfa01409b9ce7fb01e6'
+               CONNECT BY PRIOR D.ID_ = D.PID_))
+           
+           )
+     ORDER BY A.PROJ_ID DESC
+			 ]]> 
+	  </table_sql>
+	   </alldb>
+      <dataSource>dataSource</dataSource>
+      <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

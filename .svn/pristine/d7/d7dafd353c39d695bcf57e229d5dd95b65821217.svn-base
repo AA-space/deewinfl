@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+    <alldb>
+      <table_sql> 
+	        <![CDATA[
+			 
+		select 
+		info.id
+		,info.contract_number contracnumber
+		,info.project_name projectname
+		,con.contract_id contractid
+		,con.free_defa_inter_day freedefainterday
+		,con.start_date_ startdate
+		,sta.status_name statusname
+		 from contract_info info 
+		left join contract_condition con on info.id=con.contract_id
+		left join base_contract_status sta on sta.status_code=info.contract_status
+		where  1=1
+		and con.contract_id is not null  
+		and info.contract_status not in ('71','201','111')	
+			
+		/~projectname: and info.project_name like '%{projectname}%'~/
+		/~contracnumber: and info.contract_number    like '%{contracnumber}%'~/
+		/~startdate_start: and con.start_date_ >= '{startdate_start}'~/
+		/~startdate_end: and con.start_date_ <= '{startdate_end}'~/                  
+                
+            
+			 ]]> 
+	  </table_sql>
+	  </alldb>
+      <dataSource>dataSource</dataSource>
+	  <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

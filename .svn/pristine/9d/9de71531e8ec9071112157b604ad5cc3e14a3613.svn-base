@@ -1,0 +1,416 @@
+package com.business.entity.invoice.vat;
+
+
+import java.math.BigDecimal;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.GenericGenerator;
+
+import com.business.entity.User;
+import com.business.entity.base.BaseFile;
+import com.kernal.annotation.FieldName;
+
+/**
+ * @author Toybaby
+ *	2013-10-11
+ *  资计发票信息
+ *  
+ */
+@Entity
+@FieldName(name = "资金发票导入数据存储")
+@Table(name="TAX_FUND_UPLOAD_INFO")
+public class TaxFundUploadInfo {
+	@Id
+    @GeneratedValue(generator = "paymentableGenerator")     
+    @GenericGenerator(name = "paymentableGenerator", strategy = "uuid") 
+    @Column(length=32)
+	private String id;
+	
+	@FieldName(name="发票号")
+	@Column(name="INVOICE_NO", length=50)
+	private String invoiceNo;
+	
+	@FieldName(name="合同编号")
+	@Column(name="CONTRACT_ID", length=50)
+	private String contractId;
+	
+	@FieldName(name="导出流水编号")
+	@Column(name="OUT_NO", length=50)
+	private String outNo;
+	
+	@FieldName(name="含税金额")
+	@Column(name="CORPUS_TAX_MONEY",precision=22,scale=2)
+	private BigDecimal corpusTaxMoney;
+	
+	@FieldName(name="税率")
+	@Column(name="TAX_RATE",precision=22,scale=2)
+	private BigDecimal taxRate;
+	
+	@FieldName(name="税额")
+	@Column(name="TAX_MONEY",precision=22,scale=2)
+	private BigDecimal taxMoney;
+	
+	@FieldName(name="费用类型")
+	@Column(name="TAX_TYPE", length=50)
+	private String taxType;
+	
+	@FieldName(name="客户名称")
+	@Column(name="CUST_NAME", length=200)
+	private String custName;
+	
+	@FieldName(name="设备名称")
+	@Column(name="MODEL", length=100)
+	private String model;
+	
+	@FieldName(name="收款日期")
+	@Column(name="INCOME_DATE", length=200)
+	private String incomeDate;
+	
+	@FieldName(name="收款金额")
+	@Column(name="INCOME_MONEY", precision=22,scale=2)
+	private BigDecimal incomeMoney;
+	
+	@FieldName(name="开票日期")
+	@Column(name="INVOICE_DATE", length=200)
+	private String invoiceDate;
+	
+	@FieldName(name="开票金额")
+	@Column(name="INVOICE_MONEY", precision=22,scale=2)
+	private BigDecimal invoiceMoney;
+	
+	
+	@FieldName(name="开票类类型")
+	@Column(name="INVOICE_TYPE", length=50)
+	private String invoiceType;
+	
+	
+	@FieldName(name="开户行")
+	@Column(name="TAX_BANK", length=100)
+	private String taxBank;
+	
+	
+	@FieldName(name="开户帐号")
+	@Column(name="TAX_ACC", length=50)
+	private String taxAcc;
+	
+	@FieldName(name="电话")
+	@Column(name="TAX_TEL", length=50)
+	private String taxTel;
+	
+	@FieldName(name="纳税人识别号")
+	@Column(name="TAX_REG_CODE", length=50)
+	private String taxRegCode;
+	
+	@FieldName(name="地址")
+	@Column(name="TAX_ADDR", length=50)
+	private String taxAddr;
+	
+	@FieldName(name="快递单号")
+	@Column(name="EMS_NO", length=50)
+	private String emsNo;
+	
+	@FieldName(name="寄送时间")
+	@Column(name="SEND_DATE", length=20)
+	private String sendDate;
+	
+	@FieldName(name="导出人")
+	@Column(name="EXP_USER", length=50)
+	private String exportUser;
+	
+	@FieldName(name="导出时间")
+	@Column(name="EXPORT_DATE", length=50)
+	private String exportDate;
+	
+	@FieldName(name="红冲状态，红冲状态1 代表‘已红冲’ 2代表‘红冲发票’")
+	@Column(name="HC_STATUS", length=20)
+	private String hcStatus;
+	
+	@FieldName(name="是否已导出，针对收据导出状态，(null,||0)：未导出，1：已导出")
+	@Column(name="is_export")
+	private Integer isExport;
+	
+	@ManyToOne
+	@FieldName(name="上传文件名")
+	@JoinColumn(name="UPLOAD_ID")
+	private BaseFile upLoadId ;
+
+	public void setUpLoadId(BaseFile upLoadId) {
+		this.upLoadId = upLoadId;
+	}
+
+	@ManyToOne
+	@FieldName(name="创建人")
+	@JoinColumn(name="CREATOR_")
+	private User creator;
+	
+	@FieldName(name="创建时间")
+	@Column(name="CREATE_DATE", length=20)	
+	private String createDate;
+	
+	@ManyToOne
+	@FieldName(name="修改人")
+	@JoinColumn(name="MODIFICATOR_")
+	private User modificator;
+	
+	@FieldName(name="修改时间")
+	@Column(name="MODIFY_DATE", length=20)	
+	private String modifyDate;
+
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	
+	public String getInvoiceNo() {
+		return invoiceNo;
+	}
+
+	public void setInvoiceNo(String invoiceNo) {
+		this.invoiceNo = invoiceNo;
+	}
+
+	public String getContractId() {
+		return contractId;
+	}
+
+	public void setContractId(String contractId) {
+		this.contractId = contractId;
+	}
+
+
+	public BigDecimal getCorpusTaxMoney() {
+		return corpusTaxMoney;
+	}
+
+	public String getModel() {
+		return model;
+	}
+
+	public void setModel(String model) {
+		this.model = model;
+	}
+
+	public void setCorpusTaxMoney(BigDecimal corpusTaxMoney) {
+		this.corpusTaxMoney = corpusTaxMoney;
+	}
+
+	public BigDecimal getTaxRate() {
+		return taxRate;
+	}
+
+	public void setTaxRate(BigDecimal taxRate) {
+		this.taxRate = taxRate;
+	}
+
+	public BigDecimal getTaxMoney() {
+		return taxMoney;
+	}
+
+	public void setTaxMoney(BigDecimal taxMoney) {
+		this.taxMoney = taxMoney;
+	}
+
+	public String getTaxType() {
+		return taxType;
+	}
+
+	public void setTaxType(String taxType) {
+		this.taxType = taxType;
+	}
+
+	public String getCustName() {
+		return custName;
+	}
+
+	public void setCustName(String custName) {
+		this.custName = custName;
+	}
+
+
+
+	public String getInvoiceDate() {
+		return invoiceDate;
+	}
+
+	public void setInvoiceDate(String invoiceDate) {
+		this.invoiceDate = invoiceDate;
+	}
+
+	
+	
+	public String getOutNo() {
+		return outNo;
+	}
+
+	public void setOutNo(String outNo) {
+		this.outNo = outNo;
+	}
+
+	public String getIncomeDate() {
+		return incomeDate;
+	}
+
+	public void setIncomeDate(String incomeDate) {
+		this.incomeDate = incomeDate;
+	}
+
+	public BigDecimal getIncomeMoney() {
+		return incomeMoney;
+	}
+
+	public void setIncomeMoney(BigDecimal incomeMoney) {
+		this.incomeMoney = incomeMoney;
+	}
+
+	public BigDecimal getInvoiceMoney() {
+		return invoiceMoney;
+	}
+
+	public void setInvoiceMoney(BigDecimal invoiceMoney) {
+		this.invoiceMoney = invoiceMoney;
+	}
+
+	public String getInvoiceType() {
+		return invoiceType;
+	}
+
+	public void setInvoiceType(String invoiceType) {
+		this.invoiceType = invoiceType;
+	}
+
+	public String getTaxBank() {
+		return taxBank;
+	}
+
+	public void setTaxBank(String taxBank) {
+		this.taxBank = taxBank;
+	}
+
+	public String getTaxAcc() {
+		return taxAcc;
+	}
+
+	public void setTaxAcc(String taxAcc) {
+		this.taxAcc = taxAcc;
+	}
+
+	public String getTaxTel() {
+		return taxTel;
+	}
+
+	public void setTaxTel(String taxTel) {
+		this.taxTel = taxTel;
+	}
+
+	public String getTaxRegCode() {
+		return taxRegCode;
+	}
+
+	public void setTaxRegCode(String taxRegCode) {
+		this.taxRegCode = taxRegCode;
+	}
+
+	public String getTaxAddr() {
+		return taxAddr;
+	}
+
+	public void setTaxAddr(String taxAddr) {
+		this.taxAddr = taxAddr;
+	}
+
+	public String getEmsNo() {
+		return emsNo;
+	}
+
+	public void setEmsNo(String emsNo) {
+		this.emsNo = emsNo;
+	}
+
+	public String getExportUser() {
+		return exportUser;
+	}
+
+	public void setExportUser(String exportUser) {
+		this.exportUser = exportUser;
+	}
+
+	public String getExportDate() {
+		return exportDate;
+	}
+
+	public void setExportDate(String exportDate) {
+		this.exportDate = exportDate;
+	}
+
+	public String getHcStatus() {
+		return hcStatus;
+	}
+
+	public void setHcStatus(String hcStatus) {
+		this.hcStatus = hcStatus;
+	}
+
+	public User getCreator() {
+		return creator;
+	}
+
+	public void setCreator(User creator) {
+		this.creator = creator;
+	}
+
+	public String getCreateDate() {
+		return createDate;
+	}
+
+	public void setCreateDate(String createDate) {
+		this.createDate = createDate;
+	}
+
+	public User getModificator() {
+		return modificator;
+	}
+
+	public void setModificator(User modificator) {
+		this.modificator = modificator;
+	}
+
+	public String getModifyDate() {
+		return modifyDate;
+	}
+
+	public void setModifyDate(String modifyDate) {
+		this.modifyDate = modifyDate;
+	}
+
+	public BaseFile getUpLoadId() {
+		return upLoadId;
+	}
+
+	public Integer getIsExport() {
+		return isExport;
+	}
+
+	public void setIsExport(Integer isExport) {
+		this.isExport = isExport;
+	}
+
+	public String getSendDate() {
+		return sendDate;
+	}
+
+	public void setSendDate(String sendDate) {
+		this.sendDate = sendDate;
+	}
+	
+}

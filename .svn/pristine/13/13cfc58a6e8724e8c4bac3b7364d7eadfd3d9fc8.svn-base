@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+  <!--以客户为主表导出数据
+    custNumber[客户编号],custname[客户名],brithdate[出生日期],homeadd[家庭地址],sexName[性别名],contractnumber[合同号],dealer[经销商名称]
+    projexportstatus[合同导出状态] ,custnameall[客户名称|经销商名称|合同号]
+    -->
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+
+  <table>
+    <data>
+    <alldb>
+      <table_sql> 
+	        <![CDATA[
+   SELECT TT_SORT_OUTER.* FROM(select rownum, rs.*from (
+   select
+  (cust.cust_number) custnumber2,
+ cust.cust_number  custnumber,
+ cust.cust_name custname,
+ M.contract_number contractnumber,
+ cust2.cust_name||cust3.cust_name dealer,
+ --proj.proj_status ptojstatus,
+ M.contract_status contractstatus, 
+ person.cust_id id,
+ CASE person.sex_ WHEN '1' THEN '男'  ELSE '女' END sexname,
+ person.brith_date brithdate,
+ person.HOME_ADD homeadd,
+ M.id||'/id'   contractid,
+ cust.cust_class custclass,
+  --info.cust_dealer custdealer,--经销商编号
+  cust4.cust_number custdealer,
+  'customerGroupStandard' customerGroupStandard,
+ cust.cust_name||'/'||cust2.cust_name||cust3.cust_name||'/'||M.contract_number custnameall,
+ CASE  WHEN cust.cust_export_status='0' THEN '未导出' 
+    WHEN cust.cust_export_status is null THEN '未导出'
+   ELSE '已导出' END custexportstatus
+ from  
+ cust_info cust 
+ left join cust_info_person person on cust.id=person.cust_id  
+ left join cust_info_company comp on comp.cust_id=cust.id 
+ left join cust_info cust2 on cust2.id=person.dealer_company
+ left join cust_info cust3 on cust3.id=comp.dealer_company
+ left join (
+    select * from contract_info where id in (
+ select a.id from  (select  info.cust_id, max(id) id from contract_info info 
+  /~contract_status:  where info.contract_status>={contract_status} ~/ 
+  group by info.cust_id order by info.cust_id) a
+ )
+ ) M   on M.cust_id=cust.id --承租人 
+ left join cust_info  cust4 on M.cust_dealer=cust4.id
+ where 1=1
+   /~contract_status:  and M.contract_status>={contract_status} ~/
+   /~cust_export_status: and (cust.cust_export_status='{cust_export_status}' or cust.cust_export_status is null)~/
+  /~custnumber: and cust.cust_number  like '%{custnumber}%' ~/
+  /~custnameall: and cust.cust_name||'/'||cust2.cust_name||cust3.cust_name||'/'||M.contract_number  like '%{custnameall}%' ~/
+ )rs where 1=1)TT_SORT_OUTER
+   
+	  ]]> 
+			 </table_sql>
+	  </alldb>
+      <dataSource>dataSource</dataSource>
+      <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

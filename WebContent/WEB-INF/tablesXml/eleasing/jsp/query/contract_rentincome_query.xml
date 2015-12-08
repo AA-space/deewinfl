@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+    <alldb>
+      <table_sql> 
+	        <![CDATA[
+		select * from (
+			select  cust.cust_name dealername
+			,dict.name_  district
+			,rs.realname_ proj_manage
+			,contract.contract_number
+			,cust2.cust_name
+			,pla.rent_list
+			,pla.plan_date
+			,pla.rent
+			,pla.corpus
+			,pla.interest
+			,income.rent s_rent
+			,income.interest s_interest
+			,income.hire_date 
+			,dq.d_rent
+			,dq.d_corpus
+			,dq.d_interest
+			,pena.penalty
+			,nvl(e.ecount,condition.nominal_price/100) countx
+			,card.memo
+			 from  contract_info contract 
+			 left join (
+			 select count(*) ecount,contract_id from contract_equip   where equip_class<>'equip_class_2'
+			 group by contract_id
+			  )e on contract.id=e.contract_id
+			left join cust_info_dealer deal on contract.cust_dealer=deal.cust_id
+			 left join t_dicts_datas dct on dct.id_ = deal.owner_district
+			  left join (select *
+			                    from manager_district
+			                   where manager_role = '402881824094f54f01409551aff2002c') t
+			          on deal.owner_district=t.district_
+			 left join t_users rs on t.manager_ = rs.id_
+			left join 
+			(
+			select 
+			pla.contract_id contract_id
+			,max(pla.rent_list) rent_list
+			,min(pla.plan_date) plan_date
+			,sum(pla.rent) rent
+			,sum(pla.corpus) corpus
+			,sum(pla.interest) interest
+			 from contract_fund_rent_plan pla group by pla.contract_id
+			)pla on contract.id=pla.contract_id
+			left join 
+			(
+			  select income.contract_id contract_id,sum(income.rent) rent,sum(income.interest) interest ,max(income.hire_date) hire_date  from contract_fund_rent_income income   group by contract_id
+			)income on income.contract_id=contract.id
+			left join 
+			(
+			select  ins.contract_id contract_id,sum(pls.rent-ins.rent) d_rent,sum(pls.corpus-ins.corpus) d_corpus,sum(ins.interest) d_interest from  contract_fund_rent_income ins
+			left join contract_fund_rent_plan pls on ins.contract_id=pls.contract_id 
+			where  to_char(to_date(pls.plan_date,'yyyy-mm-dd'),'yyyy-mm') = to_char(sysdate,'yyyy-mm')
+			group by ins.contract_id
+			)dq  on dq.contract_id=contract.id
+			left join
+			( select pena.contract_id contract_id,sum(pena.penalty) penalty from  vi_contract_penalty pena group by pena.contract_id )pena on pena.contract_id=contract.id
+			left join contract_condition condition  on contract.id=condition.contract_id 
+			left join contract_card_for_rent card on card.contract_id=contract.id
+			left join cust_info_dealer dealer on contract.cust_dealer=dealer.cust_id
+			left join cust_info cust on cust.id=dealer.cust_id
+			left join t_dicts_datas dict on dict.id_=dealer.owner_district
+			left join cust_info cust2 on cust2.id=contract.cust_id
+			where contract.contract_status <>'71'
+			and rs.id_ ='{user_id}'
+			)rs 
+			where 1=1 
+			/~dealername: and rs.dealername like '%{dealername}%'~/
+			/~contract_number: and rs.contract_number like '%{contract_number}%'~/
+			/~district: and rs.district like '%{district}%'~/
+			/~cust_name: and rs.cust_name like '%{cust_name}%'~/
+			/~d_rent: and rs.d_rent like '%{d_rent}%'~/
+				 	
+			 ]]> 
+	  </table_sql>
+	  </alldb>
+      <dataSource>dataSource</dataSource>
+	  <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

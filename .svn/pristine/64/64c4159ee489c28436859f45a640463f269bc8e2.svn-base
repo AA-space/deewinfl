@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+    <alldb>
+      <table_sql> 
+	        <![CDATA[
+/* 				select 
+                   ci.id as contid,                     --合同id
+                   ci.contract_id as contractid,        --合同编号
+                   ci.contract_number as contractnumber,-- 合同号,
+                   cio1.id as custid,                   --客户名称id
+                   cio1.cust_name as custname,          --客户名称,
+                   cio2.id as  delarid,                 --经销商id
+                   cio2.cust_name as dealername,        --经销商,
+                   ce.contract_id as equipid,           -- 租赁id
+                   ce.equipnum as equipnum              --租赁台数
+            
+            from contract_info ci
+            left join cust_info cio1 on ci.cust_id=cio1.id
+            left join cust_info cio2 on ci.cust_dealer=cio2.id
+            left join ( 
+                     select contract_id,sum(equip_num) as equipnum from contract_equip
+                     group by contract_id) ce on ce.contract_id=ci.id
+                     
+                   where ci.id not in (select CONTRACT_ID from gps_info)  */
+              SELECT CI.ID              AS CONTID, --合同id
+			         CI.CONTRACT_ID     AS CONTRACTID, --合同编号
+			         CI.CONTRACT_NUMBER AS CONTRACTNUMBER, -- 合同号,
+			         CIO1.ID            AS CUSTID, --客户名称id
+			         CIO1.CUST_NAME     AS CUSTNAME, --客户名称,
+			         CIO2.ID            AS DELARID, --经销商id
+			         CIO2.CUST_NAME     AS DEALERNAME, --经销商,
+			         CE.CONTRACT_ID     AS EQUIPID, -- 租赁id
+			         CE.EQUIPNUM        AS EQUIPNUM --租赁台数
+			  
+			    FROM CONTRACT_INFO CI
+			    LEFT JOIN CUST_INFO CIO1
+			      ON CI.CUST_ID = CIO1.ID
+			    LEFT JOIN CUST_INFO CIO2
+			      ON CI.CUST_DEALER = CIO2.ID
+			    LEFT JOIN (SELECT CONTRACT_ID, SUM(EQUIP_NUM) AS EQUIPNUM
+			                 FROM CONTRACT_EQUIP
+			                GROUP BY CONTRACT_ID) CE
+			      ON CE.CONTRACT_ID = CI.ID
+			    left JOIN GPS_INFO GI
+			      ON GI.CONTRACT_ID = CI.ID
+			  
+			   WHERE    1=1  
+			  
+			  /~total: and NVL(GI.CONTRACT_ID, '1') ='1' ~/
+			   
+                    ------------经销商初始权限判断----------------
+			      --注：传入当前userid，不做其他关联
+			      --员工在经销部门里, 如果是经销商则是1，如果不是则为0
+			      AND (1 =
+			       --员工在经销部门里, 如果是经销商则是1，如果不是则为0
+			       (SELECT DECODE(NUM, 0, 0, 1)
+			           FROM (SELECT COUNT(*) AS NUM
+			                    FROM DUAL
+			                   WHERE
+			                  --用户部门是经销商部门
+			                   (SELECT DEPT_ID_
+			                      FROM T_USERS_DEPTS
+			                     WHERE USER_ID_ = '{user_id}') IN
+			                   (SELECT D.ID_
+			                      FROM T_DEPTS D
+			                     START WITH D.PID_ = '402881ef409b4bfa01409b9ce7fb01e6'
+			                    CONNECT BY PRIOR D.ID_ = D.PID_)
+			                  --经销商用户对应的部门在<经销商用户对应表>里为不为空
+			                AND (SELECT DEALER_DEPT D1
+			                      FROM DEALER_DEPT_INFO T
+			                     WHERE DEALER_DEPT IN
+			                           (SELECT DEPT_ID_
+			                              FROM T_USERS_DEPTS
+			                             WHERE USER_ID_ = '{user_id}')
+			                             AND ENABLE_ = '0') IS NOT NULL
+			                  
+			                  )) OR
+			       0 =
+			       --不是经销部门
+			       (SELECT COUNT(*) AS NUM
+			           FROM DUAL
+			          WHERE
+			         --用户部门是经销商部门
+			          (SELECT DEPT_ID_
+			             FROM T_USERS_DEPTS
+			            WHERE USER_ID_ = '{user_id}') IN
+			          (SELECT D.ID_
+			             FROM T_DEPTS D
+			            START WITH D.PID_ = '402881ef409b4bfa01409b9ce7fb01e6'
+			           CONNECT BY PRIOR D.ID_ = D.PID_))
+			       
+			       )
+			
+			       ------------经销商初始权限判断结束----------------
+			/~currentDealerCustInfoId: AND cio2.id = '{currentDealerCustInfoId}'~/       
+            /~contractid: AND ci.contract_id like '%{contractid}%'~/
+            /~contractnumber: AND ci.contract_number like '%{contractnumber}%'~/
+            /~custname: AND cio1.cust_name like '%{custname}%'~/
+            /~dealername: AND cio2.cust_name like '%{dealername}%'~/
+            /~equipnum: and ce.equipnum like '%{equipnum}%'~/
+			       
+                     
+                     
+			 ]]> 
+	  </table_sql>
+	  </alldb>
+      <dataSource>dataSource</dataSource>
+      <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+    <alldb>
+      <table_sql> 
+	        <![CDATA[
+	            select tax.out_no outon,
+				ci.contract_id contractid,
+				cust.cust_name custname,
+				dealer.cust_name dealername,
+				dict.name_ feetype,
+				cffp.plan_date plandate,
+				cffp.plan_money planmoney,
+				case cust.tax_level when 'tax_level_name.1' then '增值税专用发票' else '增值税普通发票' end taxlevel,
+				'' invoicenum,
+				'' invoicemoney,
+				'' invoicedate,
+				cffp.plan_money*0.17 as taxmoney,
+				'17%' as taxrate,
+				cust.tax_bank taxbank,
+				cust.tax_acc taxacc,
+				cust.tax_phone taxphone,
+				cust.TAX_REG_CODE taxregcode,
+				tax_reg_add taxregadd,
+				'' emsno,
+				'' sentdate,
+				sysdate,
+				'{currentLoginRealName}' as exportperson
+				from contract_fund_fund_plan cffp
+				left join contract_info ci on cffp.contract_id = ci.id
+				left join cust_info dealer on dealer.id=ci.cust_dealer
+				left join t_dicts_datas dict on cffp.fee_type = dict.code_
+				left join (select cust_info.id,cust_info.cust_name,tax_level,TAX_REG_CODE,tax_bank,tax_acc,tax_phone,tax_reg_add 
+				from cust_info
+				left join (select cust_id,tax_level,tax_reg_code,tax_bank,tax_acc,tax_phone,tax_reg_add
+				from cust_info_company
+				union
+				select cust_id,tax_level,TAX_REG_CODE,tax_bank,tax_acc,tax_phone,tax_reg_add
+				from cust_info_person) info on cust_info.id = info.cust_id) cust on ci.cust_id = cust.id
+				left join   tax_fund_info tax on cffp.id=tax.cffp_id                                                                             
+				where cffp.invalid='0' and ci.contract_status >= 21 and ci.contract_status <= 31 and dict.code_ in ('feetype1', 'feetype4', 'feetype5')
+				and tax.id is not null and tax.id in ({ids})
+			 ]]> 
+	  </table_sql>
+	  </alldb>
+      <dataSource>dataSource</dataSource>
+    </data>
+  </table>
+</table-root>

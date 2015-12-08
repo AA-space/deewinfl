@@ -1,0 +1,8 @@
+﻿${contract_infocontractnumber} 数据类型：字段；数据来源：页面；
+${contract_infocustdealername} 数据类型：字段；数据来源：页面；
+${contract_infocustname}       数据类型：字段；数据来源：页面；
+json_proj_equip_strs           数据类型：表格；数据来源：数据库；数据列表：eqipname,modelname,manufacturer,equipnum,purchaseprice,nowtotal；
+			       数据sql：SELECT P.EQIP_NAME AS eqipname,P.MODEL_ AS modelname,ci.cust_name as manufacturer,P.EQUIP_NUM as equipnum,P.PURCHASE_PRICE as purchaseprice,P.NOWTOTAL as nowtotal FROM PROJ_EQUIP P 
+                               left join cust_info ci on ci.id = p.manufacturer
+                               WHERE P.PROJ_ID='{project_info.id}'；
+${contract_infoequipdeliveryplace} 数据类型：字段；数据来源：页面；数据sql：select distinct P.Equip_Delivery_Place as equipdeliveryplace FROM PROJ_EQUIP P WHERE P.PROJ_ID='{project_info.id}'；

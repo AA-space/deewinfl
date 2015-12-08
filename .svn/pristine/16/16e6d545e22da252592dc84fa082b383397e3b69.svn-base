@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+    <alldb>
+      <table_sql> 
+	        <![CDATA[
+	        select ttt.* from (
+	            select tax.id,
+                 ci.contract_id contractid,
+                 ci.contract_number contractnumber,
+				 cust2.cust_name dealername,
+                 cffc.payment_id paymentid,
+                 cffc.fact_date plandate,
+                 cffc.fact_money planmoney,
+                 dict.name_ feetype,
+                 cust.cust_name custname,
+                 decode(cit.rentinvoicetype,'invoice_type05','营业税发票',
+                             decode(cust.tax_level,'tax_level_name.1','增值税专用发票','增值税普通发票')) taxlevel,
+                 cust.TAX_REG_CODE TAXREGCODE,
+                 cust.tax_bank taxbank,
+                 cust.tax_acc taxacc,
+                 cust.tax_phone taxphone,
+                 tax_reg_add taxregadd,
+                 case nvl(tax.invoice_status,1) when  1 then '确认中' when 2 then '已导出'  when 3 then '已退回' end as invoicestatus 
+            from contract_fund_fund_charge cffc
+            left join contract_info ci on cffc.contract_id = ci.id 
+            left join contract_invoice_type cit on ci.id=cit.contract_id 
+            left join cust_info cust2 on ci.cust_dealer=cust2.id 
+            left join t_dicts_datas dict on cffc.fee_type = dict.code_
+            left join (select cust_info.id,
+                              cust_info.cust_name,
+                              tax_level,
+                              TAX_REG_CODE,
+                              tax_bank,
+                              tax_acc,
+                              tax_phone,
+                              tax_reg_add 
+                         from cust_info
+                         left join (select cust_id,
+                                          tax_level,
+                                          tax_reg_code,
+                                          tax_bank,
+                                          tax_acc,
+                                          tax_phone,
+                                          tax_reg_add
+                                     from cust_info_company
+                                   union
+                                   select cust_id,
+                                          tax_level,
+                                          TAX_REG_CODE,
+                                          tax_bank,
+                                          tax_acc,
+                                          tax_phone,
+                                           tax_reg_add
+                                     from cust_info_person) info on cust_info.id =
+                                                                    info.cust_id) cust on ci.cust_id = cust.id
+            left join   tax_fund_info tax on cffc.id=tax.cffc_id    
+                                                                                             
+           where ci.contract_status >= 21
+             and ci.contract_status <= 31
+             and dict.code_ in ('feetype1', 'feetype4', 'feetype5', 'feetype15')
+             and tax.cffc_id is not null and tax.invoice_status<>0 
+             and(cit.rentinvoicetype<>'invoice_type02' or 
+                   (cit.rentinvoicetype='invoice_type02' and cffc.fee_type<>'feetype5'))
+				  /~contractid: and ci.contract_id like '%{contractid}%' ~/
+				  /~custname: and cust.cust_name like '%{custname}%' ~/
+				  /~contractnumber: and ci.contract_number like '%{contractnumber}%' ~/
+				  /~dealername: and cust2.cust_name like '%{dealername}%' ~/
+				  /~planmoney: and cffp.plan_money like '%{planmoney}%' ~/
+				  /~plandate_start: and cffc.fact_date>='{plandate_start}' ~/
+          /~plandate_end: and cffc.fact_date<='{plandate_end}' ~/
+          order by ci.cust_dealer
+          ) ttt
+          where 1=1
+          /~invoicestatus: and invoicestatus like '%{invoicestatus}%' ~/
+			  
+			 ]]> 
+	  </table_sql>
+	  </alldb>
+      <dataSource>dataSource</dataSource>
+      <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

@@ -1,0 +1,336 @@
+package com.business.entity.contract.fund;
+
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.GenericGenerator;
+
+import com.business.entity.DictionaryData;
+import com.business.entity.User;
+import com.business.entity.contract.ContractInfo;
+import com.kernal.annotation.FieldName;
+
+/**
+ * 
+ * @author 
+ * @date 
+ * @info 保证金支付明细表
+ * @Copyright Tenwa
+ */
+@Entity
+@FieldName(name = "保证金支付明细表")
+@Table(name = "CONTRACT_FUND_PAY_CAUTIONMONEY")
+public class ContractFundPayCautionmoney {
+
+	@Id
+	@GeneratedValue(generator = "paymentableGenerator")
+	@GenericGenerator(name = "paymentableGenerator", strategy = "uuid")
+	@Column(length = 32)
+	private String id;
+
+	@FieldName(name = "收付编号")
+	@Column(name = "PAYMENT_ID", length = 32)
+	private String paymentId;
+
+	@FieldName(name = "流程编号")
+	@Column(name = "DOC_ID")
+	private String docId;
+
+	@FieldName(name = "合同编号")
+	@ManyToOne(targetEntity = ContractInfo.class, fetch = FetchType.LAZY)
+	@JoinColumn(name = "CONTRACT_ID")
+	private ContractInfo contractId;
+
+	
+	@FieldName(name="综合服务费[默认为额度金额的2.6%](德银)")
+	@Column(name="SERVICE_FEES",precision=22,scale=2)
+	private BigDecimal serviceFees;
+
+
+	@FieldName(name="客户银行")
+	@Column(name="CLIENT_BANK")
+	private String   clientBank;
+
+	@FieldName(name="客户帐户")
+	@Column(name="CLIENT_ACCOUNT")
+	private String   clientAccount;
+
+	@FieldName(name="客户帐号")
+	@Column(name="CLIENT_ACCNUMBER")
+	private String   clientAccnumber;
+	
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@FieldName(name = "费用类型")
+	@JoinColumn(name = "FEE_TYPE")
+	private DictionaryData feeType;
+
+	@FieldName(name = "计划收付日期")
+	@Column(name = "PLAN_DATE", length = 20)
+	private String planDate;
+
+	@FieldName(name = "金额")
+	@Column(name = "PLAN_MONEY", precision = 22, scale = 2)
+	private BigDecimal planMoney;
+
+	@FieldName(name = "付款对象")
+	@Column(name = "PAY_OBJ")
+	private String payObj;
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@FieldName(name="企划")
+	@JoinColumn(name="PLANNED")
+	private User planned;
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@FieldName(name="创建人")
+	@JoinColumn(name="ACCOUNTANT")
+	private User accountant;
+
+	@FieldName(name = "当前授信额度")
+	@Column(name="CREDIT_MONEY",precision=22,scale=2)
+	private BigDecimal creditMoney = BigDecimal.ZERO;
+	
+	@FieldName(name = "台数")
+	@Column(name="EQUIP_COUNT", length = 5)
+	private Integer equipcount = 0;
+	
+	@FieldName(name="备注")
+	@Column(name="FPNOTE")
+	private String   fpnote;
+	
+	//设置作废字段,默认为0-不作废,1-作废
+	@FieldName(name="是否作废")
+	@Column(name="INVALID",length=2)
+	private String invalid="0";
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@FieldName(name="创建人")
+	@JoinColumn(name="CREATOR_")
+	private User creator;
+
+	@FieldName(name = "创建时间")
+	@Column(name = "CREATE_DATE", length = 20)
+	private String createDate;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@FieldName(name = "修改人")
+	@JoinColumn(name = "MODIFICATOR_")
+	private User modificator;
+
+	@FieldName(name = "修改时间")
+	@Column(name = "MODIFY_DATE", length = 20)
+	private String modifyDate;
+
+	@FieldName(name = "导出状态, 0未导出，1导出")
+	@Column(name = "EXPORT_FLAG", length = 2, columnDefinition = "INT DEFAULT 0")
+	private Integer exportFlag = 0;
+
+	public String getId() {
+		return id;
+	}
+
+	public String getPaymentId() {
+		return paymentId;
+	}
+
+	public String getDocId() {
+		return docId;
+	}
+
+	public ContractInfo getContractId() {
+		return contractId;
+	}
+
+	public DictionaryData getFeeType() {
+		return feeType;
+	}
+
+	public String getPlanDate() {
+		return planDate;
+	}
+
+	public BigDecimal getPlanMoney() {
+		return planMoney;
+	}
+
+	public String getPayObj() {
+		return payObj;
+	}
+
+	public BigDecimal getCreditMoney() {
+		return creditMoney;
+	}
+
+	public String getFpnote() {
+		return fpnote;
+	}
+
+	public String getInvalid() {
+		return invalid;
+	}
+
+	public User getCreator() {
+		return creator;
+	}
+
+	public String getCreateDate() {
+		return createDate;
+	}
+
+	public User getModificator() {
+		return modificator;
+	}
+
+	public String getModifyDate() {
+		return modifyDate;
+	}
+
+	public Integer getExportFlag() {
+		return exportFlag;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	public void setPaymentId(String paymentId) {
+		this.paymentId = paymentId;
+	}
+
+	public void setDocId(String docId) {
+		this.docId = docId;
+	}
+
+	public void setContractId(ContractInfo contractId) {
+		this.contractId = contractId;
+	}
+
+	public void setFeeType(DictionaryData feeType) {
+		this.feeType = feeType;
+	}
+
+	public void setPlanDate(String planDate) {
+		this.planDate = planDate;
+	}
+
+	public void setPlanMoney(BigDecimal planMoney) {
+		this.planMoney = planMoney;
+	}
+
+	public void setPayObj(String payObj) {
+		this.payObj = payObj;
+	}
+
+	public void setCreditMoney(BigDecimal creditMoney) {
+		this.creditMoney = creditMoney;
+	}
+
+	public void setFpnote(String fpnote) {
+		this.fpnote = fpnote;
+	}
+
+	public void setInvalid(String invalid) {
+		this.invalid = invalid;
+	}
+
+	public void setCreator(User creator) {
+		this.creator = creator;
+	}
+
+	public void setCreateDate(String createDate) {
+		this.createDate = createDate;
+	}
+
+	public void setModificator(User modificator) {
+		this.modificator = modificator;
+	}
+
+	public void setModifyDate(String modifyDate) {
+		this.modifyDate = modifyDate;
+	}
+
+	public void setExportFlag(Integer exportFlag) {
+		this.exportFlag = exportFlag;
+	}
+
+	public Integer getEquipcount() {
+		return equipcount;
+	}
+
+	public void setEquipcount(Integer equipcount) {
+		this.equipcount = equipcount;
+	}
+	
+	
+
+	@Override
+	public String toString() {
+		return "ContractFundFundPayCollect [id=" + id + ", paymentId=" + paymentId + ", docId=" + docId + ", contractId=" + contractId + ", feeType=" + feeType + ", planDate=" + planDate
+				+ ", planMoney=" + planMoney + ", payObj=" + payObj + ", creditMoney=" + creditMoney + ", equipcount=" + equipcount + ", fpnote=" + fpnote + ", invalid=" + invalid + ", creator="
+				+ creator + ", createDate=" + createDate + ", modificator=" + modificator + ", modifyDate=" + modifyDate + ", exportFlag=" + exportFlag + "]";
+	}
+
+	public BigDecimal getServiceFees() {
+		return serviceFees;
+	}
+
+	public String getClientBank() {
+		return clientBank;
+	}
+
+	public String getClientAccount() {
+		return clientAccount;
+	}
+
+	public String getClientAccnumber() {
+		return clientAccnumber;
+	}
+
+	public void setServiceFees(BigDecimal serviceFees) {
+		this.serviceFees = serviceFees;
+	}
+
+	public void setClientBank(String clientBank) {
+		this.clientBank = clientBank;
+	}
+
+	public void setClientAccount(String clientAccount) {
+		this.clientAccount = clientAccount;
+	}
+
+	public void setClientAccnumber(String clientAccnumber) {
+		this.clientAccnumber = clientAccnumber;
+	}
+
+	public User getPlanned() {
+		return planned;
+	}
+
+	public User getAccountant() {
+		return accountant;
+	}
+
+	public void setPlanned(User planned) {
+		this.planned = planned;
+	}
+
+	public void setAccountant(User accountant) {
+		this.accountant = accountant;
+	}
+	
+}
+ 

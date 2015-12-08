@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+合同借阅，加上判断为有归档合同的合同
+
+-->
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+     <alldb>
+      <table_sql> 
+	        <![CDATA[
+	          SELECT 
+              CI.ID  AS id,
+              CI.CONTRACT_ID contractid,
+              CI.CONTRACT_NUMBER contractnumber,
+              DICT.NAME_ custclass,
+              DICT2.NAME_ area,
+              CUST2.CUST_NAME as dealer,
+              CF.CUST_NAME custname,
+              CF.ID custid
+             
+              FROM CONTRACT_INFO CI 
+              LEFT JOIN CUST_INFO CF ON CI.CUST_ID=CF.ID
+              LEFT JOIN T_DICTS_DATAS DICT ON DICT.ID_=CF.CUST_CLASS 
+              LEFT JOIN CUST_INFO CUST2 ON CI.CUST_DEALER=CUST2.ID
+              LEFT JOIN CUST_INFO_DEALER CID ON CUST2.ID=CID.CUST_ID
+              LEFT JOIN T_DICTS_DATAS DICT2 ON DICT2.ID_=CID.OWNER_DISTRICT
+	          WHERE 1=1
+	          AND CF.CUST_CLASS <> 'CUST_INFO_DEALER' 
+	          /~currentDealerCustInfoId: AND CI.CUST_DEALER = '{currentDealerCustInfoId}'~/
+				 /~CONTRACT_STATUS_LessThan:  and CI.CONTRACT_STATUS < '{CONTRACT_STATUS_LessThan}'~/
+	         	 /~CONTRACT_STATUS_GreaterThan:  and CI.CONTRACT_STATUS > '{CONTRACT_STATUS_GreaterThan}'~/
+				 
+				 /~contractid: AND CI.CONTRACT_ID like '%{contractid}%'~/
+			     /~custname: AND CF.CUST_NAME like '%{custname}%'~/
+			     /~contractnumber: AND CI.CONTRACT_NUMBER  like '%{contractnumber}%'~/
+			     /~dealer: AND CUST2.CUST_NAME   like '%{dealer}%'~/
+			 ]]> 
+	  </table_sql>
+	   </alldb>
+      <dataSource>dataSource</dataSource>
+      <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

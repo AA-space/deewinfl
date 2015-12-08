@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+项目层的清单列表
+/~queryText://like全局搜索
+/~WORK_FLAG://判断是否在流程中
+/~user_id://传当前登录用户id 得到本账号挂名的经销商下面的自然人和法人 ；为经销商赋权限
+
+-->
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+     <alldb>
+      <table_sql> 
+	        <![CDATA[
+				select 
+				tab.id id
+				,tab.cust_id custid
+				,dict1.code_ businesstype
+				,dict2.code_   typecode
+				,cust.cust_name custname
+				,cust2.cust_name dealer
+				,tab.project_name projectname
+				,tab.contract_number contractnumber
+				,tab.proj_id projid
+				from  proj_info tab
+				right join 
+				(
+				select  i.id id,i.cust_id cust_id,i.cust_dealer cust_dealer
+				from  proj_info i
+				where i.id not in(
+				select  p.id  from  proj_info  p where p.id  in(select proj_id from contract_info )
+				)
+				and proj_status='11'
+				)tab2  on tab.id=tab2.id
+				left join cust_info cust on tab.cust_id=cust.id
+				left join cust_info cust2 on tab.cust_dealer=cust2.id
+				left join t_dicts_datas dict1 on tab.business_type=dict1.id_
+				left join t_dicts_datas dict2 on tab.business_mode=dict2.id_
+				where 1=1
+				and tab.proj_status<>'101'
+				/~projid: and tab.proj_id  like '%{projid}%'  ~/
+				/~custname: and cust.cust_name like '%{custname}%'  ~/
+				/~dealer: and cust2.cust_name like '%{dealer}%'  ~/
+				/~projectname: and tab.project_name  like '%{projectname}%'  ~/
+				/~contractnumber: and tab.contract_number   like '%{contractnumber}%'  ~/
+			 ]]> 
+	  </table_sql>
+	   </alldb>
+      <dataSource>dataSource</dataSource>
+      <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

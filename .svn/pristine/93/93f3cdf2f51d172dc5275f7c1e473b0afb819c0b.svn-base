@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<module-info>
+	<entity id="com.business.entity.customer.CustomerInfoCompanyAccount" name="区域信息" dataUrl="CustomerInfoCompanyAccount.action">
+	</entity>
+	<entity id="com.business.entity.customer.CustomerInfoCompanyAccount" name="区域信息" dataUrl="house/areainfo.action" type="findById">
+	</entity>
+	<entity id="com.business.entity.customer.CustomerInfoCompanyAccount" name="添加区域信息" dataUrl="house/areainfo.action"  groupStyle="entityTest" type="updata">
+	</entity>
+	<entity id="com.business.entity.customer.CustomerInfoCompanyAccount" name="xxxx" dataUrl="house/areainfo.action" type="fuzzy">
+	</entity>
+	<entity id="com.business.entity.customer.CustomerInfoCompanyAccount"  type="add" typeModel="openNewWindow" groupStyle="span4" >
+		<columns id="custInfo">
+			<columns id="id" type="hidden"/>
+		</columns>
+	</entity>
+</module-info>

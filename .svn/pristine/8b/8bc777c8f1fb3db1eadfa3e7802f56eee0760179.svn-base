@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+     <alldb>
+      <table_sql> 
+	        <![CDATA[
+			 SELECT  P.ID as idold ,
+			  P.DICT3.NAME_ as equipclassnameold,
+              P.DICT2.NAME_ as equiptypenameold,
+              p.model_ as modelnameold,
+			    
+			  p.EQIP_ID as eqipidold ,
+			  p.EQIP_NAME as eqipnameold,
+              p.BRAND_ as brandold,
+              p.EQUIP_PLACE as equipplaceold,
+              P.DICT2.NAME_ as cartypeidold,
+              p.DICT2.ID_ as cartypeold,
+              P.EQUIP_CONTRACT_NUM as equipcontractnumold,
+              P.CHASSIS_NUM as chassisnumold,
+              P.CHASSIS_NUMBER as  chassiisnumberold,
+              P.MODEL_ as modelold,
+              P.GARAGE_DATE as garagedateold,
+              P.SALE_DATE as saledateold,
+              p.EQUIP_NUM as equipnumold , 
+              P.PURCHASE_PRICE as purchasepriceold,
+              P.SALE_PRICE as salepriceold,
+              P.SALE_PRICE-P.PURCHASE_PRICE as differential_swapold,
+              P.PURCHASE_TAX as purchasetaxold,
+              P.INSURE_MONEY as insuremoneyold,
+              P.LEASING_MONEY as leasingmoneyold,
+              p.DICT.NAME_ as devicetypeidold , 
+              p.DICT.ID_ as deviceTypeold,
+              p.TOTAL as totalold,
+              p.NOWTOTAL as nowtotalold , 
+              CI.CUST_NAME AS vndridold,
+              p.VNDR as vndrold,
+              CI2.CUST_NAME as manufactureridold ,
+              p.manufacturer as manufacturerold,
+              EQUIP_DELIVERY_PLACE as equipdeliveryplaceold , 
+              EQUIP_DELIVERY_DATE as equipdeliverydateold , 
+              CENOTE as cenoteold
+              FROM CONTRACT_EQUIP P
+			   LEFT JOIN CUST_INFO CI
+			     ON P.VNDR = CI.ID
+			   LEFT JOIN CUST_INFO CI2
+			     ON P.MANUFACTURER = CI2.ID
+			   LEFT JOIN CUST_INFO CI3
+			     ON P.AGENT = CI2.ID
+			   LEFT JOIN T_DICTS_DATAS DICT
+			     ON P.DEVICE_TYPE = DICT.ID_
+			     LEFT JOIN T_DICTS_DATAS DICT2 ON P.EQUIP_TYPE=DICT2.ID_
+				 LEFT JOIN T_DICTS_DATAS DICT3 ON P.EQUIP_CLASS=DICT3.ID_
+               WHERE P.CONTRACT_ID = '{contract_id}'
+			 ]]> 
+	  </table_sql>
+	   </alldb>
+      <dataSource>dataSource</dataSource>
+	  <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

@@ -1,0 +1,86 @@
+package com.business.action.leasing.contract.dealercost;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+
+import org.codehaus.jackson.map.ObjectMapper;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.springframework.stereotype.Component;
+
+import com.business.action.JbpmBaseAction;
+import com.business.entity.JBPMWorkflowHistoryInfo;
+import com.business.entity.contract.equip.gps.GPSInfo;
+import com.business.entity.cust.CustInfo;
+import com.business.entity.dealer.CustInfoDealer;
+import com.business.exception.BusinessException;
+import com.business.service.BaseService;
+import com.kernal.annotation.WorkflowAction;
+ 
+
+ 
+@WorkflowAction(name = "dealerCostEndAction", description = "流程结束动作", workflowName = "GPS费用核对")
+@Component(value = "dealerCostEndAction")
+public class DealerCostEndAction implements JbpmBaseAction {
+	@Resource(name = "baseService")
+	private BaseService baseService;
+	
+	@Override
+	public void end(HttpServletRequest request, Map<String, String> variablesMap,JBPMWorkflowHistoryInfo jbpmWorkflowHistoryInfo) throws Exception { 
+		
+		String json_proj_gps_str = variablesMap.get("json_proj_gps_str");
+		//this.tableService.updateOneToManyCollections(contractInfo, null, GPSInfo.class, "contractId", json_proj_gps_str,null);
+		ObjectMapper jsonMapper = new ObjectMapper(); 
+		JSONArray jsonArray = new JSONArray(json_proj_gps_str);
+		List<GPSInfo> GPSInfoList=new ArrayList<GPSInfo>(); 
+		
+		Map<String,String> propertiesMap = new HashMap<String,String>();
+		propertiesMap.put("DictionaryData", "code");
+		for(int i=0;i<jsonArray.length();i++){
+			  JSONObject jsonObj = jsonArray.getJSONObject(i);
+			  jsonObj.remove("id");  
+			  Map[] newSetMaps = jsonMapper.readValue("["+jsonObj.toString()+"]", Map[].class);
+			  GPSInfo gpsInfo=new GPSInfo();
+			  this.baseService.copyAndOverrideExistedValueFromStringMap(newSetMaps[0], gpsInfo, propertiesMap);
+			  gpsInfo.setIsGPS("0");
+			  GPSInfoList.add(gpsInfo);
+		}
+		this.baseService.saveOrUpdateAllEntities(GPSInfoList);
+	}
+		
+	@Override
+	public String delete(HttpServletRequest request, Map<String, String> variablesMap,JBPMWorkflowHistoryInfo jbpmWorkflowHistoryInfo) throws Exception {
+		return null;
+	}
+
+	
+
+	@Override
+	public String save(HttpServletRequest request, Map<String, String> variablesMap,JBPMWorkflowHistoryInfo jbpmWorkflowHistoryInfo) throws Exception {
+		return null;
+	}
+
+	@Override
+	public void start(HttpServletRequest request, Map<String, String> variablesMap,JBPMWorkflowHistoryInfo jbpmWorkflowHistoryInfo) throws Exception {
+
+	}
+
+	
+	 /**
+	 * (non-Javadoc)
+	 * @see com.business.action.JbpmBaseAction#back(javax.servlet.http.HttpServletRequest, java.util.Map)
+	 **/
+	
+	@Override
+	public void back(HttpServletRequest request,
+			Map<String, String> variablesMap,JBPMWorkflowHistoryInfo jbpmWorkflowHistoryInfo) throws Exception {
+		// TODO Auto-generated method stub
+		
+	}
+
+}

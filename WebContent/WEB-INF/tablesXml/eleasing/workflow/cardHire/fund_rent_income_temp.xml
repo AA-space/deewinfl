@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+    <alldb>
+      <table_sql> 
+	        <![CDATA[
+			  SELECT CFRIT.ID,
+			       CFRIT.CONTRACT_ID CONTRACTID,
+			       CI.CONTRACT_ID  AS CONTRACT,
+                   CI.CONTRACT_NUMBER AS CONTRACTNUMBER,
+			       CFRIT.PLAN_ID PLANID,       
+			       CFRIT.PLAN_LIST PLANLIST,
+			       CFRIT.BALANCE_MODE BALANCEMODE,
+			       DICT1.NAME_ BALANCEMODENAME,       
+			       CFRIT.HIRE_DATE HIREDATE,
+			       CFRIT.RENT,
+			       CFRIT.CORPUS,
+			       CFRIT.INTEREST,
+			       CFRIT.PENALTY,
+			       CFRIT.ACCOUNTING_DATE ACCOUNTINGDATE,
+			       CFRIT.OWN_BANK OWNBANK,
+			       CFRIT.OWN_ACCOUNT OWNACCOUNT,
+			       CFRIT.HIRE_OBJECT HIREOBJECT,
+			       CFRIT.HIRE_BANK HIREBANK,
+			       CFRIT.HIRE_NUMBER HIRENUMBER
+			       
+			  FROM CONTRACT_FUND_RENT_INCOME_TEMP CFRIT
+			  LEFT JOIN T_DICTS_DATAS DICT1 ON (CFRIT.BALANCE_MODE=DICT1.ID_)
+			  left join contract_info ci on CFRIT.CONTRACT_ID=CI.ID
+
+			  WHERE 1=1
+			   /~fileid: AND CFRIT.UP_ID = '{fileid}'~/
+			   /~docid: AND CFRIT.DOC_ID = '{docid}'~/
+			 ]]> 
+			 </table_sql>
+	  </alldb>
+      <dataSource>dataSource</dataSource>
+      <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

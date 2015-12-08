@@ -1,0 +1,180 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ page import="com.kernal.utils.FileUtil,com.kernal.utils.WebUtil" %>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>抵扣明细导出</title>
+    <!--css sheet-->
+	<link href="${pageContext.request.contextPath}/css/dtree/dtree.css" rel="stylesheet" type="text/css">
+	<link href="${pageContext.request.contextPath}/css/jquery-easyui/easyui.css" rel="stylesheet" type="text/css">
+	<link href="${pageContext.request.contextPath}/css/jquery-easyui/icon.css" rel="stylesheet" type="text/css">
+	<link href="${pageContext.request.contextPath}/css/tracywindy/tracywindy.css" rel="stylesheet" type="text/css">
+	<link href="${pageContext.request.contextPath}/css/tracywindy/button.css" rel="stylesheet" type="text/css">
+	<link href="${pageContext.request.contextPath}/css/tracywindy/workFlowUtil.css" rel="stylesheet" type="text/css">
+	<!--javascript libray-->
+	<script type="text/javascript" src="${pageContext.request.contextPath}/js/tracywindy/workFlowUtil.js"></script>
+	<script type="text/javascript" src="${pageContext.request.contextPath}/js/tracywindy/tracywindyUtils.js"></script>
+	<script type="text/javascript" src="${pageContext.request.contextPath}/js/tracywindy/tracywindyJsonUtil.js"></script>
+	<script type="text/javascript" src="${pageContext.request.contextPath}/js/tracywindy/tracywindyAjax.js"></script>
+	<script type="text/javascript" src="${pageContext.request.contextPath}/js/jquery/jquery.min.js"></script>
+	<script type="text/javascript" src="${pageContext.request.contextPath}/js/jquery/jquery.easyui.min.js"></script>
+	<script type="text/javascript" src="${pageContext.request.contextPath}/js/jquery/easyui-lang-zh_CN.js"></script>
+	<script type="text/javascript" src="${pageContext.request.contextPath}/js/tracywindy/tracywindyLoadMask.js"></script>
+	<script type="text/javascript" src="${pageContext.request.contextPath}/js/tracywindy/tracywindyTable.js"></script>
+	<script type="text/javascript" src="${pageContext.request.contextPath}/js/tracywindy/tracywindyComboBox.js"></script>
+	<script type="text/javascript" src="${pageContext.request.contextPath}/js/tracywindy/tracywindySerializeFormToJsonObject.js"></script>
+	<script type="text/javascript" src="${pageContext.request.contextPath}/js/my97DatePicker/WdatePicker.js"></script>
+	<script type="text/javascript" src="${pageContext.request.contextPath}/js/validator.js"></script>
+	<script type="text/javascript" src="${pageContext.request.contextPath}/js/tracywindy/tracywindyOperationTable.js"></script>
+	<script type="text/javascript" src="${pageContext.request.contextPath}/js/tracywindy/tracywindyAjax.js"></script>
+	<style type="text/css">
+	   html,body{
+	     overflow:hidden;
+	   }
+	</style>
+<script type="text/javascript">
+    function importEbankCallBack(message){
+        alert(message);
+    	window.currentImportExcelLoadMask.hide();
+    	var table = getTracywindyObject("id_table");
+    	table.reload();
+    }
+    var constantFlagTable = "bankdownlist";
+    var ebankUploadUrl="";
+    var ebankAttachUrl="";
+	var pageWidth  = document.documentElement.clientWidth-2;
+	var pageHeight = document.documentElement.clientHeight-2;
+	
+	jQuery(function(){
+   	 var tableebank = new tracywindyOperationTable({
+
+   		 tableComment:'[抵扣明细导出]',
+   		 constantFlagTable:'FundforRent',
+   		 windowTop:20,
+   	     border:true,
+         renderTo:'id_tableContainer',
+         title:'抵扣明细导出',
+         width:parseInt("${param.tableWidth}")||pageWidth,
+         height:parseInt("${param.tableHeight}")||pageHeight,
+         id:'id_table',
+         xmlFileName:'/eleasing/jsp/fund_exprot_for_rent/dedulistmodify.xml',
+         loadMode:'ajax',
+         isPage:true,
+         isExcel:true,
+         isFit:true,
+         //checkType:'checkbox',
+         operButtons:'',
+         tools:[
+			{
+			 iconCls:'icon-update',
+			 html:'<font color="red">退回</font>',
+				handler : function(table) {
+					debugger;
+				    var operAction = "updateFundForRentManager";
+					var checkedRowDatas = table.getCheckedRowDatas();
+					var currentLoadMask = null;
+				    var params = {};
+				    var tempIdArr = [];
+				    for(var i = 0;i<checkedRowDatas.length;i++){
+						var checkedRowdata = checkedRowDatas[i];
+						var id = checkedRowdata.id;
+						tempIdArr.push(id);
+					}
+					params["ids"] = tempIdArr.join(",");
+					if(0 == checkedRowDatas.length){
+						alert("请选择要提交的记录！！");
+						return false;
+					}
+					if(!window.confirm(("确定提交当前"+checkedRowDatas.length+"条记录么？"))) return;
+					var loadMaskMsg="正在提交数据   请稍后... ";
+					var url=getRootPath()+"/acl/"+operAction+".action";
+					currentLoadMask = new tracywindyLoadMask(document.body,loadMaskMsg);
+					currentLoadMask.show();
+					ajaxRequest({
+				        url:url,
+				        params:params,
+				        timeout:30*1000,
+				        success:function(res){//孙传良 修改  显示出action返回值
+					   		res=res.responseText;
+					   		res=res.replace(/(^\s+)|(\s+$)/g, ""); 
+				     	    if(res!=''){
+					    	 	alert(res);
+				     	    }else{
+				     	    	alert("提交成功！！");
+				     	    }
+				            currentLoadMask.hide();
+				            table.reload();
+				        }
+				   });
+				}
+			 },
+        	 {
+         	    iconCls:'icon-update',
+         	    html:'<font color="red">导出抵扣明细</font>',
+         		handler : function(table) {
+        	    	var url="/leasing/template/createFileByTemplateClass.action";
+        	    	var fileparames={url:url,dateInitMethod:'totalCredit', sqlDataCallback:'deduDetailListDataCallback',title:"导出",twoClassify:'wordtempletypetwo.201511',returnType:'file',modelname:'dedudetaillist'};
+        	        
+        	        fileparames["export.title"] = "111车款/综合服务费抵扣逾期租金明细";
+        	        fileparames.invalid = "'已提交'";
+        	        attachmentDown(fileparames); 
+         		}
+         	 }
+        	 ],
+         columns:[
+                    {header:'id',name:'id',hidden:true},
+		            {header:'经销商',name:'cust_name',queryConfig:{}},
+		            {header:'账号',name:'client_accnumber'},
+		            {header:'账户名称',name:'client_account'},
+		            {header:'开户行',name:'client_bank'},
+		            {header:'台数',name:'equip_count'},
+		            {header:'付款时间',name:'plan_date'},
+		            {header:'现汇金额',name:'plan_money'},
+		            {header:'抵扣金额',name:'dedu_money'},
+		            {header:'状态',name:'invalid',type:'combobox'
+// 						queryConfig:{
+// 						colSpan:2,
+// 						loadMode:'local',
+// 						datas:[{title:'未提交',name:"'未提交'"},{title:'已提交',name:"'已提交'"}],
+// 			            displayField:'title',
+// 			            valueField:'name'
+// 						}
+		            }
+	        ],
+	        params:{
+	        	invalid : "'已提交'"
+		   }
+   	 });
+   });
+
+</script>
+</head>
+<body>
+    <div id="id_tableContainer"></div>
+	<div id="id_detailInfoWindowContainer" title="维护抵扣租金信息" style="display: none; width: 800px; height: 300px">
+		<center>
+			<form id="id_detailInfoForm">
+				<table style="width: 90%">
+					<tr style="display: none">
+						<td><input name="id" type="hidden" value="" /></td>
+					</tr>
+					<tr>
+						<td class="input_label_desc" align="left">经销商:</td>
+						<td><input name="cust_name" class="td-content-input" readOnly label="经销商" maxB="50" /> <span class="content-required">*</span></td>
+						<td class="input_label_desc" align="left">抵扣金额:</td>
+						<td class="td-content"><input type="text" name="dedu_money" class="td-content-input" require="true" label="抵扣金额" dataType="Money" /><span class="content-required">*</span></td>
+					</tr>
+				
+					<tr class="content-separator">
+						<td colspan='4'><a style="margin-left: 20px;" href="javascript:void(0);" class="btn btn-primary" onclick='getTracywindyObject("id_table").operationTable();'><span>确定</span></a> <a
+							style="margin-left: 20px;" href="javascript:void(0);" class="btn btn-primary" onclick='jQuery("#id_detailInfoWindowContainer").window("close");'
+						><span>取消</span></a></td>
+					</tr>
+				</table>
+			</form>
+		</center>
+	</div>
+</body>
+</html>

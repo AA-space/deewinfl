@@ -1,0 +1,296 @@
+package com.business.action.leasing.contract.terminate;
+
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
+
+import com.business.action.JbpmBaseAction;
+import com.business.daoImpl.AbstractBaseDaoImpl;
+import com.business.entity.DictionaryData;
+import com.business.entity.JBPMWorkflowHistoryInfo;
+import com.business.entity.User;
+import com.business.entity.base.WorkFlowFlag;
+import com.business.entity.contract.ContractInfo;
+import com.business.entity.contract.doc.ContractDocSendInfo;
+import com.business.entity.contract.equip.ContractEquip;
+import com.business.entity.contract.fund.ContractFundFundCharge;
+import com.business.entity.contract.fund.ContractFundFundPlan;
+import com.business.entity.contract.reckon.fund.FundRentAdjust;
+import com.business.service.TableService;
+import com.business.service.reckon.ContractFundRentDataToHisService;
+import com.business.service.vouchersFactory.ContractTerminateService;
+import com.google.common.collect.Lists;
+import com.kernal.annotation.WorkflowAction;
+import com.kernal.utils.DateUtil;
+
+@WorkflowAction(name = "contractTerminateEndAction", description = "流程结束动作", workflowName = "合同中途终止流程")
+@Component(value = "contractTerminateEndAction")
+public class ContractTerminateEndAction  implements JbpmBaseAction {
+	@Resource(name = "tableService")
+	private TableService tableService;
+	@Resource(name="contractTerminateService")
+	private ContractTerminateService contractTerminateService;
+	
+	@Resource(name = "contractFundRentDataToHisService")
+	private ContractFundRentDataToHisService contractFundRentDataToHisService;
+	private static Log log = LogFactory.getLog(AbstractBaseDaoImpl.class);
+	@Override
+	public String delete(HttpServletRequest request, Map<String, String> variablesMap,JBPMWorkflowHistoryInfo jbpmWorkflowHistoryInfo) throws Exception {
+		return null;
+	}
+	@Override
+	public void end(HttpServletRequest request, Map<String, String> variablesMap,JBPMWorkflowHistoryInfo jbpmWorkflowHistoryInfo) throws Exception {
+		/** 流程冲突第三步-结束 */
+		if (StringUtils.isNotEmpty(variablesMap.get("workFlowFlag"))) {
+			WorkFlowFlag w = this.tableService.findEntityByID(WorkFlowFlag.class, variablesMap.get("workFlowFlag"));
+			this.tableService.removeEntity(w);
+		}
+		/** 流程冲突第三步-结束 */
+		
+		String  contractid=variablesMap.get("contract_id");
+		String docId=jbpmWorkflowHistoryInfo.getHistoryProcessInstanceImpl().getDbid()+"";
+		FundRentAdjust fundRentAdjust = new FundRentAdjust();
+		fundRentAdjust = (FundRentAdjust) this.tableService.copyAndOverrideExistedValueFromStringMap(variablesMap, fundRentAdjust,null,"fund_rent_adjust");
+		this.tableService.saveEntity(fundRentAdjust);
+		contractFundRentDataToHisService.saveContractFundRentDataToHis(contractid, docId, "his_contract_end", variablesMap, "json_fund_rent_plan_str");
+		
+		//fund_rent_adjust.deductible
+		/**
+		 * 需求：
+		 * 需要添加抵扣保证金信息
+		 */
+		ContractFundFundCharge cffc = new ContractFundFundCharge();
+		variablesMap.get("contract_info");
+		ContractInfo cinfo = this.tableService.findEntityByID(ContractInfo.class, contractid);
+		// 4.保存租赁物明细
+		//数据字典通过name属性匹配
+		System.out.println(11);
+		Map<String,String> dictDataClassMapping = new HashMap<String,String>();
+		dictDataClassMapping.put("DictionaryData", "code");
+		String jsonEquipsString = variablesMap.get("json_proj_equip_str");
+		this.tableService.updateOneToManyCollections(cinfo, "contractEquips", ContractEquip.class, "contractId", jsonEquipsString,dictDataClassMapping);
+				
+		if(cinfo!=null){
+					System.out.println(variablesMap);
+					cffc.setContractId(cinfo);
+					cffc.setChargeList(1);
+					//结算方式 电汇
+					DictionaryData dict_PayFund6       = this.getDictName("PayFund6");
+					DictionaryData dict_currency_type1 = this.getDictName("currency_type1");
+					//费用类型
+					DictionaryData dict_feetype2       = this.getDictName("feetype2");
+					//收付类型
+					DictionaryData dict_pay_type_out       = this.getDictName("pay_type_out");
+					cffc.setFeeType(dict_feetype2);
+					cffc.setSettleMethod(dict_PayFund6);
+					cffc.setFactDate(DateUtil.getSystemDate());
+					//数字字符串 
+					String StrBd = variablesMap.get("fund_rent_adjust.currentcautionmoney"); 
+					//构造以字符串内容为值的BigDecimal类型的变量bd 
+					BigDecimal bd=new BigDecimal(StrBd); 
+					cffc.setFactMoney(bd);
+					cffc.setCurrency(dict_currency_type1);
+					cffc.setFactObject(cinfo.getCustId().getCustName());
+					cffc.setPayType(dict_pay_type_out);
+		}
+		//this.tableService.saveEntity(cffc);
+		
+		//提前还款
+		BigDecimal corpusoverage=BigDecimal.ZERO;
+		BigDecimal interestover=BigDecimal.ZERO;
+		BigDecimal rentover=BigDecimal.ZERO;
+		//违约金
+		BigDecimal penal=BigDecimal.ZERO;
+		
+		/*剩余利息 = 租金计划的利息 - 买断后页面算出的利息 */
+		String advancerate = variablesMap.get("fund_rent_adjust.advancerate"); //结清比例为100%
+		String hqlstr = "SELECT sum(interest) interest,sum(corpus) corpus FROM CONTRACT_FUND_RENT_PLAN  WHERE CONTRACT_ID ='"+contractid+"'";
+		Map<String, Object> map2 = this.tableService.queryListBySql(hqlstr).get(0);
+		String suminterest = map2.get("interest").toString();
+		String calinterest = variablesMap.get("calinterest");
+		interestover = new BigDecimal(suminterest).subtract(new BigDecimal(calinterest));
+		
+		/*剩余本金 = 剩余租金- 剩余利息*/
+		String caldate = variablesMap.get("caldate"); 
+		String calrent = variablesMap.get("calrent"); 
+		String hqlstr2 = "SELECT sum(rent) rent  FROM CONTRACT_FUND_RENT_PLAN  WHERE CONTRACT_ID ='"+contractid+"' and plan_date >'"+caldate+"'";
+		Map<String, Object> map3 = this.tableService.queryListBySql(hqlstr2).get(0);
+		String rent = map3.get("rent").toString();
+		rentover= new BigDecimal(rent).subtract( new BigDecimal(calrent) ).setScale(2, BigDecimal.ROUND_HALF_UP);
+		
+		if(!advancerate.equals("100")){//非100%结清 的情况
+			/*非100%结清 的情况 部分买断  剩余本金 = 剩余租金 -剩余利息 */
+			corpusoverage = rentover.subtract(interestover).setScale(2, BigDecimal.ROUND_HALF_UP);
+		}else{//全部结清
+			corpusoverage = new BigDecimal(variablesMap.get("fund_rent_adjust.corpusoverage")).setScale(2, BigDecimal.ROUND_HALF_UP);
+			rentover= corpusoverage.add(interestover);
+		}
+		
+		HashMap<String,Object> map = new HashMap<String,Object>();
+		map.put("corpusoverage", corpusoverage);
+		map.put("interestover", interestover);
+		map.put("rentover", rentover);
+		
+		penal=new BigDecimal(variablesMap.get("fund_rent_adjust.handlingcharge")).setScale(2, BigDecimal.ROUND_HALF_UP);
+		
+		//2014-09-16 增加违约金(违约手续费)的资金计划
+		if(penal != null){
+			ContractFundFundPlan cplan = new ContractFundFundPlan();
+			//流程编号
+			cplan.setDocId(docId);
+			//收付编号
+			cplan.setPaymentId("1");
+			//合同编号
+			cplan.setContractId(cinfo);
+			//费用类型
+			DictionaryData dict_feetype2       = this.getDictName("feetype13");
+			//收付类型
+			DictionaryData dict_pay_type_out       = this.getDictName("pay_type_in");
+			cplan.setFeeType(dict_feetype2);
+			//计划日期   DateUtil.getSystemDate()
+			cplan.setPlanDate(variablesMap.get("fund_rent_adjust.paydayadjust"));//取约定终止日    
+			//计划金额
+			cplan.setPlanMoney(penal);
+			//付款对象
+			cplan.setPayObj(cinfo.getCustId().getCustName());
+			//收付类型
+			cplan.setPayType(dict_pay_type_out);
+			//流程状态  默认0
+			cplan.setWorkFlag(0);
+			
+			this.tableService.saveEntity(cplan);
+		}
+		//docAction(request,variablesMap);
+		
+		/*
+		 * 生成凭证：核销+客户+提前还款
+		 * 提前还款大于0生成
+		 * */
+		if(corpusoverage.compareTo(BigDecimal.ZERO)==1){
+//			contractTerminateService.createVoucherPrepayment(cinfo, sum);
+			contractTerminateService.createVoucherPrepayment(cinfo, map);
+		}
+		
+		/*
+		 * 生成凭证：确认提前还款+客户+违约金
+		 * 违约金大于0生成
+		 * */
+		if(penal.compareTo(BigDecimal.ZERO)==1){
+			contractTerminateService.createVoucherPenalMoney(cinfo, penal);
+		}
+		
+		/*
+		 * 生成凭证：确认+客户+留购价收入
+		 * 留购价
+		 * */
+		/*判断是全部买断留购价生成凭证*/
+		String advancestop = variablesMap.get("advancestop");//是否标记所以租赁物为买断状态
+		BigDecimal NominalPrice=cinfo.getContractCondition().getNominalPrice();//取留购价
+		if(NominalPrice.compareTo(BigDecimal.ZERO)==1 && advancestop.equals("true") && advancerate.equals("100") ){
+			contractTerminateService.createVoucherNominalPrice(cinfo, NominalPrice);
+		}
+	}
+	public DictionaryData getDictName(String code) throws Exception{
+		List<DictionaryData> dict = this.tableService.findResultsByHSQL("from DictionaryData where code=?", code);
+		DictionaryData newDict = null;
+		if(!dict.isEmpty()){
+			newDict = dict.get(0);
+		}
+		return newDict;
+	}
+	public void docAction(HttpServletRequest request,Map<String, String> variablesMap)
+	{
+		User user = null;
+		try {
+			user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+		List<ContractDocSendInfo> list = Lists.newArrayList();
+		
+		String json_contract_doc_send_info_str = request.getParameter("json_reg_list_str");
+		JSONArray jsonArray = new JSONArray(json_contract_doc_send_info_str);
+		
+		String contractid = variablesMap.get("contract_id");
+		ContractInfo ci = this.tableService.findEntityByID(ContractInfo.class, contractid);
+		Map<String, Object> propertiesMap=new HashMap<String, Object>();
+		propertiesMap.put("contractID", ci);
+		List<ContractDocSendInfo> condoclist=this.tableService.findEntityByProperties(ContractDocSendInfo.class, propertiesMap);
+		System.out.println(condoclist.size());
+		this.tableService.removeAllEntites(condoclist);
+		this.tableService.updateFlush();
+		
+		for (int i = 0; i < jsonArray.length(); i++) {
+			JSONObject jsonObject = (JSONObject) jsonArray.opt(i);
+			ContractDocSendInfo si = new ContractDocSendInfo();
+			
+			si.setContractDate(jsonObject.optString("contractdate"));
+			si.setContractA(jsonObject.optString("contracta"));
+			si.setContractB(jsonObject.optString("contractb"));
+			//System.out.println(jsonObject.optString("contractid"));
+			
+			si.setContractID(ci);
+			si.setContractPerson(jsonObject.optString("contractperson"));
+			
+			
+			//DictionaryData dict = (DictionaryData) this.tableService.findEntityByID(DictionaryData.class, jsonObject.optString("docname"));
+			si.setDocName(jsonObject.optString("docname"));
+			//si.setDocName(dict);
+			si.setEquipInfo(jsonObject.optString("equipinfo"));
+			si.setSendNo(jsonObject.optString("sendno"));
+			si.setSendPart(jsonObject.optInt("sendpart"));
+			si.setDocPart(jsonObject.optInt("docpart"));
+			if ( jsonObject.has("maincount") && jsonObject.has("gcount") && jsonObject.has("sdy") )
+			{
+				si.setMaincount(jsonObject.optString("maincount"));
+				si.setGcount(jsonObject.optString("gcount"));
+				si.setSdy(jsonObject.optString("sdy"));
+			}
+			//String s = jsonObject.getString("id") ;
+			
+			if(StringUtils.isNotEmpty(jsonObject.optString("docnumber"))){
+				si.setDocNumber(jsonObject.optString("docnumber"));
+			}
+			
+			if(StringUtils.isNotEmpty(jsonObject.optString("id"))){
+				si.setId(jsonObject.optString("id"));
+				si.setModificator(user);
+				si.setModifyDate(DateUtil.getSystemDate());
+			}
+			si.setCreateDate(DateUtil.getSystemDate());
+			si.setCreator(user);
+			list.add(si);
+			this.tableService.saveOrUpdateAllEntities(list);
+			}
+		} 
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	@Override
+	public String save(HttpServletRequest request, Map<String, String> variablesMap,JBPMWorkflowHistoryInfo jbpmWorkflowHistoryInfo) throws Exception {
+		return null;
+	}
+	@Override
+	public void start(HttpServletRequest request, Map<String, String> variablesMap,JBPMWorkflowHistoryInfo jbpmWorkflowHistoryInfo) throws Exception {}
+	 /**
+	 * (non-Javadoc)
+	 * @see com.business.action.JbpmBaseAction#back(javax.servlet.http.HttpServletRequest, java.util.Map)
+	 **/
+	@Override
+	public void back(HttpServletRequest request,
+			Map<String, String> variablesMap,JBPMWorkflowHistoryInfo jbpmWorkflowHistoryInfo) throws Exception {
+		// TODO Auto-generated method stub
+		
+	}
+}

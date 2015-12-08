@@ -1,0 +1,93 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <!--租金回笼流程发起列表，添加时间查询-->
+  <table>
+    <data>
+     <alldb>
+      <table_sql> 
+	        <![CDATA[
+				 SELECT 
+	      		C.ID AS id,
+	      		C.CONTRACT_ID AS contractid,
+	      		C.CONTRACT_NUMBER   contractnumber,
+				C.CUST_ID AS custid,
+				C.PROJ_ID AS pid,
+				P.PROJ_ID AS  proj_id,
+				ci1.cust_name custname,
+				ci2.cust_name custdealer,
+				CI2.ID AS custdealerid,
+				C.PROJECT_NAME projname,
+				DICT.NAME_ AS projtype,
+				DICT2.NAME_ AS projsource,
+				DICT3.NAME_ AS projscale ,
+				DICT4.NAME_ AS industrytype,
+				DICT5.NAME_ AS  leasform ,
+				DICT6.NAME_ AS businesstype,
+				DICT7.NAME_ AS businessmode,
+				DICT8.NAME_ AS ownerdistrict,
+				'{palndate_end}' AS PALNDATE,
+				T.REALNAME_ AS projmanage,
+				need_rent.penalty as penalty,
+        		nvl(payrent1,0.0)-nvl(payrent2,0.0) as receivablerent
+        		 ,pln.rent yrent
+				 FROM CONTRACT_INFO C
+				 left join cust_info ci1 on ci1.id = c.cust_id
+				 left join cust_info ci2 on ci2.id = c.cust_dealer
+				 LEFT JOIN CUST_INFO_DEALER CD	ON CI2.ID = CD.CUST_ID
+				 LEFT JOIN T_DICTS_DATAS DICT ON C.PROJ_TYPE=DICT.ID_
+				 LEFT JOIN T_DICTS_DATAS DICT2 ON C.PROJ_SOURCE=DICT2.ID_
+				 LEFT JOIN T_DICTS_DATAS DICT3 ON C.PROJ_SCALE=DICT3.ID_
+				 LEFT JOIN T_DICTS_DATAS DICT4 ON C.INDUSTRY_TYPE=DICT4.ID_
+				 LEFT JOIN T_DICTS_DATAS DICT5 ON C.LEAS_FORM=DICT5.ID_
+				 LEFT JOIN T_DICTS_DATAS DICT6 ON C.BUSINESS_TYPE=DICT6.ID_
+				 LEFT JOIN T_DICTS_DATAS DICT7 ON C.BUSINESS_MODE=DICT7.ID_
+				 LEFT JOIN T_DICTS_DATAS DICT8 ON CD.OWNER_DISTRICT=DICT8.ID_
+				 LEFT JOIN T_USERS T ON C.PROJ_MANAGE=T.ID_
+				 LEFT JOIN PROJ_INFO P ON P.ID=C.PROJ_ID
+			left join 
+		         (
+		                select * from contract_fund_rent_plan pln where pln.rent_list=1
+		         )pln on c.id=pln.contract_id
+         left join (select nvl(sum(rent), 0.00) as payrent1 ,nvl(sum(penalty), 0.00) as penalty,rentplan.contract_id
+               from contract_fund_rent_plan rentplan
+                
+                 where 1=1
+                 /~palndate_start: AND PLAN_DATE >= '{palndate_start}'~/
+                 /~palndate_end: AND PLAN_DATE <= '{palndate_end}'~/
+              
+              group by rentplan.contract_id) need_rent
+              on need_rent.contract_id = c.id
+        left join (select rentincome.contract_id,
+                    nvl(sum(rentincome.rent), 0.00) + nvl(sum(rentincome.RENT_ADJUST), 0.00) as payrent2
+               from contract_fund_rent_plan rentplan 
+               left join  contract_fund_rent_income rentincome ON (rentplan.id=rentincome.plan_id)
+              where 1=1
+                 /~palndate_start: AND rentplan.PLAN_DATE >= '{palndate_start}'~/
+                 /~palndate_end: AND rentplan.PLAN_DATE <= '{palndate_end}'~/
+              group by rentincome.contract_id) has_rent
+        on has_rent.contract_id = c.id 
+        where 1=1
+        /~total:
+         		 /~CONTRACT_STATUS_LessThan:  and C.CONTRACT_STATUS < '{CONTRACT_STATUS_LessThan}'~/
+		         /~CONTRACT_STATUS_GreaterThan:  and C.CONTRACT_STATUS > '{CONTRACT_STATUS_GreaterThan}'~/
+		         /~hasMoney: and NVL(PAYRENT1, 0.0) - NVL(PAYRENT2, 0.0) >  0 ~/
+		  ~/
+		  
+				 /~dealer_id: and c.cust_dealer = '{dealer_id}'  ~/
+				 /~custname: and ci1.cust_name like '%{custname}%' ~/
+				 /~contractid: and C.CONTRACT_ID like '%{contractid}%' ~/
+				 /~contractnumber: and C.CONTRACT_NUMBER    like '%{contractnumber}%' ~/
+				 /~projname: and C.PROJECT_NAME like '%{projname}%' ~/
+				 /~projtype: and DICT.NAME_ = '{projtype}' ~/
+				 /~custdealer: and ci2.cust_name  like '%{custdealer}%' ~/
+			 ]]> 
+	  </table_sql>
+	   </alldb>
+      <dataSource>dataSource</dataSource>
+      <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

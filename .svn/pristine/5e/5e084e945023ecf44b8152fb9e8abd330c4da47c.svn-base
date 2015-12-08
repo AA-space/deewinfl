@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+     <alldb>
+      <table_sql> 
+	        <![CDATA[
+			
+			select pi.id id,
+			ci.cust_name seller,
+			cd.legal_representative sellerlegalperson,
+			cd.reg_addr sellerregisteraddr,
+			cd.mail_add selleraddr,
+			cd.post_code sellerpostcode,
+			cd.phone_ sellertel,
+			cd.fax_number  sellerfax,
+			cd.tax_acc selleraccnumber,
+			cd.tax_bank selleraccbank
+
+			from proj_info pi
+			left join cust_info ci on pi.cust_dealer=ci.id
+			left join cust_info_dealer cd on ci.id=cd.cust_id
+
+			where pi.id= '{proj_id}'
+
+			 ]]> 
+	  </table_sql>
+	   </alldb>
+      <dataSource>dataSource</dataSource>
+	  <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

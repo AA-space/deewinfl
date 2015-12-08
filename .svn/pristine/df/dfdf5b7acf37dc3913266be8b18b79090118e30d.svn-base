@@ -1,0 +1,340 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ page import="com.kernal.utils.FileUtil,com.kernal.utils.WebUtil" %>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<style type="text/css">
+	   html,body{
+	     overflow:hidden;
+	   }
+</style>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>客户信息 - 法人客户</title>
+    <!--css sheet-->
+	<link href="${pageContext.request.contextPath}/css/dtree/dtree.css" rel="stylesheet" type="text/css">
+	<link href="${pageContext.request.contextPath}/css/jquery-easyui/easyui.css" rel="stylesheet" type="text/css">
+	<link href="${pageContext.request.contextPath}/css/jquery-easyui/icon.css" rel="stylesheet" type="text/css">
+	<link href="${pageContext.request.contextPath}/css/tracywindy/tracywindy.css" rel="stylesheet" type="text/css">
+	<link href="${pageContext.request.contextPath}/css/tracywindy/button.css" rel="stylesheet" type="text/css">
+	<link href="${pageContext.request.contextPath}/css/tracywindy/workFlowUtil.css" rel="stylesheet" type="text/css">
+	<!--javascript libray-->
+	<script type="text/javascript" src="${pageContext.request.contextPath}/js/tracywindy/workFlowUtil.js"></script>
+	<script type="text/javascript" src="${pageContext.request.contextPath}/js/tracywindy/tracywindyUtils.js"></script>
+	<script type="text/javascript" src="${pageContext.request.contextPath}/js/tracywindy/tracywindyJsonUtil.js"></script>
+	<script type="text/javascript" src="${pageContext.request.contextPath}/js/tracywindy/tracywindyAjax.js"></script>
+	<script type="text/javascript" src="${pageContext.request.contextPath}/js/jquery/jquery.min.js"></script>
+	<script type="text/javascript" src="${pageContext.request.contextPath}/js/jquery/jquery.easyui.min.js"></script>
+	<script type="text/javascript" src="${pageContext.request.contextPath}/js/jquery/easyui-lang-zh_CN.js"></script>
+	<script type="text/javascript" src="${pageContext.request.contextPath}/js/tracywindy/tracywindyLoadMask.js"></script>
+	<script type="text/javascript" src="${pageContext.request.contextPath}/js/tracywindy/tracywindyTable.js"></script>
+	<script type="text/javascript" src="${pageContext.request.contextPath}/js/tracywindy/tracywindyComboBox.js"></script>
+	<script type="text/javascript" src="${pageContext.request.contextPath}/js/tracywindy/tracywindySerializeFormToJsonObject.js"></script>
+	<script type="text/javascript" src="${pageContext.request.contextPath}/js/my97DatePicker/WdatePicker.js"></script>
+	<script type="text/javascript" src="${pageContext.request.contextPath}/js/validator.js"></script>
+	<script type="text/javascript" src="${pageContext.request.contextPath}/js/tracywindy/tracywindyOperationTable.js"></script>
+	<script type="text/javascript" src="${pageContext.request.contextPath}/js/MustFillIn.js"></script>
+	<script type="text/javascript" src="${pageContext.request.contextPath}/js/custType.js"></script>
+</head>
+<body >
+<script language="javascript">
+var cust_id="<%= request.getParameter("cust_id")%>";
+window.currentLoadMask = new tracywindyLoadMask(document.body,"正在初始化 请稍等..."); 
+currentLoadMask.show();
+    function initCustInfo(cust_id){
+        var param={};
+        param.CUST_ID=cust_id;
+        param.xmlFileName='/eleasing/jsp/law_manage/law_info.xml';
+        param.loginuser = "${sessionScope['login_userid']}";
+    	ajaxRequest({
+		     url:'${pageContext.request.contextPath}/table/getTableData.action',
+		     method:'POST',
+		     success:function(res){
+			   
+	   		    var scustinfo=res.responseText;
+	   		    
+	   		    scustinfo=scustinfo.replace(/(^\s+)|(\s+$)/g, ""); 
+	   		    var cust=eval("("+scustinfo+")");
+	   		    var currentRowData=cust.datas[0];
+	   		    // var $form=$("#id_custForm form");
+	     		$("span").each(function(i, v){
+	   		    	 var $v = $(v);
+	   		    	var name = $v.attr("name");
+		   		    if(name && ("undefined"!=typeof(currentRowData[name.toLowerCase()]))){
+		   		    	$v.html(currentRowData[name.toLowerCase()]);
+		   		    }
+	   		     })
+	   		  var tempStr=currentRowData['provideassuretype'];
+		   		$("#collateraltype_TR1").hide();
+		   		$("#collateraltype_TR2").hide();
+		   		$("#pledgetype_TR1").hide();
+		   		$("#warrantertype_TR").hide();
+		   		if(tempStr!=""){
+		   			var checkLis=tempStr.split(",");
+		   			for(var i=0;i<checkLis.length;i++){
+		   				var temp=checkLis[i];
+		   				if(temp=="collateraltype"){
+			   				$("#collateraltype").html("<抵押方式>");
+		   					$("#collateraltype_TR1").show();
+		   					$("#collateraltype_TR2").show();
+		   				}
+		   				if(temp=="pledgetype"){
+		   					$("#pledgetype").html("<质押方式>");
+		   					 $("#pledgetype_TR1").show();
+		   				}
+		   				if(temp=="warrantertype"){
+		   					$("#warrantertype").html("<第三方保证>");
+		   					$("#warrantertype_TR").show();
+		   				}
+		   			}
+		   		}
+	   		 currentLoadMask.hide();
+		     },
+		     async:false,
+		     failure:function(res){
+		    	 currentLoadMask.hide();
+			     },
+		     params:param
+	 });
+    }	
+   </script>
+   <form>
+      <table style="width:100%;height:100%" class="fillTable">
+        <tr style="display:none"><td><input name="id"  type="hidden" value=""/><input name="custid" id="custid" type="hidden" value=""/></td></tr>
+	    <tr  class="tr-even">
+		   <td class="td-content-title">客户编号:</td>  
+		   <td class="td-content" colspan="3"><span name="custnumber"></span></td>
+		</tr>
+	    <tr class="tr-odd">
+		   <td class="td-content-title" style="width:20%">客户名称:</td>  
+		   <td class="td-content" style="width:30%"><span name="custname"></span></td>
+		   <td class="td-content-title" style="width:20%">所属经销商:</td>  
+		   <td class="td-content" style="width:30%"><span name="names"></span></td>
+	    </tr>
+	    <tr  class="tr-even">
+		   <td class="td-content-title">组织机构代码:</td>  
+		   <td class="td-content" nowrap="nowrap"><span name="orgcode"></span></td>
+		   <td class="td-content-title">客户规模:</td>  
+		   <td class="td-content"><span name="custscalename"></span></td>
+	    </tr>
+	    <tr  class="tr-odd">
+		   <td class="td-content-title">客户类别:</td>
+		   <td class="td-content" colspan="3"><span name="custtypename"></span></td>
+		</tr>
+	    <tr  class="tr-even">
+		   <td class="td-content-title">纳税人类别:</td>
+		   <td class="td-content"><span name="taxlevelname"></span></td>
+		   <td class="td-content-title">纳税人识别号/国税登记号:</td>  
+		   <td class="td-content"><span name="taxregcode"></span></td>
+	    </tr>
+		<tr  class="tr-odd">
+		   <td class="td-content-title">开户行:</td>  
+		   <td class="td-content"><span name="taxbank"></span></td>
+		   <td class="td-content-title">开户账号:</td>  
+		   <td class="td-content"><span name="taxacc"></span></td>
+	    </tr>
+	    <tr  class="tr-even">
+		   <td class="td-content-title">货款卡号:</td>  
+		   <td class="td-content"><span name="creditcard"></span></td>
+		   <td class="td-content-title">电话:</td>
+		   <td class="td-content"><span name="taxphone"></span></td>
+	    </tr>
+	    <tr class="tr-odd">
+		    <td class="td-content-title">是否已办企业管理:</td>  
+			<td class="td-content"><span name="iscompanymanagename"></span></td>
+			<td class="td-content-title">银行信用等级:</td>  
+			<td class="td-content"><span name="banklevelname"></span></td>
+		</tr>
+	    <tr  class="tr-even">
+			<td class="td-content-title">企业在职人数:  </td>  
+			<td class="td-content"><span name="enterpriseNumber"></span></td>
+			<td class="td-content-title">企业总人数:  </td>  
+			<td class="td-content"><span name="enterpriseTotal"></span></td>
+		</tr>
+	    <tr class="tr-odd">
+			<td class="td-content-title">年营业收入:</td>  
+			<td class="td-content"><span name="annualRevenue"></span></td>
+			<td class="td-content-title">净资产:</td>  
+			<td class="td-content"><span name="netassets"></span></td>
+	    </tr>
+	    <tr  class="tr-even">
+			<td class="td-content-title">客户内部行业:</td>  
+			 <td class="td-content"><span name="custkindname" ></span></td>
+			 <td class="td-content-title">客户所属行业门类:</td>  
+			 <td class="td-content"><span name="industryname"></span></td>
+		</tr>
+		<tr  class="tr-odd">
+			 <td class="td-content-title">客户所属行业大类:</td>  
+			 <td class="td-content"><span name="industrylevelbigname"></span></td>
+			 <td class="td-content-title">客户所属行业中类:  </td>  
+			 <td class="td-content"><span name="industrylevelmiddlename"></span></td>
+		</tr>
+		<tr  class="tr-even">
+			  <td class="td-content-title">客户所属行业小类:  </td>  
+			  <td class="td-content"><span name="industrylevelsmallname"></span></td>
+			  <td class="td-content-title">国家:</td>  
+			  <td class="td-content">中国</td>
+		</tr>
+		<tr  class="tr-odd">
+			  <td class="td-content-title">省份:</td>  
+			  <td class="td-content"><span name="provincename"></span></td>
+			  <td class="td-content-title">城市:</td>  
+			  <td class="td-content"><span name="cityname"></span></td>
+		</tr>
+		<tr  class="tr-even">
+			  <td class="td-content-title">区县:</td>  
+			  <td class="td-content" colspan="3"><span name="countyname"></span></td>
+		</tr>
+		<tr  class="tr-odd">
+			  <td class="td-content-title">企业性质:</td>  
+			  <td class="td-content" colspan="3"><span name="ownershipname"></span></td>
+		</tr>
+		<tr  class="tr-even">
+			  <td class="td-content-title">法人代表:</td>  
+			  <td class="td-content"><span name="legalrepresentative"></span></td>
+			  <td class="td-content-title">法人代表身份证号:</td>  
+			  <td class="td-content"><span name="idcardno"></span></td>
+		</tr>
+		<tr  class="tr-odd">
+			  <td class="td-content-title">手机:</td>  
+			  <td class="td-content"><span name="mobilenumber"></span></td>
+			  <td class="td-content-title">电话:</td>  
+			  <td class="td-content"><span name="phone"></span></td>
+		</tr>
+		<tr  class="tr-even">
+			  <td class="td-content-title">公司邮寄地址:</td>  
+			  <td class="td-content" colspan="3"><span name="mailadd"></span></td>
+		</tr>
+		<tr   class="tr-odd">
+			   <td class="td-content-title">邮编:</td>  
+			   <td class="td-content"><span name="postcode"></span></td>
+			   <td class="td-content-title">公司网址:  </td>  
+			   <td class="td-content"><span name="website"></span></td>
+		</tr>
+		<tr  class="tr-even">
+			   <td class="td-content-title">公司地址:</td>  
+			   <td class="td-content" colspan="3"><span name="postaddr"></span></td>
+		</tr>
+		<tr class="tr-odd">
+			   <td class="td-content-title">传真:</td>  
+			   <td class="td-content" colspan="3"><span name="faxnumber"></span></td>
+		</tr>
+		<tr  class="tr-even">
+			   <td class="td-content-title"><B>注册资本 </B> </td>  
+			   <td class="td-content-title"></td> 
+			   <td class="td-content-title"></td> 
+			   <td class="td-content-title"></td> 
+		</tr>
+		<tr   class="tr-odd">
+			   <td class="td-content-title">出资方式及金额(货币、实物等):</td>  
+			   <td class="td-content"><span name="investmentamoun"></span></td>
+			   <td class="td-content-title">注册登记机关:</td>  
+			   <td class="td-content"><span name="registrationauthority"></span></td>
+		</tr>
+		<tr  class="tr-even">
+			    <td class="td-content-title">认缴额:</td>  
+			    <td class="td-content"><span name="subscriptions"></span></td>
+			    <td class="td-content-title">登记注册号（营业执照号）: </td>  
+			    <td class="td-content"><span name="regnumber"></span></td>
+		</tr>
+		<tr   class="tr-odd">
+			    <td class="td-content-title">实缴额:  </td>  
+			    <td class="td-content"><span name="paidinamount"></span></td>
+             	<td class="td-content-title">成立时间:  </td>  
+			    <td class="td-content"><span name="fundtime"></span></td>
+		</tr>
+        <tr id="pledgetype_TR" class="tr-even">
+	    	<td class="td-content-title">可提供担保方式:</td>
+			<td class="td-content">
+	          	<b><span name="collateraltype" id="collateraltype"></span></b>&nbsp;
+	          	<b><span name="pledgetype" id="pledgetype"></span></b>&nbsp;
+	          	<b><span name="warrantertype" id="warrantertype"></span></b>&nbsp;
+          	</td>
+          	<td class="td-content-title"></td>
+    		<td class="td-content-title"></td>
+    	</tr>
+    	<tr id="collateraltype_TR1" class="tr-odd">
+    		<td class="td-content-title">抵押物品名称:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          	<td class="td-content">
+          		<span name="collateralname"></span>
+          	</td>
+          	<td class="td-content-title">有无估价文件:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  </td>  
+          	<td class="td-content">
+          		<span name="valuationfilename"></span>
+          	</td>
+    	</tr>
+    	<tr id="collateraltype_TR2"  class="tr-even">
+    		<td class="td-content-title">抵押物价值:</td>
+          	<td class="td-content">
+          		<span name="gagevalue"></span>
+          	</td>
+          	<td class="td-content-title"></td>
+    		<td class="td-content-title"></td>
+    	</tr>
+    	<tr id="pledgetype_TR1" class="tr-odd">
+    		<td class="td-content-title">质物名称:</td>
+          	<td class="td-content">
+          		<span name="pledgename"></span>
+          	</td>
+          	<td class="td-content-title">质物价值:  </td>  
+          	<td class="td-content">
+          		<span name="pledgevalue"></span>
+          	</td>
+    	</tr>
+    	<tr id="warrantertype_TR" class="tr-odd">
+   			<td class="td-content-title">保证人名称:</td>
+         	<td class="td-content">
+         		<span name="warrantername"></span>
+          	</td>
+			<td class="td-content-title"></td>
+	    	<td class="td-content-title"></td>
+    	</tr>
+		<tr  class="tr-even">
+			    <td class="td-content-title">注册地址 :</td>  
+				<td class="td-content" ><span name="taxregadd"></span> </td>
+				<td class="td-content-title"></td>
+				<td class="td-content-title"></td>
+		</tr>
+		<tr  class="tr-odd">
+			    <td class="td-content-title">经营方式 :</td>  
+			    <td class="td-content" colspan="3"><span name="bizmethod"></span></td>
+			    <td class="td-content-title"></td>
+				<td class="td-content-title"></td>
+		</tr>
+		<tr  class="tr-even">
+			    <td class="td-content-title">经营范围（主营）:</td>  
+			    <td class="td-content" colspan="3"><span name="bizscopeprimary"></span></td>
+		</tr>
+		<tr  class="tr-odd">
+			     <td class="td-content-title">经营范围（兼营） : </td>  
+			     <td class="td-content" colspan="3"><span name="bizscopesecondary"></span></td>
+		</tr>
+		<tr  class="tr-even">
+			     <td class="td-content-title">客户概况 : </td>  
+			     <td class="td-content" colspan="3"><span name="cimemo"></span></td>
+		</tr>
+		<tr  class="tr-odd">
+			     <td class="td-content-title">是否作废: </td>  
+			     <td class="td-content"><span name="invalidname"></span><input name="invalid" id="invalid"  label="是否作废 " class="td-content-readonly" readonly="readonly"  type="hidden" /></td>
+			     <td class="td-content-title">是否草稿: </td>  
+			     <td class="td-content"><span name="draftname"></span></td>
+		</tr>
+		<tr class="tr-even">
+			     <td class="td-content-title">登记人 :</td>  
+			     <td class="td-content"><span name="creatorname"></span></td>
+			     <td class="td-content-title">登记时间:</td>  
+			     <td class="td-content"><span name="createdate"></span></td>
+		</tr>
+		<tr  class="tr-odd">
+			     <td class="td-content-title">修改人 :</td>  
+			     <td class="td-content"><span name="modificatorname"></span></td>
+			     <td class="td-content-title">修改时间:</td>  
+			     <td class="td-content"><span name="modifydate"></span></td>
+		</tr>
+	</table>
+	</form>
+</body>
+<script>
+initCustInfo(cust_id);
+</script>
+</html>

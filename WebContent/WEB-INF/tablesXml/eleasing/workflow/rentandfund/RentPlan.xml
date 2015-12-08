@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+   租金计划，租金余额
+   contractid(合同号ID),rentlist(期次),plandate(计划日期),rent(租金),
+   corpus(本金),interest(利息),yearrate(利率),curcorpusincome(实收本金),
+   curinterestincome(实收利息),curinterestAdjustIncome(利息减免)
+   ,curpenaltyIncome(实收罚息),curpenaltyAdjustIncome(罚息减免),
+   curRentOverage(租金余额),curCorpusOverage(本金余额),curInterestOverage(利息余额)
+   ,penalty(应收罚息),penaltyOverage(罚息余额)
+ -->
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+     <alldb>  
+      <table_sql> 
+	        <![CDATA[
+	           select nvl(cfr.penaltyOverage,0)+nvl(cfr.curpenaltyIncome,0)+nvl(cfr.curpenaltyAdjustIncome,0) penalty,
+	              cfr.*  from (
+	              select cfp.id,cfp.contract_id contractid,rent_list rentlist,plan_date plandate,rent,corpus,interest,year_rate yearrate
+                  ,nvl(cf.factcorpus,0) curcorpusincome,nvl(cf.factinterest,0) curinterestincome,nvl(cf.factinterestadjust,0) curinterestAdjustIncome,
+                   nvl(cf.factpenalty,0) curpenaltyIncome,nvl(cf.factpenaltyadjust,0) curpenaltyAdjustIncome
+                   ,(cfp.rent-nvl(cf.factrent,0))curRentOverage,(cfp.corpus-nvl(cf.factcorpus,0))curCorpusOverage
+                   ,(cfp.interest-nvl(cf.factinterest,0)-nvl(factinterestadjust,0))curInterestOverage
+                   /~curdate:, nvl(cfp.PENALTY_OVERAGE,0) penaltyOverage~/
+                   /~oldDate:,getpenalty(cfp.contract_id,cfp.rent_list,'{oldDate}') penaltyOverage~/
+                   from contract_fund_rent_plan cfp
+                   left outer join(
+                        select contract_id,plan_list,sum(nvl(rent,0)) factrent, sum(nvl(corpus,0))factcorpus,sum(nvl(interest,0))factinterest,
+                        sum(nvl(interest_adjust,0))factinterestadjust,sum(nvl(penalty,0)) factpenalty,sum(nvl(penalty_adjust,0))factpenaltyadjust
+                        ,plan_id from contract_fund_rent_income
+                        group by contract_id,plan_id,plan_list)cf
+                        on cfp.contract_id=cf.contract_id and cfp.rent_list=cf.plan_list 
+                        order by cfp.contract_id,cfp.rent_list
+	               ) cfr
+                 where 1=1 
+               /~contract_id: and cfr.contractid='{contract_id}'~/
+               /~overrent: and cfr.curRentOverage>0 ~/
+			 ]]> 
+	  </table_sql>
+	   </alldb>
+      <dataSource>dataSource</dataSource>
+      <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

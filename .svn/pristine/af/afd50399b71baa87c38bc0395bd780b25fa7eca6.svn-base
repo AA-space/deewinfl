@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+公用的客户选择combox对应的XML配置文件
+统一的选择客户的页面,该选择显示值只有客户名(和流程选择的不相同,因为有些地方显示值只能有客户名
+显示值: 客户名
+隐藏域: 客户ID
+如果在选择客户的时候有其他的附加条件可以通过配置更多的参数来设置
+添加参数请记录:
+0.currentRawValue ajax搜索时需要
+1.cust_class 客户性质类别  单个的  比如 只查法人 只查个人呢
+2.cust_class_m 要查多个客户性质类别 cust_class1 cust_class2 则为两个必须传入值
+3.cooperate_status 特例的经销商的合同状态
+4.dealer_id 经销商ID ${sessionScope['currentDealerCustInfoId']} 如果传入该参数则只能查询到这个经销商
+5.cust_dealer_id 经销商ID ${sessionScope['currentDealerCustInfoId']} 如果传入该参数则只能查询到这个经销商的客户
+6.cust_type 客户类别 如果 承租 担保 等
+
+ -->
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+     <alldb>
+      <table_sql> 
+	        <![CDATA[
+	        	SELECT 
+	        		DISTINCT ID,NAME
+	        	FROM 
+	        	(
+		        	 SELECT 
+						 DISTINCT
+						 CI.ID,
+						 CI.CUST_NAME NAME 
+					 FROM CUST_INFO CI
+					 LEFT JOIN  CUST_TYPE_INFO CTI ON(CI.ID=CTI.CUST_ID)
+					 LEFT JOIN  CUST_INFO_DEALER CID ON (CI.ID=CID.CUST_ID)
+					 LEFT JOIN  CUST_INFO_PERSON CIP ON (CI.ID=CIP.CUST_ID)
+					 LEFT JOIN  CUST_INFO_COMPANY CIC ON (CI.ID=CIC.CUST_ID)
+					 WHERE  CI.INVALID_='1' AND CI.DRAFT_='1'
+					 /~cust_id:
+					 AND UPPER(CI.ID) = UPPER('{cust_id}')
+					 ~/
+					 /~cust_class:
+					 AND UPPER(CI.CUST_CLASS) = UPPER('{cust_class}')
+					 ~/
+					 /~cust_class_m:
+					 AND (UPPER(CI.CUST_CLASS) = UPPER('{cust_class1}') or UPPER(CI.CUST_CLASS) = UPPER('{cust_class2}'))
+					 ~/
+					 /~cooperate_status:
+					 AND UPPER(CID.COOPERATE_STATUS)=UPPER('{cooperate_status}')
+					 ~/
+					 /~dealer_id:
+					 ---经销商
+					 AND CID.CUST_ID='{dealer_id}'
+					 ~/
+					 /~cust_dealer_id:
+					 ---客户经销商归属
+					 AND CIC.DEALER_COMPANY||CIP.DEALER_COMPANY='{cust_dealer_id}'
+					 ~/
+					 /~cust_type: 
+					 AND UPPER(CTI.CUST_TYPE) = UPPER('{cust_type}')
+					 ~/
+					 
+					 union all 
+ 					 select cust1.id,cust1.cust_name from cust_info cust1
+					 LEFT JOIN  CUST_TYPE_INFO CTI1 ON(cust1.ID=CTI1.CUST_ID)
+ 					 where cust1.id='100'
+					  /~cust_type: 
+					 AND UPPER(CTI1.CUST_TYPE) = UPPER('{cust_type}')
+					 ~/
+				 ) RS WHERE 1=1 
+		         /~currentRawValue: AND RS.NAME LIKE '%{currentRawValue}%'~/
+				ORDER BY RS.NAME DESC,RS.ID
+			 ]]> 
+	  </table_sql>
+	   </alldb>
+      <dataSource>dataSource</dataSource>
+      <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

@@ -1,0 +1,62 @@
+1.
+word对应：融资信息
+关键字：framework_condition
+数据类型：列表
+数据来源：页面
+多行控件名：不填
+数据列名：equipnum,equipamt,leasemoney,firstpaymentratio,leaseterm,isregistration,isguaranty,date
+数据SQL:不填
+说明：不填
+
+2.
+word对应：法人担保
+关键字：companys
+数据类型：表格
+数据来源：数据库
+多行控件名：不填
+数据列名：cust_class,Cust_Name,POST_ADDR,FUND_TIME,mobile_number,OWNER_SHIP,ORG_CODE,REG_CAPITAL,CALLED_CAPITAL,LEGAL_REPRESENTATIVE,ENTERPRISE_TOTAL,ANNUAL_REVENUE,NET_ASSETS,BIZ_SCOPE_PRIMARY,relation,stockname
+
+数据SQL: 
+select
+cust_class,Cust_Name,POST_ADDR,FUND_TIME,mobile_number,DICT3.Name_ AS OWNER_SHIP,ORG_CODE,INVESTMENT_AMOUN as REG_CAPITAL,PAID_INAMOUNT as CALLED_CAPITAL,LEGAL_REPRESENTATIVE,ENTERPRISE_TOTAL,ANNUAL_REVENUE,NET_ASSETS,BIZ_SCOPE_PRIMARY,dict2.name_ relation,stockname
+from cust_info_company CIP 
+left join cust_info CI ON CIP.CUST_ID=CI.ID
+left join proj_guarantee_method pg on pg.assuror=ci.id
+left join proj_info pj on pg.proj_id=pj.id
+LEFT JOIN T_DICTS_DATAS DICT2 ON pg.assure_relation= DICT2.ID_
+LEFT JOIN T_DICTS_DATAS DICT3 ON cip.owner_ship= DICT3.ID_
+left join (select st.cust_name custname,wm_concat(stock) stockname from
+(
+select ci1.cust_name ,'主要股东:'||cst.stockholder_name ||';持股比例:'||cst.shareholding as stock 
+From cust_info ci1 
+left join  cust_stockholder cst on cst.cust_id=ci1.id
+where ci1.cust_name in {assurorname}
+) st
+group by st.cust_name) stock on ci.cust_name=stock.custname
+where ci.cust_name in {assurorname} and pj.proj_id='{projectid}'
+
+说明：不填
+
+
+3.
+word对应：个人担保
+关键字：persons
+数据类型：表格
+数据来源：数据库
+多行控件名：不填
+数据列名：cust_class,Cust_Name,UNIT_NAME,UNIT_POSITION,relation
+
+数据SQL: 
+select cust_class,Cust_Name,UNIT_NAME,DICT3.NAME_ as UNIT_POSITION,dict2.name_ as relation 
+from cust_info_person cp 
+left join  cust_info ci on CP.CUST_ID=CI.ID
+left join proj_guarantee_method pg on pg.assuror=ci.id
+left join proj_info pj on pg.proj_id=pj.id
+LEFT JOIN T_DICTS_DATAS DICT2 ON pg.assure_relation= DICT2.ID_
+LEFT JOIN T_DICTS_DATAS DICT3 ON cp.unit_position= DICT3.ID_
+where ci.cust_name in {assurorname} and pj.proj_id='{projectid}'
+
+说明：不填
+
+
+

@@ -1,0 +1,14 @@
+1.
+word对应填写字段：营业执照号码,企业性质,主营（产）,兼营（产）
+关键字：cust_info_dealer
+数据类型：列表
+数据来源：数据库
+多行控件名：不填
+数据列名：regnumber,ownership,bizscopeprimary,bizscopesecondary
+数据SQL:select reg_number          as regnumber,
+                          owner_ship          as ownership,
+                          biz_scope_primary   as bizscopeprimary,
+                          biz_scope_secondary as bizscopesecondary
+                     from  cust_info_dealer  
+                    where cust_id = '{cust_info.id}'
+说明：不填

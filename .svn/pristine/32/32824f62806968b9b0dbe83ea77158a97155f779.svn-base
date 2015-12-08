@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+     <alldb>
+      <table_sql> 
+	        <![CDATA[
+			 SELECT P.ID as idold,
+			   c.ID as assurorold,
+			   c.CUST_NAME as assurornameold , 
+			   DICT1.NAME_ as assuremethodnameold,
+			   DICT1.ID_ as assuremethodold,
+			   DICT2.NAME_ as assurerelationnameold, 
+			   DICT2.ID_ as assurerelationold,
+			   P.CGMNOTE as cgmnoteold
+			   FROM CONTRACT_GUARANTEE_METHOD P
+			   LEFT JOIN CUST_INFO C ON P.ASSUROR = C.ID
+			   LEFT JOIN T_DICTS_DATAS DICT1 ON P.ASSURE_METHOD = DICT1.ID_
+			   LEFT JOIN T_DICTS_DATAS DICT2 ON P.ASSURE_RELATION = DICT2.ID_
+              WHERE P.CONTRACT_ID = '{contract_id}'
+			 ]]> 
+	  </table_sql>
+	   </alldb>
+      <dataSource>dataSource</dataSource>
+	  <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

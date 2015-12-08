@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+    <alldb>
+      <table_sql> 
+	        <![CDATA[
+	        select wmsys.wm_concat(id) id,invoiceno,sum(invoicemoney) invoicemoney,
+wmsys.wm_concat(contractid) contractid,sum(equipamt) equipamt,sum(taxmoney) taxmoney,invoicestatus from (
+	            select tax.id,
+				       tax.invoice_money invoicemoney,
+				       tax.record_date recorddate,
+				       tax.invoice_no invoiceno,
+				       tax.tax_money taxmoney,
+				       ci.contract_id contractid,
+				       ci.contract_number contractnumber,
+				       cust.cust_name custname,
+				       cust2.cust_name dealername,
+				       cc.equip_amt equipamt,
+				       t_users.realname_ createname, 
+				       case tax.invoice_status when 1 then '确认中' when 2 then '已确认' when 3 then '已退回' end as invoicestatus   
+				  from tax_vat_info tax
+				  left join contract_info ci on tax.contract_id = ci.id
+				  left join cust_info cust on ci.cust_id = cust.id 
+				  left join contract_condition cc on cc.contract_id=ci.id
+				  left join t_users t_users on tax.creator_=t_users.id_
+				  left join cust_info cust2 on ci.cust_dealer=cust2.id 
+				  where nvl(tax.invoice_status,0)<>0   
+				  /~contractid: and ci.contract_id like '%{contractid}%' ~/
+				  /~custname: and cust.cust_name like '%{custname}%' ~/
+				  /~contractnumber: and ci.contract_number like '%{contractnumber}%'~/
+				  /~dealername: and cust2.cust_name like '%{dealername}%'~/
+				  /~invoiceno: and tax.invoice_no like '%{invoiceno}%'~/
+				  /~invoicemoney: and tax.invoice_money like '%{invoicemoney}%' ~/
+				  /~invoiceamount: and tax.invoice_amount like '%{invoiceamount}%' ~/
+				  ) ttt
+				  where 1=1
+				   /~invoicestatus: and invoicestatus like '%{invoicestatus}%' ~/ 
+				    group by invoiceno,invoicestatus 
+				  order by  contractid
+			  
+			 ]]> 
+	  </table_sql>
+	  </alldb>
+      <dataSource>dataSource</dataSource>
+    </data>
+  </table>
+</table-root>

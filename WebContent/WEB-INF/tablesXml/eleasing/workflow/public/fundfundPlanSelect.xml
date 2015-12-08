@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+   使用地方。经销商收款流程
+           租金计划和实收表
+    id(资金计划表的ID),CONTRACT_ID(合同号),CUST_NUMBER(承租人编号),CUST_NAME(承租人名称),dealer_number(经销商编号),dealer_custname(经销商名称),payment_id(收付款编号)
+    plan_date(计划日期),plan_money(计划金额),fact_money(实收金额),ow_fact_money(余额),fee_type(费用code),raw_fee_type(费用),pay_type(收付款code),raw_pay_type(收付款)
+    plan_first_money(首付款),plan_first_fact_money(首付款实收)
+    
+ -->
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+     <alldb>
+      <table_sql> 
+	        <![CDATA[
+	           select * from (
+	           select cp.id,cp.pay_obj,nvl(tab.money,0) money,ci.id contract_id,ci.contract_number,ci1.id CUST_NUMBER,ci1.CUST_NAME,ci2.id dealer_number,ci2.CUST_NAME dealer_custname,
+                      cp.payment_id,cp.plan_date,cp.plan_money,nvl(cfc.fact_money,0) fact_money,
+                      cp.plan_money-nvl(cfc.fact_money,0) ow_fact_money,cp.fee_type,td1.name_ rawvaluefee_type,cp.pay_type,td2.name_ rawValue_pay_type
+                      ,nvl(fpr.fact_money,0) plan_first_money,nvl(fpf.fact_money,0) plan_first_fact_money, 
+                      CASE
+                        WHEN NVL(CFC.FACT_MONEY, 0) = 0 THEN '未回收'
+                        WHEN 0 < NVL(CFC.FACT_MONEY, 0) AND NVL(CFC.FACT_MONEY, 0) <  CP.PLAN_MONEY  THEN '部分回收'
+                        ELSE '已回收'
+                    END AS status
+               from contract_fund_fund_plan cp
+               left outer join T_DICTS_DATAS td1
+               on td1.code_=cp.fee_type
+               left outer join T_DICTS_DATAS td2
+               on td2.code_=cp.pay_type
+               left outer join(
+                  select sum(fact_money)fact_money,payment_id from contract_fund_fund_charge
+                  where nvl(roll_back,0)<>1
+                  group by payment_id ) cfc
+               on cfc.payment_id=cp.id
+               left outer join 
+                  (select  sum(cffp.plan_money) fact_money,cffp.contract_id from contract_fund_fund_plan cffp
+                  where cffp.fee_type='feetype5' and cffp.invalid='0'
+                  group by cffp.contract_id) fpr
+               on fpr.contract_id=cp.contract_id
+               left outer join
+                  (select  sum(cffp.fact_money) fact_money,cffp.contract_id from contract_fund_fund_charge cffp
+                   where cffp.fee_type='feetype5'  and nvl(roll_back,0)<>1
+                    group by cffp.contract_id ) fpf
+               on fpf.contract_id=cp.contract_id
+               left outer join contract_info ci
+               on ci.id=cp.contract_id
+               left outer join cust_info ci1
+               on ci.CUST_ID=ci1.id
+               left outer join cust_info ci2
+               on ci.CUST_DEALER=ci2.id
+			   left join 
+               (select C.CONTRACT_ID CONTRACTID,SUM(C.LIMIT_MONEY) MONEY
+                 FROM CONTRACT_LIMIT_INFO C
+                 GROUP BY C.CONTRACT_ID) tab  
+			   on cp.contract_id=tab.contractid
+			   where cp.invalid='0'
+               ) cfp
+               where 1=1 
+               /~cust_number: and cfp.CUST_NUMBER='{cust_number}'~/
+              /~dealer_number: and cfp.dealer_number='{dealer_number}'~/
+              /~plan_date_start: and cfp.plan_date>'{plan_date_start}'~/
+              /~plan_date_end: and cfp.plan_date<'{plan_date_end}'~/
+              /~fee_type: and cfp.fee_type='{fee_type}'~/
+              /~contract_id: and cfp.CONTRACT_ID='{contract_id}'~/
+              /~pay_type: and cfp.pay_type = '{pay_type}'~/
+              /~hasmoney: and cfp.ow_fact_money>0~/
+			 ]]> 
+	  </table_sql>
+	   </alldb>
+      <dataSource>dataSource</dataSource>
+      <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

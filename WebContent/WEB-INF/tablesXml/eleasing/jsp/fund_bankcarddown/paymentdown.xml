@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--卡扣下载 custname[承租人],custid[承租人id],dealername[经销商],dealerid[经销商ID],contract_id[合同号],contractnumber[租赁合同号],contractstatusname[合同状态],cardnum[卡号] rentlist[期次],plandate[计划日期],rent[计划金额],ovrent[余额],memo[备注] -->
+<table-root xmlns="http://www.tracywindy.org/table" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+
+	<table>
+		<data>
+			<alldb>
+				<table_sql> 
+	        <![CDATA[
+			select rownum as rn,
+               pc.id,
+               jwork.putdate  plan_date,
+               ci.contract_number,
+               cust.cust_name,
+               dealer.cust_name as dealer,
+               cp.cust_name as planned,
+               ca.cust_name as accountant,
+               pc.plan_money,
+               pc.credit_money,
+               pc.plan_money + pc.credit_money as total_money,
+               pc.fpnote,
+               pc.equip_count,
+               pc.client_bank,
+               pc.client_account,
+               pc.client_accnumber,
+               pc.export_flag,
+               pc.service_fees,
+               users.realname_  realname
+          from contract_fund_fund_pay_collect pc
+          left join contract_info ci
+            on pc.contract_id = ci.id
+          left join cust_info cust
+            on cust.id = ci.cust_id
+          left join cust_info dealer
+            on ci.cust_dealer = dealer.id
+          left join cust_info cp
+            on cp.id = pc.planned
+          left join cust_info ca
+            on ca.id = pc.accountant
+          left join cust_info_dealer cid on cid.cust_id = ci.cust_dealer  
+          left join (select  * from manager_district  where manager_role='402881824094f54f01409551189e002b') md on md.district_=cid.owner_district
+          left join t_users users on md.manager_=users.id_
+           left join
+          (
+			select TO_CHAR(pro.end_ ,'YYYY-MM-DD') putdate,works.key_one_  contractid  from  t_jbpm_workflow_info works
+			left join JBPM4_HIST_PROCINST  pro on works.jbpm4_hist_procinst_dbid_=pro.dbid_
+			 where 
+			works.workflow_name_='实际投放流程' and 
+			works.history_activity_name_='04租赁业务会计审核' 
+		)jwork on ci.contract_id=jwork.contractid
+          where 1=1
+		   /~export_flag: and export_flag = {export_flag}~/
+		    /~cust_name: and cust.cust_name like '%{cust_name}%' ~/
+		    /~dealer: and dealer.cust_name    like '%{dealer}%' ~/
+		    /~plan_money: and pc.plan_money    like '%{plan_money}%' ~/
+		    /~credit_money: and pc.credit_money    like '%{credit_money}%' ~/
+		    /~plan_date: and jwork.putdate    like '%{plan_date}%' ~/
+		    /~client_accnumber: and pc.client_accnumber    like '%{client_accnumber}%' ~/
+			        
+		  ]]>
+				</table_sql>
+			</alldb>
+			<dataSource>dataSource</dataSource>
+			<show_sql>true</show_sql>
+		</data>
+	</table>
+</table-root>

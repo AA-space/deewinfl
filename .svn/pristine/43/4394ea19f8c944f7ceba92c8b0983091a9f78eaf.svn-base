@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+ 使用地方：经销商收款流程
+    查询资金计划的合同号 
+    id(合同id) contract_id(合同号)contract_number(租赁合同号),cust_number(承租人的ID),cust_name(承租人名称)
+ -->
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+     <alldb>
+      <table_sql> 
+	        <![CDATA[
+	          select 
+            ID as carid,
+            CHASSIS_NUM as chassisnum
+            from CONTRACT_EQUIP
+              where 1=1 
+              /~contract_id: and CONTRACT_ID='{contract_id}'~/
+              /~cust_number: and cust_number='{cust_number}'~/
+              /~contract_number: and contract_number like '%{contract_number}%'~/
+              /~dealer_id: and cust_dealer = '{dealer_id}'~/
+			 ]]> 
+	  </table_sql>
+	   </alldb>
+      <dataSource>dataSource</dataSource>
+      <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

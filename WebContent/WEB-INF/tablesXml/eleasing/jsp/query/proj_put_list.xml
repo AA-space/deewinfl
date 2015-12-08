@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+    <alldb>
+      <table_sql> 
+	        <![CDATA[
+	        select rownum as rowlist,list1.*
+from (
+			select 
+--TO_CHAR(HP.END_  ,'YYYY-MM-DD HH24:MI:SS')            AS PROCESSEND,
+ci.contract_number as contractnum,
+ci1.cust_name      as custname,
+ci2.cust_name      as dealername,
+tab1.equipnum      as equipnum,
+cffc.fact_money    as factmoney,
+cffc.credit_money  as creditmoney,
+cffp.plan_money    as planmoney,
+wi1.realname       as username1,
+wi.realname        as username2,
+cffc.fact_date     as factdate,
+cffc.client_account   as clientaccname,
+cffc.client_bank      as clientbank,
+cffc.client_accnumber as clientacc
+FROM(
+                     SELECT 
+                       ID_,KEY_ONE_,KEY_TWO_,KEY_THREE_,KEY_FOUR_,KEY_FIVE_,KEY_SIX_,KEY_SEVEN_,
+                 KEY_EIGHT_,KEY_NINE_,KEY_TEN_,PROCESS_FORM_PATH_,PROCESS_FORM_TITLE_,
+                 WORKFLOW_NAME_,WORKFLOW_DISPLAY_NAME_,DRAFT_UUID_,PROCESSINSTANCE_STATE_,
+                 PROCESSDEFINITION_ID_,REQUEST_INITIATOR_,REQUEST_INITIATOR_REAL_NAME_,
+                 FROM_BUTTONTEXT_TO_COME_,JBPM4_HIST_ACTINST_DBID_,PREV_JBPM4_HIST_ACTINST_DBID_,
+                 JBPM4_HIST_PROCINST_DBID_,twork.JBPM4_DEPLOYMENT_DBID_,
+                 REQUEST_INITIATOR_ID_,ACTIVITY_DETAIL_ID_,JBPM4_HIST_ACTINST_LAST_DBID_,HISTORY_ACTIVITY_NAME_,tab.realname
+                     FROM T_JBPM_WORKFLOW_INFO twork
+                     
+                     left join (
+                     select tjpbpu.jbpmworkflowhistoryinfo_id_, WM_CONCAT(tu.realname_) as realname from 
+                      T_JBPM_WORKFLOW_INFOS_USERS tjpbpu 
+                     left join t_users tu on tjpbpu.plan_actor_user_id_=tu.id_
+                     group by tjpbpu.jbpmworkflowhistoryinfo_id_
+                     ) tab on twork.id_=tab.jbpmworkflowhistoryinfo_id_
+                     
+                     WHERE twork.JBPM4_HIST_ACTINST_DBID_ in
+                     (
+                      select max(JBPM4_HIST_ACTINST_DBID_)
+                      from T_JBPM_WORKFLOW_INFO twork
+                      group by twork.jbpm4_hist_procinst_dbid_
+                      )
+                   and twork.workflow_name_ ='实际投放流程'
+                  ) WI
+                  left join
+                  (
+                     SELECT 
+                       ID_,KEY_ONE_,KEY_TWO_,KEY_THREE_,KEY_FOUR_,KEY_FIVE_,KEY_SIX_,KEY_SEVEN_,
+                 KEY_EIGHT_,KEY_NINE_,KEY_TEN_,PROCESS_FORM_PATH_,PROCESS_FORM_TITLE_,
+                 WORKFLOW_NAME_,WORKFLOW_DISPLAY_NAME_,DRAFT_UUID_,PROCESSINSTANCE_STATE_,
+                 PROCESSDEFINITION_ID_,REQUEST_INITIATOR_,REQUEST_INITIATOR_REAL_NAME_,
+                 FROM_BUTTONTEXT_TO_COME_,JBPM4_HIST_ACTINST_DBID_,PREV_JBPM4_HIST_ACTINST_DBID_,
+                 JBPM4_HIST_PROCINST_DBID_,twork.JBPM4_DEPLOYMENT_DBID_,
+                 REQUEST_INITIATOR_ID_,ACTIVITY_DETAIL_ID_,JBPM4_HIST_ACTINST_LAST_DBID_,HISTORY_ACTIVITY_NAME_,tab.realname
+                     FROM T_JBPM_WORKFLOW_INFO twork
+                     
+                     left join (
+                     select tjpbpu.jbpmworkflowhistoryinfo_id_, WM_CONCAT(tu.realname_) as realname from 
+                      T_JBPM_WORKFLOW_INFOS_USERS tjpbpu 
+                     left join t_users tu on tjpbpu.plan_actor_user_id_=tu.id_
+                     group by tjpbpu.jbpmworkflowhistoryinfo_id_
+                     ) tab on twork.id_=tab.jbpmworkflowhistoryinfo_id_
+                     
+                     WHERE twork.JBPM4_HIST_ACTINST_DBID_ in
+                     (
+                      select min(JBPM4_HIST_ACTINST_DBID_)
+                      from T_JBPM_WORKFLOW_INFO twork
+                      group by twork.jbpm4_hist_procinst_dbid_
+                      )
+                   and twork.workflow_name_ ='实际投放流程'
+                  ) WI1  on wi.JBPM4_HIST_PROCINST_DBID_=wi1.JBPM4_HIST_PROCINST_DBID_ 
+                  
+                   LEFT JOIN(
+                     SELECT 
+                        DBID_, DBVERSION_, ID_, PROCDEFID_, KEY_, START_, END_, 
+                    DURATION_, STATE_, ENDACTIVITY_, NEXTIDX_  
+                     FROM JBPM4_HIST_PROCINST
+                  )HP ON   HP.DBID_ = WI.JBPM4_HIST_PROCINST_DBID_  
+                  
+ left join contract_info ci on wi.KEY_ONE_=ci.contract_id
+ left join cust_info ci1 on ci.cust_id=ci1.id 
+ left join cust_info ci2 on ci.cust_dealer=ci2.id 
+ left join (
+ select ce.contract_id, count(*) as equipnum from contract_equip ce
+ group by ce.contract_id
+ ) tab1 on ci.id=tab1.contract_id 
+ left join contract_fund_fund_charge cffc  on ci.id=cffc.contract_id and cffc.fee_type='feetype10'
+ left join contract_fund_fund_plan cffp on ci.id=cffp.contract_id and cffp.fee_type='feetype10' and cffp.invalid=0  
+ where  hp.END_ is not null--实际投放流程已经结束
+ 
+ /~custname: and ci1.cust_name like '%{custname}%'~/
+ /~dealername: and ci2.cust_name like '%{dealername}%'~/
+ order by ci2.cust_name              
+)list1
+			 ]]> 
+	  </table_sql>
+	  </alldb>
+      <dataSource>dataSource</dataSource>
+	  <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

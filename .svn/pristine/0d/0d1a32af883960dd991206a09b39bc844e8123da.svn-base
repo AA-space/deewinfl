@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+    <alldb>
+      <table_sql> 
+	        <![CDATA[
+					SELECT 
+                C.ID ID,
+                C.CUST_ID CUSTID,
+                C.CONTRACT_NUM CONTRACTNUM,
+                C.OWNER_DISTRICT OWNERDISTRICT,
+                D8.NAME_ OWNERDISTRICTNAME,
+            C.OWNER_OFFICE OWNEROFFICE,
+            D11.NAME_ OWNEROFFICENAME,
+                C.SHOP_TYPE SHOPTYPE,
+                D9.NAME_ SHOPTYPENAME,
+                CUST.CUST_NUMBER CUSTNUMBER,
+                CUST.CUST_NAME CUSTNAME,
+                C.COOPERATE_STATUS COOPERATESTATUS,
+                D12.NAME_ COOPERATESTATUSNAME,
+                C.INCOME_ASSETS INCOMEASSETS,
+                D10.NAME_ DEALERSTATUSNAME,
+                C.REG_DATE REGDATE,
+                C.ORG_CODE ORGCODE,
+                C.LEGAL_REPRESENTATIVE LEGALREPRESENTATIVE,
+                C.ID_CARD_NO IDCARDNO,
+                CT.CUST_TYPE_NAME CUSTTYPENAME,
+                CT.CUST_TYPE CUSTTYPE,
+                C.CUST_SCALE CUSTSCALE,
+                D13.NAME_ CUSTSCALENAME,
+                D2.NAME_ TAXLEVELNAME,
+                C.TAX_LEVEL TAXLEVEL,
+                C.TAX_REG_CODE TAXREGCODE,
+                C.TAX_PHONE TAXPHONE,
+                C.TAX_BANK TAXBANK,
+                C.TAX_ACC TAXACC,
+                C.CREDIT_CARD CREDITCARD,
+                C.PROVINCE_ PROVINCE,
+                PR.NAME PROVINCENAME,
+                C.CITY_ CITY,
+                CT.NAME CITYNAME,
+                C.COUNTY_ COUNTY,
+                CO.NAME COUNTYNAME,
+                C.MAIL_ADD MAILADD,
+                C.POST_CODE POSTCODE,
+                C.MOBILE_NUMBER MOBILENUMBER,
+                C.PHONE_ PHONE,
+                C.THREE_YEAR_SALES THREEYEARSALES,
+                C.COOPERATION_DATE COOPERATIONDATE,
+                C.PURPOSE_SALES PURPOSESALES,
+                C.OFTEN_ADDR OFTENADDR,
+                C.NET_ASSETS NETASSETS,
+                C.OWNERSHIP_STRUCTURE OWNERSHIPSTRUCTURE,
+                C.OWNER_VEHICLE OWNERVEHICLE,
+                C.OWNER_ESTATE OWNERESTATE,
+                C.OWNER_LAND OWNERLAND,
+                C.OWNER_OTHER OWNEROTHER,
+                C.OWNERSHIP_TOTAL OWNERSHIPTOTAL,
+                C.OWNER_MEMO OWNERMEMO,
+                CASE CUST.DRAFT_ WHEN '0' THEN '是'  ELSE '否'  END  DRAFTNAME,
+                CASE WHEN CUST.DRAFT_ IS NULL THEN '1' ELSE CUST.DRAFT_ END DRAFT,
+                CASE CUST.INVALID_ WHEN '0' THEN '是'  ELSE '否'  END  INVALIDNAME,
+                CASE WHEN CUST.INVALID_ IS NULL THEN '1' ELSE CUST.INVALID_ END INVALID,
+                CASE C.is_4s WHEN '0' THEN '是'  ELSE '否'  END  IS4SNAME,
+                      CASE WHEN C.is_4s IS NULL THEN '1' ELSE C.is_4s END IS4S,
+                C.WEB_SITE WEBSITE,
+                USER1.REALNAME_ CREATORNAME,
+                USER3.NAME_ CREATORDEPTNAME,
+                USER3.ID_ CREATORDEPT,
+                SUBSTR(C.CREATE_DATE,0,10) CREATEDATE,
+                USER4.REALNAME_ MODIFICATORNAME,
+                SUBSTR(C.MODIFY_DATE,0,10) MODIFYDATE,
+                C.OWNER_SHIP OWNERSHIP,
+                D7.NAME_ OWNERSHIPNAME,
+                C.POST_ADDR POSTADDR,
+                C.REG_NUMBER REGNUMBER,
+                C.FAX_NUMBER FAXNUMBER,
+                C.REG_CAPITAL REGCAPITAL,
+                C.REG_ADDR REGADDR,
+                C.BIZ_SCOPE_PRIMARY BIZSCOPEPRIMARY,
+                C.BIZ_SCOPE_SECONDARY BIZSCOPESECONDARY,
+                c.two_level_status twolevelstatus,
+                c.one_level onelevel,
+                decode(c.two_level_status,'1','否','是') twolevelstatusname,
+                cust2.cust_name onelevelname,
+                cust2.cust_name rawValue_onelevel
+                
+                FROM CUST_INFO_DEALER C LEFT JOIN CUST_INFO CUST ON C.CUST_ID = CUST.ID
+                left join cust_info cust2 on c.one_level=cust2.id
+                LEFT JOIN T_DICTS_DATAS D2 ON C.TAX_LEVEL=D2.ID_        
+                LEFT JOIN T_USERS USER1 ON C.CREATOR_=USER1.ID_ 
+                LEFT JOIN T_DEPTS USER3 ON C.CREATOR_DEPT=USER3.ID_
+                LEFT JOIN T_USERS USER4 ON C.MODIFICATOR_ =USER4.ID_
+                LEFT JOIN T_DICTS_DATAS D7 ON C.OWNER_SHIP=D7.ID_   
+                LEFT JOIN T_DICTS_DATAS D8 ON C.OWNER_DISTRICT=D8.ID_   
+                  LEFT JOIN T_DICTS_DATAS D9 ON C.SHOP_TYPE=D9.ID_ 
+                  LEFT JOIN T_DICTS_DATAS D10 ON C.COOPERATE_STATUS=D10.ID_ 
+                  LEFT JOIN T_DICTS_DATAS D11 ON C.OWNER_OFFICE=D11.ID_  
+                  LEFT JOIN T_DICTS_DATAS D12 ON C.COOPERATE_STATUS=D12.ID_
+                  LEFT JOIN T_DICTS_DATAS D13 ON C.CUST_SCALE=D13.ID_
+                LEFT JOIN (
+                  SELECT 
+                  CUST_ID,
+                  WMSYS.WM_CONCAT(CTI.CUST_TYPE) CUST_TYPE,
+                  WMSYS.WM_CONCAT(D17.NAME_) CUST_TYPE_NAME 
+                  FROM  CUST_TYPE_INFO CTI
+                  LEFT JOIN T_DICTS_DATAS D17 ON CTI.CUST_TYPE =D17.ID_
+                  GROUP BY CUST_ID
+                ) CT ON (CUST.ID=CT.CUST_ID)
+                LEFT JOIN T_DISTRICT PR ON (C.PROVINCE_=PR.ID)
+                LEFT JOIN T_DISTRICT CT ON (C.CITY_=CT.ID)
+                LEFT JOIN T_DISTRICT CO ON (C.COUNTY_=CO.ID)
+                
+                ------------第一步开始----------------
+				--增加区域管理 cust_info关联
+				--增加区域管理第一步 CUST2为经销商
+				--  LEFT JOIN CUST_INFO_DEALER CIDR
+				--    ON CIDR.CUST_ID = CUST2.ID
+				
+				  LEFT JOIN MANAGER_DISTRICT MD
+				    ON MD.DISTRICT_ = C.OWNER_DISTRICT AND MD.MANAGER_ = '{loginuser}'
+				------------第一结束步开始----------------
+
+					where 1=1
+					 /~CUST_ID: and C.CUST_ID like '%{CUST_ID}%'~/
+					 /~draftname: and CUST.DRAFT_= '{draftname}'~/
+					 /~twolevelstatusname: and c.two_level_status= '{twolevelstatusname}'~/
+					 /~enabled: AND CUST.INVALID_='{enabled}'~/
+					  /~custname: AND CUST.CUST_NAME like '%{custname}%'~/
+					  /~onelevelname: AND cust2.cust_name like '%{onelevelname}%'~/
+					  
+					   
+			   ------------第二步开始----------------
+					--增加区域管理第二步
+					/~loginuser: ~/
+					 AND ( MD.ID IN
+					     (SELECT ID FROM MANAGER_DISTRICT WHERE MANAGER_ = '{loginuser}')
+					         
+					     OR 1 =(SELECT DECODE((SELECT COUNT(ID) FROM MANAGER_DISTRICT WHERE MANAGER_ = '{loginuser}'),0,1,0) FROM DUAL)
+					  )
+				------------第二步结束----------------
+				
+					ORDER BY CUST.CUST_NUMBER ASC
+			 ]]> 
+	  </table_sql>
+	  </alldb>
+      <dataSource>dataSource</dataSource>
+        <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

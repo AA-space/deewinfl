@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+  <!--以合同为主表导出数据
+    custNumber[客户编号],custname[客户名],brithdate[出生日期],homeadd[家庭地址],sexName[性别名],contractnumber[合同号],dealer[经销商名称]
+    projexportstatus[合同导出状态] ,custnameall[客户名称|经销商名称|合同号]
+    -->
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+
+  <table>
+    <data>
+    <alldb>
+      <table_sql> 
+	        <![CDATA[
+   select rownum, rs.*from (
+ select cust.cust_number  custnumber,
+ cust.cust_name custname,
+ info.contract_number contractnumber,
+ cust2.cust_name||cust3.cust_name dealer,
+ --proj.proj_status ptojstatus,
+ info.contract_status contractstatus, 
+ person.cust_id id,
+ CASE person.sex_ WHEN '1' THEN '男'  ELSE '女' END sexname,
+ person.brith_date brithdate,
+ person.HOME_ADD homeadd,
+ info.id||'/id'   contractid,
+ cust.cust_class custclass,
+  info.cust_dealer custdealer,--经销商编号
+ cust.cust_name||'/'||cust2.cust_name||cust3.cust_name||'/'||info.contract_number custnameall,
+ CASE  WHEN cust.cust_export_status='0' THEN '未导出' 
+    WHEN cust.cust_export_status is null THEN '未导出'
+   ELSE '已导出' END custexportstatus
+ from contract_info  info 
+ left join cust_info cust  on info.cust_id=cust.id --承租人
+ left join cust_info_person person on cust.id=person.cust_id --
+ left join cust_info_company comp on comp.cust_id=cust.id 
+ left join cust_info cust2 on cust2.id=person.dealer_company
+ left join cust_info cust3 on cust3.id=comp.dealer_company
+ where 1=1
+   /~contract_status:  and info.contract_status>={contract_status} ~/
+   /~cust_export_status: and (cust.cust_export_status='{cust_export_status}' or cust.cust_export_status is null)~/
+   
+ )rs where 1=1 
+
+	  ]]> 
+			 </table_sql>
+	  </alldb>
+      <dataSource>dataSource</dataSource>
+      <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

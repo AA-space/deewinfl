@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+    <alldb>
+      <table_sql> 
+	        <![CDATA[
+				select  
+					  cffp.id,
+					  pi.proj_id projid,
+					  ci.project_name projname,
+					  payment_id paymentid,
+					  doc_id docid,
+					  ci.contract_id contractid,
+					  fee_type feetype,
+					  plan_date plandate,
+					  plan_money planmoney,
+					  pay_obj payobj,
+					  pay_type paytype,
+					  fpnote
+					  
+					  
+					from contract_fund_fund_plan cffp 
+					left join contract_info ci on cffp.contract_id = ci.id
+					left join proj_info pi on ci.proj_id = pi.id
+					where 1 =1 
+					and cffp.invalid='0'
+					/~projid: and pi.proj_id like '%{projid}%'~/
+					/~projname: and ci.project_name like '%{projname}%'~/
+					/~contractid: and ci.contract_id like '%{contractid}%'~/
+					order by pi.proj_id
+			 ]]> 
+	  </table_sql>
+	  </alldb>
+      <dataSource>dataSource</dataSource>
+      <show_sql>false</show_sql>
+    </data>
+  </table>
+</table-root>

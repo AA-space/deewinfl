@@ -1,0 +1,886 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+    <%@ taglib prefix='permission' uri='/WEB-INF/tlds/permission.tld' %>
+<%@ page import="com.kernal.utils.FileUtil,com.kernal.utils.WebUtil" %>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>经销商 - 经销商管理</title>
+    <!--css sheet-->
+	<link href="${pageContext.request.contextPath}/css/dtree/dtree.css" rel="stylesheet" type="text/css">
+	<link href="${pageContext.request.contextPath}/css/jquery-easyui/easyui.css" rel="stylesheet" type="text/css">
+	<link href="${pageContext.request.contextPath}/css/jquery-easyui/icon.css" rel="stylesheet" type="text/css">
+	<link href="${pageContext.request.contextPath}/css/tracywindy/tracywindy.css" rel="stylesheet" type="text/css">
+	<link href="${pageContext.request.contextPath}/css/tracywindy/button.css" rel="stylesheet" type="text/css">
+	<link href="${pageContext.request.contextPath}/css/tracywindy/workFlowUtil.css" rel="stylesheet" type="text/css">
+	<!--javascript libray-->
+	<script type="text/javascript" src="${pageContext.request.contextPath}/js/tracywindy/workFlowUtil.js"></script>
+	<script type="text/javascript" src="${pageContext.request.contextPath}/js/tracywindy/tracywindyUtils.js"></script>
+	<script type="text/javascript" src="${pageContext.request.contextPath}/js/tracywindy/tracywindyJsonUtil.js"></script>
+	<script type="text/javascript" src="${pageContext.request.contextPath}/js/tracywindy/tracywindyAjax.js"></script>
+	<script type="text/javascript" src="${pageContext.request.contextPath}/js/jquery/jquery.min.js"></script>
+	<script type="text/javascript" src="${pageContext.request.contextPath}/js/jquery/jquery.easyui.min.js"></script>
+	<script type="text/javascript" src="${pageContext.request.contextPath}/js/jquery/easyui-lang-zh_CN.js"></script>
+	<script type="text/javascript" src="${pageContext.request.contextPath}/js/tracywindy/tracywindyLoadMask.js"></script>
+	<script type="text/javascript" src="${pageContext.request.contextPath}/js/tracywindy/tracywindyTable.js"></script>
+	<script type="text/javascript" src="${pageContext.request.contextPath}/js/tracywindy/tracywindyComboBox.js"></script>
+	<script type="text/javascript" src="${pageContext.request.contextPath}/js/tracywindy/tracywindySerializeFormToJsonObject.js"></script>
+	<script type="text/javascript" src="${pageContext.request.contextPath}/js/my97DatePicker/WdatePicker.js"></script>
+	<script type="text/javascript" src="${pageContext.request.contextPath}/js/validator.js"></script>
+	<script type="text/javascript" src="${pageContext.request.contextPath}/js/tracywindy/tracywindyOperationTable.js"></script>
+	<script type="text/javascript" src="${pageContext.request.contextPath}/js/MustFillIn.js"></script>
+	<script type="text/javascript" src="${pageContext.request.contextPath}/js/custType.js"></script>
+	<style type="text/css">
+	   html,body{
+	     overflow:hidden;
+	   }
+	   td.td-content{
+	     text-align:left;
+	   }
+	   td.td-content input{
+	      width:165px;
+	      float:left;
+	      border:1px solid #DDD;
+	   }
+	   td.td-content textarea{
+	      width:90%;
+	      overflow:auto;
+	      float:left;
+	      border:1px solid #DDD;
+	   }
+	</style>
+		<script type="text/javascript">
+var isAdmin=false;
+var operButtons='';
+</script >
+<permission:action  code="dealer_manage">
+<script type="text/javascript">
+isAdmin=true;
+operButtons='新增|修改';
+</script >
+</permission:action>
+<permission:action  code="admin_action">
+<script type="text/javascript">
+isAdmin=true;
+operButtons='新增|修改|删除|状态';
+</script >
+</permission:action>
+<script type="text/javascript">
+	var constantFlagTable = "User";
+	var pageWidth  = document.documentElement.clientWidth-2;
+	var pageHeight = document.documentElement.clientHeight-2;
+	jQuery(function(){
+
+		dictOnSelect('ownerdistrictname','ownerdistrict','dealer_district',null,null,'require="true" label="所属区域"');
+		dictOnSelect('ownerofficename','owneroffice','owner_office',null,null,'label="办事处"');
+		dictOnSelect('shoptypename','shoptype','dealer_shop_type',null,null,'label="店面类型"');		
+		dictOnSelect('cooperatestatusname','cooperatestatus','dealer_symbiosis',null,null,'require="true" label="合作状态"');
+		commonSelectOverall('provincename',"(select id,name from t_district where pid in('HB','DB','HD','HZ','XN','XB','HN','TQ')) rs",'id',"name",'province','','','require="true" label="省份"', function(combo,data){ choseNext(combo,'id_combo_cityname','t_district');},true);//省份
+		commonSelectOverall('cityname',"(select id,name from t_district where 1=2) rs",'id',"name",'city','','','require="true" label="城市"', function(combo,data){ choseNext(combo,'id_combo_countyname','t_district');},true);//城市
+		commonSelectOverall('countyname',"(select id,name from t_district where 1=2) rs",'id',"name",'county','','','require="true" label="区县"',null,true);//地区
+		dictOnSelect('ownershipname','ownership','ownership',null,null,'label="企业性质"');//企业性质
+		dictOnSelect('taxlevelname','taxlevel','tax_level_name',null,null,'label="纳税人类别"');//纳税人
+		dictYesOrNoByCode('isassociatedname','isassociated',null,null,true,'label="是否与本企业关联"');//是否与本企业关联
+		dictYesOrNoByCode('draftname','draft',null,null,null,'label="是否草稿"');//是否草稿
+		dictYesOrNoByCode('is4sname','is4s',null,null,null,'require="true" label="是否4S"');//是否4S
+		dictOnSelect('custscalename','custscale','cust_scale',null,null,'label="客户规模"');//客户规模
+		dictOnSelect('reditorrightname','reditorright','reditor_right',null,null,'label="债权性质"');//债权性质
+		dictOnSelect('assurorrightname','assurorright','assuror_right',null,null,'label="担保性质"');//担保性质
+		commonSelect('creatordeptname','t_depts','id_','name_','creatordept','${sessionScope["loginUserDeptObj"].id}',null, 'require="true" label="登记人部门"',false);
+		dictYesOrNoByCode('twolevelstatusname','twolevelstatus',null,null,true,'label="是否是二级经销商"');//是否是二级经销商
+		new tracywindyComboBox({
+			id : 'id_combo_id_onelevelname',
+			width : 167,
+			renderTo : 'onelevelname',
+			xmlFileName : '\\eleasing\\workflow\\public\\SimpleCustSelect.xml',
+			loadMode : 'ajax',
+			readOnly : false,
+			isAjaxLenovo : true,
+			otherAttributes:'label="所属一级经销商"',
+			topAdd : 0,
+			leftAdd : 0,
+			positionDropIconLeftAdd : -1,
+			name : 'onelevel',
+			displayField : 'name',
+			valueField : 'id',
+			value:"${sessionScope['currentDealerCustInfoId']}",
+			rawValue:"${sessionScope['currentDealerCustInfoName']}",
+			params : {
+				cust_class:'CUST_INFO_DEALER',
+				cooperate_status:'dealer_symbiosis1',
+				dealer_id:"${sessionScope['currentDealerCustInfoId']}"
+			}
+		});
+		 
+		//加载页面列表
+	   	 var table = new tracywindyOperationTable({
+   		 resetFormCallback:function(table,$form,operFlag){
+			if("add" == operFlag){
+				getTracywindyObject("id_combo_draftname").readOnlyData = false;
+   	   	  		getTracywindyObject("id_combo_draftname").reload();
+				getTracywindyObject("id_combo_draftname").setRawValue("否");
+				getTracywindyObject("id_combo_draftname").setValue("1");
+				jQuery("#invalidname").val("否");
+				jQuery("#invalid").val("1");
+				jQuery("#creatorname").val('${sessionScope.loginUser.realname}');
+	 			MustFillIn.setRequire(["custname","orgcode","rawValue_province","rawValue_creatordept","regdate","regcapital","rawValue_is4s","incomeassets","cooperationdate","rawValue_city","rawValue_county","postcode","netassets","ownershipstructure","ownervehicle","ownerestate","ownerland","ownershiptotal"]);
+				MustFillIn.GoCheck(document.getElementById("id_detailInfoForm"));
+				
+	   	   		
+			}
+			//if("update" == operFlag){
+				//MustFillIn.setRequire(["orgcode","rawValue_province","rawValue_city","rawValue_county","postcode","mobilenumber","phone"]);//默认承租人
+				//MustFillIn.GoCheck(document.getElementById("id_detailInfoForm"));
+				//}
+   	     },
+   		 loadFormDataCallBack:function(table,$form,rowIndex){
+   			var twolevelstatusname=getTracywindyObject("id_combo_twolevelstatusname").getValue();
+   			if(twolevelstatusname=="0"){
+   				getTracywindyObject("id_combo_twolevelstatusname").setRawValue("是");
+   			}else{
+   				getTracywindyObject("id_combo_twolevelstatusname").setRawValue("否");
+   			}
+			var rowData = table.getRowDataAt(rowIndex);
+   			getTracywindyObject("id_combo_id_onelevelname").setRawValue(rowData['onelevelname']);
+			 			var objMappingArr = [
+  			                    {comboId:'provincename',rowDataMapping:'province'},
+ 			                    {comboId:'cityname',rowDataMapping:'city',parentRowDataMapping:'province',tableName:'t_district'},
+ 			                    {comboId:'countyname',rowDataMapping:'county',parentRowDataMapping:'city',tableName:'t_district'},
+ 			                    {comboId:'ownershipname',rowDataMapping:'ownership'},
+ 			                    {comboId:'taxlevelname',rowDataMapping:'taxlevel'},
+ 			                    {comboId:'isassociatedname',rowDataMapping:'isassociated'},
+ 			                    {comboId:'draftname',rowDataMapping:'draft'},
+ 			                    {comboId:'reditorrightname',rowDataMapping:'reditorright'},
+ 			                    {comboId:'assurorrightname',rowDataMapping:'assurorright'},
+ 			                    {comboId:'creatordept',rowDataMapping:'creatordept'},
+ 			                  	{comboId:'cooperatestatusname',rowDataMapping:'cooperatestatus'},
+ 			                  	{comboId:'ownerdistrictname',rowDataMapping:'ownerdistrict'},
+ 			                  	{comboId:'ownerofficename',rowDataMapping:'owneroffice'},
+ 			                  	{comboId:'shoptypename',rowDataMapping:'shoptype'},
+ 			                  	{comboId:'custscalename',rowDataMapping:'custscale'},
+ 			                  	{comboId:'is4sname',rowDataMapping:'is4s'}			                  	
+ 			                   
+ 			                  ];
+			 			MustFillIn.setRequire(["custname","orgcode","rawValue_province","rawValue_creatordept","regdate","regcapital","is4s","incomeassets","cooperationdate","rawValue_city","rawValue_county","postcode","netassets","ownershipstructure","ownervehicle","ownerestate","ownerland","ownershiptotal"]);//默认承租人
+						MustFillIn.GoCheck(document.getElementById("id_detailInfoForm"));
+						for(var j=0;j<objMappingArr.length;j++){
+			 			     var objMapping = objMappingArr[j];
+			 			     var parentRowDataMapping = objMapping['parentRowDataMapping'];
+			 			     var rowDataValue         = rowData[objMapping['rowDataMapping']];
+			 			     var comboId   =  ("id_combo_"+objMapping['comboId']);
+			 			     var currentCombo = getTracywindyObject(comboId);
+			 			     if(parentRowDataMapping){
+			 				     var parentRowDataMappingValue = rowData[parentRowDataMapping];
+			 				     var tableName = objMapping['tableName'];
+			 				     currentCombo.setParams({tableName:"(select id,name from "+tableName+" where pid='"+parentRowDataMappingValue+"') rs "}) ;
+			 					 var loadCompleteFunc = (function(combo,rowDataValue){
+			 						       return function(combo){
+			 						    	   combo.setValue(rowDataValue);
+			 							  };
+			 					 })(currentCombo,rowDataValue);
+			 					 currentCombo.loadComplete = loadCompleteFunc;
+			 				}else{
+			 			    		currentCombo.setValue(rowDataValue);
+			 			   }
+			 			    currentCombo.reload();
+			 			 }
+			if(getTracywindyObject("id_combo_draftname").getValue()=='1'){//不是草稿的时候不能修改
+   	   	  		//getTracywindyObject("id_combo_draftname").readOnlyData = true;
+   	   	  		//getTracywindyObject("id_combo_draftname").reload();
+			}else{
+				getTracywindyObject("id_combo_draftname").readOnlyData = false;
+   	   	  		getTracywindyObject("id_combo_draftname").reload();
+			}
+    	 },
+   		 tableComment:'[经销商管理]',
+   		 constantFlagTable:'Distributor',
+   		 windowTop:20,
+   	     border:true,
+         renderTo:'id_tableContainer',
+         title:'经销商管理',
+         width:parseInt("${param.tableWidth}")||pageWidth,
+         height:parseInt("${param.tableHeight}")||pageHeight,
+         id:'id_table',
+         xmlFileName:'/eleasing/jsp/dealer_manage/dealer_info.xml',
+         loadMode:'ajax',
+         isPage:true,
+         isFit:false,
+         operButtons:operButtons,
+         enabledPromit:'有效',
+         disabledPromit:'无效',
+         enabledDefaultValue:'1',
+         isNeedEnabled:isAdmin,
+         isNeedEnabled:true,
+         isAutoBreakContent:true,
+         isExcel : true,
+         lockedNames:['custname'],
+         columns:[
+					{header:'经销商名称',name:'custname',renderer:showCustName, queryConfig:{}},
+		            {header:'id',name:'id',hidden:true},
+		            {header:'rawValue_onelevel',name:'rawValue_onelevel',hidden:true},
+					{header:'合作经销商编号',name:'contractnum'},
+					{header:'是否二级经销商',name:'twolevelstatusname',type:'combobox',
+			            queryConfig:{
+							loadMode:'local',
+							datas:[{title:'否',name:'1'},{title:'是',name:'0'}],
+				            displayField:'title',
+				            valueField:'name',
+				            defaultValue:1
+				            }},
+					{header:'所属一级经销商',name:'onelevelname',queryConfig:{isNewLine:true}},
+					{header:'合作状态',name:'cooperatestatusname'},
+					{header:'组织机构代码',name:'orgcode'},
+					{header:'纳税人类别',name:'taxlevelname'},
+					{header:'客户规模',name:'custscalename'},
+					{header:'纳税人识别号/国税登记号',name:'taxregcode',width:140},
+					{header:'电话',name:'taxphone'},
+					{header:'开户行',name:'taxbank',width:140},
+					{header:'开户账号',name:'taxacc',width:140},
+					{header:'贷款卡号',name:'creditcard',width:140},
+					{header:'省份',name:'provincename'},
+					{header:'省份',name:'province',hidden:true},
+					{header:'城市',name:'cityname'},
+					{header:'城市',name:'city',hidden:true},
+					{header:'区县',name:'countyname'},
+					{header:'区县',name:'county',hidden:true},
+					{header:'企业性质',name:'ownershipname'},
+					{header:'法人代表',name:'legalrepresentative'},
+					{header:'法人代表身份证',name:'idcardno',width:140},
+					{header:'手机',name:'mobilenumber'},
+					{header:'电话',name:'phone'},
+					{header:'公司邮寄地址',name:'mailadd',width:150},
+					{header:'邮编',name:'postcode'},
+					{header:'公司网址',name:'website',width:140},
+					{header:'公司地址',name:'postaddr'},
+					{header:'传真',name:'faxnumber'},
+					{header:'登记注册号（营业执照号）',name:'regnumber',width:140},
+					{header:'注册时间',name:'regdate'},
+					{header:'注册资本',name:'regcapital'},
+					{header:'所属区域',name:'ownerdistrictname'},
+					{header:'办事处',name:'ownerofficename'},
+					{header:'办事处',name:'owneroffice',hidden:true},
+					{header:'店面类型',name:'shoptypename'},
+					{header:'是否作废',name:'invalidname'},
+		            {header:'是否草稿',name:'draftname',type:'combobox',
+			            queryConfig:{
+						//isNewLine:true,
+						//colSpan:3,
+						loadMode:'local',
+						datas:[{title:'否',name:'1'},{title:'是',name:'0'}],
+			            displayField:'title',
+			            valueField:'name',
+			            defaultValue:1
+			            }},
+			            {header:'操作',name:'enabled',hidden:!isAdmin,renderer:resetCust}
+	        ],
+	        params:{
+	        		loginuser:"${sessionScope['login_userid']}",
+		     		enabled:"1"    
+			   }
+   	 });
+   });
+
+	function resetCust(value,tableObj,columnName,columnIndex,rowData){
+    	var field="-";
+        var invalid=rowData.invalidname;
+        if(invalid=="是"){
+	    	var base = "<a href='#' onclick='doResetCust(\""+rowData.custid+"\",\""+rowData.custname+"\")'>{1}</a>";
+	        var updateFlag="撤销删除";
+	        field=base.replace("{1}",updateFlag);
+        }
+        return field;
+    }
+    var currentLoadMask;
+    function doResetCust(custId,name){
+    	if(confirm("是否撤销删除["+name+"]经销商?")){
+    		var loadMaskMsg = ("正在撤销删除["+name+"]经销商,请稍后... ");
+            if(null == currentLoadMask){
+            	currentLoadMask = new tracywindyLoadMask(document.body,loadMaskMsg);
+	        }
+            currentLoadMask.show();
+            ajaxRequest({
+                url:"${pageContext.request.contextPath}/leasing/acl/resetCustEwlp.acl",
+                params:{"id":custId},
+                timeout:30*1000,
+                success:function(res){
+        	   		res=res.responseText;
+        	   		res=res.replace(/(^\s+)|(\s+$)/g, ""); 
+		     	    if(res!=''){
+			    	 	alert(res);
+		     	    }else{
+		     	    	alert("撤销成功["+name+"]!");
+		     	    	getTracywindyObject("id_table").reload();
+		     	    }
+                    currentLoadMask.hide();
+                },
+                failure:function(res){
+                    alert("服务器通信失败!");
+                    currentLoadMask.hide();
+                }
+           });
+        }
+    }
+	function showCustName(value,tableObj,columnName,columnIndex,rowData){
+        var base = "<a href='javascript:void(0);' onclick='showDealerCustInfo(\""+rowData.custid+"\")'>{1}</a>{2}";
+        var separator = "&nbsp;&nbsp;";
+        var updateFlag=value;
+        var updateClickFunc="other";
+        var field=base.replace("{1}",updateFlag).replace("{2}",separator);
+        return field;
+      }
+	 function showDealerCustInfo(cust_id){
+	    	var URL = "${pageContext.request.contextPath}/leasing/cust_info/cust_info.bi";
+	    	var params = {cust_id:cust_id,read_only:true};
+		    openFullScreenWindow(URL,params);
+	    }
+//combox的相关onselect函数
+function choseNext(parentCombo,childComboId,table){//多级联动函数
+	 var parentValue = parentCombo.getValue();
+	 var childCombo  = getTracywindyObject(childComboId);
+	 childCombo.params['tableName'] ="(select id,name from "+table+" where pid='"+parentValue+"') rs" ;
+	 childCombo.reload();
+}
+
+function checkDraft(){//确认是否草稿
+	if(getTracywindyObject("id_combo_draftname").getValue()=='0'){
+		if(confirm("您确认存为草稿吗?")){
+			MustFillIn.cancelRequireAll(document.getElementById("id_detailInfoForm"));//清除所有必填
+			MustFillIn.setRequire(["custname","rawValue_creatordept"]);
+			MustFillIn.GoCheck(document.getElementById("id_detailInfoForm"));
+		}
+		}
+	}
+function submitCust(){//提交表单
+	if(check){
+		if(checkDraft()){return false;}
+		if(getTracywindyObject("id_combo_draftname").getValue()=='1'){
+			var phone=jQuery("#id_phone").val();
+			var mobilenumber=jQuery("#id_mobilenumber").val();
+			if(mobilenumber==""&&phone==""){
+				jQuery("#id_mobilenumber").focus();
+				alert("手机电话必须填写其中任意一个!");
+				return false;
+			}
+		}
+		getTracywindyObject("id_table").operationTable();
+	}else{
+		alert("请输入正确的组织机构代码!");
+		return false;
+	}
+}
+//其中checkORG1为原来组织机构编码的校验
+function checkORG(obj)
+{
+	var code = obj.value;
+    if (code.length == 10)
+    {
+        return checkORG1(obj);
+    }else{
+        var flag = isValidSocialCreditIdentifier(code);
+        if(!flag){
+        	alert("组织机构代码错误!");
+        }
+        return flag;
+    }
+}
+
+function isValidSocialCreditIdentifier(code)
+{
+    if (code.length != 18) return false;
+    var ws = [1,3,9,27,19,26,16,17,20,29,25,13,8,24,10,30,28];
+    var str = "0123456789ABCDEFGHJKLMNPQRTUWXY";
+    //验证9-17位 的组织机构代码
+    var tCode = code.substr(8, 8) + "-" + code.substr(16, 1);
+    if (isValidEntpCode(tCode) == false) return false;
+    var sum = 0;
+    for (var i = 0; i < 17; i++)
+    {
+        sum += str.indexOf((code.substr(i, 1))+"") * ws[i];
+    }
+    var c18 = 31 - (sum % 31);
+    return (str.substr(c18, 1)+"") == (code.substr(17, 1));
+}
+
+function isValidEntpCode(code)
+{
+    var ws = [3,7,9,10,5,8,4,2];
+    var  str = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    var  rx = /^([0-9A-Z]){8}-[0-9|X]$/g;
+    if (!rx.test(code)){return false;}
+     var  sum = 0;
+    for (var i = 0; i < 8; i++)
+    {sum += str.indexOf((code.substr(i,1))+"") * ws[i];}
+    var  c9 = 11 - (sum % 11);
+    var  sc9 =c9+"";
+    if (11 == c9)
+    {sc9 = "0";}
+    else if (10 == c9)
+    {   sc9 = "X";}
+    return sc9==(code.substr(9,1));
+}
+
+function checkORG1(obj){
+	if(checkORGRight(obj)){
+		if(checkORGPrmary()){
+			return true;
+		}
+	}
+	return false;
+}
+function checkORGRight(obj){//校验组织机构代码
+	  var financecode=obj.value;
+	   var fir_value, sec_value;
+	   var w_i = new Array(8);
+	   var c_i = new Array(8);
+	   var j, s = 0;
+	   var c, i;
+
+	   var code = financecode;
+
+	   if (code.length<1) {
+	     //alert("请输入组织机构代码!");
+	     //obj.select();
+	       return false;
+	   }
+
+	   if (code == "00000000-0") {
+	     alert("组织机构代码错误!");
+	     //obj.select();
+	       return false;
+	   }
+
+	   re = /[A-Z0-9]{8}-[A-Z0-9]/;    
+	   r = code.match(re);   
+	   if (r == null) {
+		 alert("组织机构代码错误!");
+	     //obj.select();
+	     return false;
+	   }        
+
+		   w_i[0] = 3;
+		   w_i[1] = 7;
+		   w_i[2] = 9;
+		   w_i[3] = 10;
+		   w_i[4] = 5;
+		   w_i[5] = 8;
+		   w_i[6] = 4;
+		   w_i[7] = 2;
+
+		   if (financecode.charAt(8) != '-') {
+		   alert("组织机构代码错误!");
+			 //obj.select();
+			   return false;
+		   }
+
+		   for (i = 0; i < 10; i++) {
+			   c = financecode.charAt(i);
+			   if ((c <= 'z') && (c >= 'a')) 
+			  {
+			   alert("组织机构代码错误!");
+			 //obj.select();
+				   return false;
+			   }
+		   }
+
+
+		   fir_value = financecode.charCodeAt(0);
+		   sec_value = financecode.charCodeAt(1);
+
+		   if (fir_value >= 'A'.charCodeAt(0) && fir_value <= 'Z'.charCodeAt(0)) {
+			   c_i[0] = fir_value + 32 - 87;
+		   } else {
+				if (fir_value >= '0'.charCodeAt(0) && fir_value <= '9'.charCodeAt(0)) {
+				c_i[0] = fir_value - '0'.charCodeAt(0);
+				} else {
+						alert("组织机构代码错误!");
+			 //obj.select();
+				return false;
+				}
+		   }
+
+		   s = s + w_i[0] * c_i[0];
+
+		   if (sec_value >= 'A'.charCodeAt(0) && sec_value <= 'Z'.charCodeAt(0)) {
+			   c_i[1] = sec_value + 32 - 87;
+		   } else if (sec_value >= '0'.charCodeAt(0) && sec_value <= '9'.charCodeAt(0)) {
+			   c_i[1] = sec_value - '0'.charCodeAt(0);
+		   } else {
+		   alert("组织机构代码错误!");
+			 //obj.select();
+			   return false;
+		   }
+
+		   s = s + w_i[1] * c_i[1];
+		   for (j = 2; j < 8; j++) {
+			   if (financecode.charAt(j) < '0' || financecode.charAt(j) > '9') {
+			   alert("组织机构代码错误!");
+			 //obj.select();
+				   return false;
+			   }
+			   c_i[j] = financecode.charCodeAt(j) - '0'.charCodeAt(0);
+			   s = s + w_i[j] * c_i[j];
+		   }
+
+		   c = 11 - (s % 11);
+
+		   if (!((financecode.charAt(9) == 'X' && c == 10) ||
+				 (c == 11 && financecode.charAt(9) == '0') || (c == financecode.charCodeAt(9) - '0'.charCodeAt(0)))) {
+
+				  alert("组织机构代码错误!");
+				  // obj.select();
+					return false;
+		   }
+	   return true;
+}
+var check=true;
+function checkORGPrmary(){//校验组织结构代码唯一
+	var custid=jQuery("#custid").val();
+	var orgcode=jQuery("#orgcode").val();
+	if(orgcode!=""){
+		var url = '${pageContext.request.contextPath}/acl/checkCustdealer.acl';
+		var param={};
+		param.custid=custid;
+		param.orgcode=orgcode;
+        ajaxRequest({
+             url:url,
+             params:param,
+		     success:function(res){
+			     	if(res!=''){
+			     		var svote=res.responseText;
+			     	    svote=svote.replace(/(^\s+)|(\s+$)/g, ""); 
+			     	    if(svote!=''){
+				    	 	alert(svote);
+				     		check=false;
+			     	    }else{
+			     	    	check=true;
+			     	    }
+			     	}
+			     },
+		     failure:function(res){alert("校验组织机构代码唯一失败!");}
+        });
+	}else{
+		check=true;
+	}
+	return check;
+}
+</script>
+</head>
+<body>
+    <div id="id_tableContainer"></div>
+	<div id="id_detailInfoWindowContainer"  buttons="#id-dlg-buttons" closed="true" modal="true" title="经销商管理" style="display:none;width:800px;">
+	        <center>
+		       <form id="id_detailInfoForm">
+			        <table style="width:95%" class="fillTable">
+			            <tr style="display:none"><td><input name="id"  type="hidden" value=""/><input name="custid" id="custid" type="hidden" value=""/></td></tr>
+			            <tr  class="tr-even">
+			            	<td class="td-content-title">经销商名称:  </td>  
+			            	<td class="td-content" colspan="3">
+			            		<input name="custname" id="custname"  style="width:92%"  label="经销商名称" maxB="255" maxlength="255" class="td-content"   type="text" />
+			            	</td>
+			            	
+			            </tr>
+			            
+			               <tr  class="tr-odd">
+			            	<!--  <td class="td-content-title">经销商编号:  </td>  
+			            	<td class="td-content">
+			            		<input name="contractNum"  readonly="readonly" id="custnumber" maxB="50"   label="经销商编号"  class="td-content-input td-content-readonly"    type="text" />
+			            	</td>-->
+			            	<td class="td-content-title">组织机构代码(统一社会信用代码):  </td>  
+			            	<td class="td-content">
+			            		<input name="orgcode" id="orgcode"  label="组织结构代码" maxB="50" maxlength="20" onblur="checkORG(this)" class="td-content"   type="text" />
+			            	</td>
+			            	<td class="td-content-title">合作状态:  </td>  
+			            	<td class="td-content">
+			            		<div style="float:left" class="leftComboContainer" id="cooperatestatusname"></div>
+			            	</td>    
+			            	<td class="td-content-title"></td> 
+			            	<td class="td-content-title"></td>  	
+			            </tr>
+			            <tr  class="tr-even">
+			            	<td class="td-content-title">是否二级经销商:  </td>  
+			            	<td class="td-content">
+			            		<div style="float:left" class="leftComboContainer" id="twolevelstatusname"></div>
+			            	</td>
+			            	<td class="td-content-title">所属一级经销商:  </td>  
+			            	<td class="td-content">
+			            		<div style="float:left" class="leftComboContainer" id="onelevelname"></div>
+			            	</td>
+			            </tr>
+			            <tr  class="tr-even">
+			            	<td class="td-content-title">纳税人类别:  </td>  
+			            	<td class="td-content">
+			            		<div style="float:left" class="leftComboContainer" id="taxlevelname"></div>
+			            	</td>
+			            	<td class="td-content-title">客户规模:  </td>  
+			            	<td class="td-content">
+			            		<div style="float:left" class="leftComboContainer" id="custscalename"></div>
+			            	</td>
+			            </tr>
+			            <tr  class="tr-odd">
+			            	<td class="td-content-title">纳税人识别号/国税登记号:  </td>  
+			            	<td class="td-content">
+			            		<input name="taxregcode" label="纳税人识别号/国税登记号" maxB="100" maxlength="100"  type="text" />
+			            	</td>
+			            	<td class="td-content-title">电话:  </td>  
+			            	<td class="td-content">
+			            		<input name="taxphone"  label="电话" maxB="100"   type="text" />
+			            	</td>
+			            </tr>
+			            <tr  class="tr-even">
+			            	<td class="td-content-title">开户行:  </td>  
+			            	<td class="td-content">
+			            		<input name="taxbank"  label="开户行"  maxB="100" maxlength="100"  type="text" />
+			            	</td>
+			            	<td class="td-content-title">开户账号:  </td>  
+			            	<td class="td-content">
+			            		<input name="taxacc"  label="开户账号"  maxB="50"  maxlength="50" type="text" />
+			            	</td>
+			            </tr>
+			            <tr  class="tr-odd">
+			            	<td class="td-content-title">货款卡号:  </td>  
+			            	<td class="td-content">
+			            		<input name="creditcard"  label="货款卡号"  maxB="50" maxlength="50"  type="text" />
+			            	</td>
+			            	<td class="td-content-title">企业性质:  </td>  
+			            	<td class="td-content">
+			            		<div style="float:left" class="leftComboContainer" id="ownershipname"></div>
+			            	</td>
+			            </tr>
+			             <tr class="tr-even">
+			            	<td class="td-content-title">省份:  </td>  
+			            	<td class="td-content">
+			            		<div style="float:left" class="leftComboContainer" id="provincename"></div>
+			            	</td>
+			            	<td class="td-content-title">城市:  </td>  
+			            	<td class="td-content">
+			            		<div style="float:left" class="leftComboContainer" id="cityname"></div>
+			            	</td>
+			            </tr>
+			            <tr  class="tr-odd">
+			            	<td class="td-content-title">区县:  </td>  
+			            	<td class="td-content">
+			            		<div style="float:left" class="leftComboContainer" id="countyname"></div>
+			            	</td>
+			            	
+			            	<td class="td-content-title">是否4S: </td>  
+			            	<td class="td-content">
+			            		<div style="float:left" class="leftComboContainer" id="is4sname"></div>
+			            	</td>
+			            </tr>
+			            
+			             <tr  class="tr-even">
+			            	<td class="td-content-title">法人代表:  </td>  
+			            	<td class="td-content">
+			            		<input name="legalrepresentative"  label="法人代表"  maxB="150" maxlength="150" type="text" />
+			            	</td>
+			            	<td class="td-content-title">法人代表身份证:  </td>  
+			            	<td class="td-content">
+			            		<input name="idcardno"  label="法人代表身份证号" dataType="IdCard"  maxB="20" maxlength="18" type="text" />
+			            	</td>
+			            </tr>
+			             <tr  class="tr-odd">
+			            	<td class="td-content-title">手机:  </td>  
+			            	<td class="td-content">
+			            		<input id="id_mobilenumber" name="mobilenumber"  label="手机" dataType="Mobile" maxB="20" maxlength="11" type="text" />
+			            	</td>
+			            	<td class="td-content-title">电话:  </td>  
+			            	<td class="td-content">
+			            		<input id="id_phone"  name="phone"  label="电话"   maxB="100"  type="text" />
+			            	</td>
+			            </tr>
+			             <tr  class="tr-even">
+			            	<td class="td-content-title">公司邮寄地址:  </td>  
+			            	<td class="td-content" colspan="3">
+			            		<textarea name="mailAdd"  label="公司邮寄地址" maxB="255" maxlength="255" style="width:92%" type="text" ></textarea>
+			            	</td>
+			            </tr>
+			            <tr   class="tr-odd">
+			            	<td class="td-content-title">邮编:  </td>  
+			            	<td class="td-content">
+			            		<input name="postcode"  label="邮编"  dataType="Zip" maxB="20" maxlength="6"  type="text" />
+			            	</td>
+			            	<td class="td-content-title">公司网址:  </td>  
+			            	<td class="td-content">
+			            		<input name="website"  label="公司网址" dataType="Url" maxB="100" maxlength="100" type="text" />
+			            	</td>
+			            </tr>
+			            <tr  class="tr-even">
+			            	<td class="td-content-title">公司地址: </td>  
+			            	<td class="td-content" colspan="3">
+			            		<textarea name="postaddr"  label="公司地址" maxB="255"  maxlength="255" style="width:92%"  type="text" ></textarea>
+			            	</td>
+			            </tr>
+			            <tr  class="tr-odd">
+			            <td class="td-content-title">传真:  </td>  
+			            	<td class="td-content">
+			            		<input name="faxnumber"  label="传真"   maxB="100"  type="text" />
+			            	</td>
+			            	<td class="td-content-title">登记注册号（营业执照号）: </td>  
+			            	<td class="td-content">
+			            		<textarea name="regnumber"  label="登记注册号（营业执照号）" maxB="50" maxlength="50" style="width:77%"   type="text" ></textarea>
+			            	</td>
+			            </tr>
+			            <tr  class="tr-even">
+			            <td class="td-content-title">注册时间 :  </td>  
+			            	<td class="td-content">
+			            	<input name="regdate" id="regdate"  label="注册时间"  class="Wdate td-content-input td-content-readonly"  onClick="WdatePicker(this,{readOnly:true})" readOnly   type="text" />
+			            	</td>
+			            	<td class="td-content-title">注册资本 :  </td>  
+			            	<td class="td-content">
+			            		<input name="regcapital" id="regcapital" label="注册资本 " dataType="PMoney" maxB="255" maxlength="255"  type="text" />
+			            	</td>
+			            </tr>
+			             <tr  class="tr-odd">
+			            	<td class="td-content-title">注册地址 : </td>  
+			            	<td class="td-content">
+			            		<input name="regaddr"  label="注册地址 : "  maxB="255" maxlength="255"  type="text" />
+			            	</td>
+			            	<td class="td-content-title">实收资本: </td>  
+			            	<td class="td-content">
+			            		<input name="incomeassets" id="incomeassets" label="实收资本"  maxB="255"  maxlength="255" type="text" />
+			            	</td>
+			            </tr>
+			            <tr  class="tr-even">
+			            	<td class="td-content-title">经营范围（主营） : </td>  
+			            	<td class="td-content" colspan="3">
+			            		<textarea name="bizscopeprimary"  label="经营范围（主营） " style="width:92%" maxB="255"  type="text" ></textarea>
+			            	</td>
+			            </tr>
+			            <tr  class="tr-odd">
+			            	<td class="td-content-title">经营范围（兼营） : </td>  
+			            	<td class="td-content" colspan="3">
+			            		<textarea name="bizscopesecondary"  label="经营范围（兼营） : " style="width:92%"  maxB="255" type="text" ></textarea>
+			            	</td>
+			            </tr>
+			            <tr  class="tr-even">
+			            	<td class="td-content-title">所属区域:  </td>  
+			            	<td class="td-content">
+			            		<div style="float:left" class="leftComboContainer" id="ownerdistrictname"></div>
+			            	</td>
+			            	<td class="td-content-title">办事处:  </td>  
+			            	<td class="td-content">
+			            		<div style="float:left" class="leftComboContainer" id="ownerofficename"></div>
+			            	</td>
+			            </tr>
+			            <tr  class="tr-odd">
+			            	<td class="td-content-title">近三年销量 : </td>  
+			            	<td class="td-content" colspan="3">
+			            		<textarea name="threeyearsales"  label="近三年销量 : " style="width:92%"  type="text" ></textarea>
+			            	</td>
+			            </tr>
+			            <tr class="tr-even">
+			            	<td class="td-content-title">店面类型:  </td>  
+			            	<td class="td-content">
+			            		<div style="float:left" class="leftComboContainer" id="shoptypename"></div>
+			            	</td>
+			            	<td class="td-content-title">与陕汽合作开始时间:  </td>  
+			            	<td class="td-content">
+			            		<input name="cooperationdate" id="cooperationdate"  label="与陕汽合作开始时间"  class="Wdate td-content-input td-content-readonly"  onClick="WdatePicker(this,{readOnly:true})" readOnly   type="text" />
+			            	</td>
+			            </tr>
+			            <tr  class="tr-odd">
+			            	<td class="td-content-title"> 目标销量: </td>  
+			            	<td class="td-content" colspan="3">
+			            		<textarea name="purposesales"  label="目标销量 " style="width:92%" maxB="255" type="text" ></textarea>
+			            	</td>
+			            </tr>
+			            <!--  <tr  class="tr-even">
+			            	<td class="td-content-title"> 常住地址: </td>  
+			            	<td class="td-content" colspan="3">
+			            		<textarea name="oftenaddr"  label="常住地址 " maxB="255" style="width:92%" type="text" ></textarea>
+			            	</td>
+			            </tr> -->
+			             <tr  class="tr-odd">
+			            	<td class="td-content-title"> 净资产: </td>  
+			            	<td class="td-content" colspan="3">
+			            		<textarea name="netassets"  label="净资产 " maxB="255" style="width:92%" type="text" ></textarea>
+			            	</td>
+			            </tr>
+			            <tr  class="tr-even">
+			            	<td class="td-content-title"> 股权结构: </td>  
+			            	<td class="td-content" colspan="3">
+			            		<textarea name="ownershipstructure" maxB="255" label="股权结构 " style="width:92%"  type="text" ></textarea>
+			            	</td>
+			            </tr>
+			            <tr  class="tr-odd">
+			            	<td class="td-content-title">自有车辆:  </td>  
+			            	<td class="td-content" colspan="3">
+			            		<textarea name="ownervehicle"  label="自有车辆" style="width:92%" maxB="1000" type="text" ></textarea>
+			            	</td>
+			            </tr>
+			             <tr   class="tr-even">
+			            	<td class="td-content-title">房产:  </td>  
+			            	<td class="td-content" colspan="3">
+			            		<textarea name="ownerestate"  label="房产" maxB="1000" style="width:92%" type="text" ></textarea>
+			            	</td>
+			            </tr>
+			             <tr   class="tr-odd">
+			            	<td class="td-content-title">土地:  </td>  
+			            	<td class="td-content" colspan="3">
+			            		<textarea name="ownerland"  label="土地"  maxB="255" style="width:92%" type="text" ></textarea>
+			            	</td>
+			            </tr>
+			             <tr   class="tr-even">
+			            	<td class="td-content-title">其他:  </td>  
+			            	<td class="td-content" colspan="3">
+			            		<textarea name="ownerother"  label="其他"  maxB="255" style="width:92%" type="text" ></textarea>
+			            	</td>
+			            </tr>
+			             <tr   class="tr-odd">
+			            	<td class="td-content-title">资产估价（总）:  </td>  
+			            	<td class="td-content" colspan="3">
+			            		<textarea name="ownershiptotal"  maxB="255" label="资产估价（总）"  style="width:92%" type="text" ></textarea>
+			            	</td>
+			            </tr>
+			             <tr   class="tr-even">
+			            	<td class="td-content-title">备注:  </td>  
+			            	<td class="td-content" colspan="3">
+			            		<textarea name="ownermemo"  label="备注"  maxB="255" style="width:92%" type="text" ></textarea>
+			            	</td>
+			            </tr>
+			            <tr  class="tr-odd">
+			            <td class="td-content-title">是否草稿: </td>  
+			            	<td class="td-content">
+			            		<div style="float:left" class="leftComboContainer" id="draftname"></div>
+			            	</td>
+			            	<td class="td-content-title">登记人 :  </td>  
+			            	<td class="td-content">
+			            		<input name="creatorname" id="creatorname" label="登记人 " class="td-content-readonly" readonly="readonly" type="text" />
+			            	</td>
+			            </tr>
+			            <tr  class="tr-even">
+			            <td class="td-content-title">登记人部门:</td>  
+			            	<td class="td-content">
+			            		<div style="float:left" class="leftComboContainer" id="creatordeptname"></div>
+			            	</td>
+			           	 <td class="td-content-title">登记时间: </td>  
+			            	<td class="td-content">
+			            		<input name="createdate" id="createdate" isDefaultDate="true"  label="登记时间"   readOnly   type="text" />
+			            		<input name="invalid" id="invalid"  label="是否作废 " class="td-content-readonly" readonly="readonly"  type="hidden" />
+			            		<input id="draftname" type="hidden" />
+			            		<input id="industryname" type="hidden" />
+			            		<input id="taxlevelname" type="hidden" />
+			            		<input id="industrylevelbigname" type="hidden" />
+			            		<input id="industrylevelmiddlename" type="hidden" />
+			            		<input id="industrylevelsmallname" type="hidden" />
+			            		<input id="onelevelname" type="hidden" />
+			            		<input id="twolevelstatusname" type="hidden" />
+			            		<span id="custtype" style="display:none"></span>
+			            		<span id="isassociatedname" style="display:none"></span>
+			            		<span id="reditorrightname" style="display:none"></span>
+			            		<span id="assurorrightname" style="display:none"></span>
+			            		
+			            	</td>
+			            </tr>
+			         
+			        </table>
+		        </form>
+	        </center>
+	</div>
+		<div style="text-align:center;width:800px;display:none;height:40px;line-height:40px;" id="id-dlg-buttons">
+		  <a  style="margin-left:20px;" href="javascript:void(0);" class="btn btn-primary" onclick='submitCust();'><span>确定</span></a>
+		  <a  style="margin-left:20px;" href="javascript:void(0);" class="btn btn-primary" onclick='jQuery("#id_detailInfoWindowContainer").window("close");'><span>取消</span></a>
+	</div>
+</body>
+</html>

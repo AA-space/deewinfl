@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+    <alldb>
+      <table_sql> 
+	        <![CDATA[
+select 
+ list1.contract_id,
+list1.districtname as districtname,
+ list1.projname as projname,
+ list1.dealername   as dealername,
+ list1.custname     as custname,
+ list1.contractnumber as contractnumber,
+ 
+ nvl(list2.contractapp,'未发起') as contractapp,
+ nvl(list2.fundcollect,'未发起') as fundcollect,
+ nvl(list2.dealercollect,'未发起') as dealercollect,
+ nvl(list2.equipacc,'未发起') as equipacc,
+ nvl(list2.contractonhire,'未发起') as contractonhire,
+ list1.insurance  as insurance,
+ list1.isgps      as isgps,
+ nvl(list2.factput,'未发起') as factput
+ from 
+ (select 
+       ci.contract_id contract_id,
+       pi.project_name project_name,
+       tu.REALNAME_  projname,
+       dict_name.name_ districtname,
+       ci2.cust_name dealername,
+       ci2.id        dealerid,
+       ci1.cust_name as custname,
+       pi.contract_number contractnumber,
+       
+       case cisi.is_sure when 1 then '已确认' else '未确定' end as insurance,
+       case gpsgruop.isgps when '0' then '已安装GPS' else '未确定' end as isgps
+       --pi.*
+       from proj_info pi
+        
+left join contract_info ci on pi.id=ci.proj_id
+left join cust_info ci1 on pi.cust_id=ci1.id
+left join cust_info ci2 on pi.cust_dealer=ci2.id
+left join CONTRACT_INSURANCE_SURE_INFO cisi on ci.id=cisi.contract_id
+left join cust_info_dealer cid on ci2.id=cid.cust_id
+left join manager_district md on cid.owner_district=md.district_ and md.manager_role='402881824094f54f01409551aff2002c'
+left join t_users tu on (md.manager_=tu.id_) 
+left join t_dicts_datas dict_name on cid.owner_district=dict_name.id_
+left join 
+(select gps.contract_id,max(gps.is_gps) isgps from 
+gps_info gps
+group by gps.contract_id
+) gpsgruop
+ on ci.id=gpsgruop.contract_id
+where length(pi.proj_id)>10 and pi.proj_status>10 
+) list1
+
+left join 
+ (
+ SELECT
+ PROJECTNAME,
+  min(CASE WORKFLOWNAME WHEN '合同审批流程'   THEN case when PROCESSEND is null then '处理过程中：'||taskuser||',开始时间:'||PROCESSSTART else '是：开始时间:'||PROCESSSTART||',结束时间:'||PROCESSEND end  ELSE '未发起' END) AS contractapp,
+  min(CASE WORKFLOWNAME WHEN '收款流程'       THEN case when PROCESSEND is null then '处理过程中：'||taskuser||',开始时间:'||PROCESSSTART else '是：开始时间:'||PROCESSSTART||',结束时间:'||PROCESSEND end  ELSE '未发起' END) AS fundcollect,
+  min(CASE WHEN WORKFLOWNAME = '设备验收流程' THEN case when PROCESSEND is null then '处理过程中：'||taskuser||',开始时间:'||PROCESSSTART else '是：开始时间:'||PROCESSSTART||',结束时间:'||PROCESSEND end  ELSE '未发起' END) AS equipacc,
+  min(CASE WHEN WORKFLOWNAME = '合同起租流程' THEN case when PROCESSEND is null then '处理过程中：'||taskuser||',开始时间:'||PROCESSSTART else '是：开始时间:'||PROCESSSTART||',结束时间:'||PROCESSEND end  ELSE '未发起' END) AS contractonhire,
+  min(CASE WHEN WORKFLOWNAME = '实际投放流程' THEN case when PROCESSEND is null then '处理过程中：'||taskuser||',开始时间:'||PROCESSSTART else '是：开始时间:'||PROCESSSTART||',结束时间:'||PROCESSEND end  ELSE '未发起' END) AS factput,
+  min(CASE WHEN WORKFLOWNAME = '经销商资金收款' THEN case when PROCESSEND is null then '处理过程中：'||taskuser||',开始时间:'||PROCESSSTART else '是：开始时间:'||PROCESSSTART||',结束时间:'||PROCESSEND end  ELSE '未发起' END) AS dealercollect
+
+  
+ FROM(
+                  SELECT 
+                            WI.JBPM4_DEPLOYMENT_DBID_                             AS DEPLOYID,
+                            WI.WORKFLOW_NAME_                                     AS WORKFLOWNAME,
+                            wi.realname                                           as taskuser,
+                            HP.DBID_                                              AS PROCESSINSTANCEDBID,
+                            HP.ID_                                                AS PROCESSINSTANCEID,
+                            TO_CHAR(HP.START_,'YYYY-MM-DD HH24:MI:SS')            AS PROCESSSTART,
+                            TO_CHAR(HP.END_  ,'YYYY-MM-DD HH24:MI:SS')            AS PROCESSEND, 
+                            WI.KEY_ONE_                                           AS SERIALNO, 
+                            WI.KEY_TWO_                                           AS PROJECTNAME
+                           -- WM_CONCAT(HAC.HTASK_)                                 AS TASKID,
+                           -- WM_CONCAT(HAC.HTASK_||'@@_@@'||TJAD.ACTIVITY_NAME_)   AS TASKNAME
+                            
+                  FROM(
+                     SELECT 
+                       ID_,KEY_ONE_,KEY_TWO_,KEY_THREE_,KEY_FOUR_,KEY_FIVE_,KEY_SIX_,KEY_SEVEN_,
+                 KEY_EIGHT_,KEY_NINE_,KEY_TEN_,PROCESS_FORM_PATH_,PROCESS_FORM_TITLE_,
+                 WORKFLOW_NAME_,WORKFLOW_DISPLAY_NAME_,DRAFT_UUID_,PROCESSINSTANCE_STATE_,
+                 PROCESSDEFINITION_ID_,REQUEST_INITIATOR_,REQUEST_INITIATOR_REAL_NAME_,
+                 FROM_BUTTONTEXT_TO_COME_,JBPM4_HIST_ACTINST_DBID_,PREV_JBPM4_HIST_ACTINST_DBID_,
+                 JBPM4_HIST_PROCINST_DBID_,twork.JBPM4_DEPLOYMENT_DBID_,
+                 REQUEST_INITIATOR_ID_,ACTIVITY_DETAIL_ID_,JBPM4_HIST_ACTINST_LAST_DBID_,HISTORY_ACTIVITY_NAME_,tab.realname
+                     FROM T_JBPM_WORKFLOW_INFO twork
+                     
+                     left join (
+                     select tjpbpu.jbpmworkflowhistoryinfo_id_, WM_CONCAT(tu.realname_) as realname from 
+                      T_JBPM_WORKFLOW_INFOS_USERS tjpbpu 
+                     left join t_users tu on tjpbpu.plan_actor_user_id_=tu.id_
+                     group by tjpbpu.jbpmworkflowhistoryinfo_id_
+                     ) tab on twork.id_=tab.jbpmworkflowhistoryinfo_id_
+                     
+                     WHERE twork.JBPM4_HIST_ACTINST_DBID_ in
+                     (
+                      select max(JBPM4_HIST_ACTINST_DBID_)
+                      from T_JBPM_WORKFLOW_INFO twork
+                      group by twork.jbpm4_hist_procinst_dbid_
+                      )
+                   
+                  ) WI
+                  
+                  
+                   
+                  LEFT JOIN(
+                     SELECT 
+                        DBID_, DBVERSION_, ID_, PROCDEFID_, KEY_, START_, END_, 
+                    DURATION_, STATE_, ENDACTIVITY_, NEXTIDX_  
+                     FROM JBPM4_HIST_PROCINST
+                  )HP ON   HP.DBID_ = WI.JBPM4_HIST_PROCINST_DBID_
+                  LEFT JOIN(
+                     SELECT 
+              DBID_, CLASS_, DBVERSION_, HPROCI_, TYPE_, 
+              EXECUTION_, ACTIVITY_NAME_, START_, END_, 
+              DURATION_, TRANSITION_, NEXTIDX_, HTASK_, 
+              PROCI_HISTORY_INFO_ID_, ACTIVED_PROCI_HISTORY_INFO_ID_, 
+              TASK_HISTORY_INFO_ID_, FIRSTED_HISTORY_INFO_ID_
+                     FROM JBPM4_HIST_ACTINST 
+                  )HAC ON HAC.HPROCI_ = WI.JBPM4_HIST_PROCINST_DBID_
+                  LEFT JOIN T_JBPM_ACTIVITY_DETAIL TJAD ON TJAD.ACTIVITY_KEY_ = HAC.ACTIVITY_NAME_
+                  --WHERE ( HAC.END_ IS NULL OR HAC.DBID_  = WI.JBPM4_HIST_ACTINST_LAST_DBID_ )
+                  
+                  GROUP BY WI.JBPM4_DEPLOYMENT_DBID_ ,WI.WORKFLOW_NAME_,wi.realname, HP.DBID_,HP.ID_,HP.START_,HP.END_,WI.KEY_ONE_,WI.KEY_TWO_
+                  ORDER BY HP.START_ DESC
+              )TTTT
+              WHERE 1=1
+              and WORKFLOWNAME in ('合同审批流程','收款流程','设备验收流程','合同起租流程','实际投放流程','经销商资金收款')
+              group by PROJECTNAME 
+              
+             --and WORKFLOWNAME in ('合同起租流程')
+)list2  
+on list1.project_name=list2.PROJECTNAME
+where 1=1
+
+/~currentDealerCustInfoId: AND list1.dealerid= '{currentDealerCustInfoId}'~/
+				
+/~custname: and list1.custname like '%{custname}%'~/
+/~dealername: and list1.dealername like '%{dealername}%'~/
+/~contractnumber: and list1.contractnumber  like '%{contractnumber}%'~/
+/~contractapp_start: and trim(substr(list2.contractapp,instr(list2.contractapp,'开始时间')+5,10)) >= '{contractapp_start}'~/
+/~contractapp_end: and trim(substr(list2.contractapp,instr(list2.contractapp,'开始时间')+5,10)) <= '{contractapp_end}'~/                  
+/~districtname: and list1.districtname like '%{districtname}%'~/
+/~projname: and list1.projname like '%{projname}%'~/             
+                
+            
+			 ]]> 
+	  </table_sql>
+	  </alldb>
+      <dataSource>dataSource</dataSource>
+	  <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

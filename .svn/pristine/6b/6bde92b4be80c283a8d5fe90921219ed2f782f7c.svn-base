@@ -1,0 +1,164 @@
+package com.business.entity.proj;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.GenericGenerator;
+
+import com.business.entity.User;
+import com.kernal.annotation.FieldName;
+
+/**
+ * 
+ * @author 徐云龙
+ * @date 2013-3-5上午10:17:01
+ * @info 项目变更信息实体类
+ * @Copyright Tenwa
+ */
+@Entity
+@FieldName(name = "项目变更信息")
+@Table(name="PROJ_CHANGER_INFO")
+public class ProjChangeInfo {
+	@Id
+	@GeneratedValue(generator = "paymentableGenerator")
+	@GenericGenerator(name = "paymentableGenerator", strategy = "uuid")
+	@Column(length = 32)
+	private String id;
+	
+	@FieldName(name = "项目编号")
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "PROJ_ID")
+	private ProjInfo projId;
+	
+	@FieldName(name = "流程号")
+	@Column(name = "WORK_FLOW_UNID")
+	private String workFlowUnid;
+	
+	@FieldName(name = "项目变更日期")
+	@Column(name = "PROJ_CHANGE_DATE", length = 20)
+	private String projChangeDate;
+
+	@FieldName(name = "项目变更前内容")
+	@Column(name = "PROJ_CHANGE_BEFORE_MEMO")
+	private String projChangeBeforMemo;
+
+	@FieldName(name = "项目变更后内容")
+	@Column(name = "PROJ_CHANGE_AFTER_MEMO")
+	private String projChangeAfterMemo;
+
+	@FieldName(name = "项目变更内容")
+	@Column(name = "PROJ_CHANGE_MEMO")
+	private String projChangeMemo;
+	@ManyToOne
+	@FieldName(name = "创建人")
+	@JoinColumn(name = "CREATOR_")
+	private User creator;
+
+	@FieldName(name = "创建时间")
+	@Column(name = "CREATE_DATE", length = 20)
+	private String createDate;
+
+	@ManyToOne
+	@FieldName(name = "修改人")
+	@JoinColumn(name = "MODIFICATOR_")
+	private User modificator;
+
+	@FieldName(name = "修改时间")
+	@Column(name = "MODIFY_DATE", length = 20)
+	private String modifyDate;
+
+	public String getId() {
+		return id;
+	}
+
+	public ProjInfo getProjId() {
+		return projId;
+	}
+
+	public String getProjChangeDate() {
+		return projChangeDate;
+	}
+
+	public String getProjChangeBeforMemo() {
+		return projChangeBeforMemo;
+	}
+
+	public String getProjChangeAfterMemo() {
+		return projChangeAfterMemo;
+	}
+
+	public String getProjChangeMemo() {
+		return projChangeMemo;
+	}
+
+	public User getCreator() {
+		return creator;
+	}
+
+	public String getCreateDate() {
+		return createDate;
+	}
+
+	public User getModificator() {
+		return modificator;
+	}
+
+	public String getModifyDate() {
+		return modifyDate;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	public void setProjId(ProjInfo projId) {
+		this.projId = projId;
+	}
+
+	public void setProjChangeDate(String projChangeDate) {
+		this.projChangeDate = projChangeDate;
+	}
+
+	public void setProjChangeBeforMemo(String projChangeBeforMemo) {
+		this.projChangeBeforMemo = projChangeBeforMemo;
+	}
+
+	public void setProjChangeAfterMemo(String projChangeAfterMemo) {
+		this.projChangeAfterMemo = projChangeAfterMemo;
+	}
+
+	public void setProjChangeMemo(String projChangeMemo) {
+		this.projChangeMemo = projChangeMemo;
+	}
+
+	public void setCreator(User creator) {
+		this.creator = creator;
+	}
+
+	public void setCreateDate(String createDate) {
+		this.createDate = createDate;
+	}
+
+	public void setModificator(User modificator) {
+		this.modificator = modificator;
+	}
+
+	public void setModifyDate(String modifyDate) {
+		this.modifyDate = modifyDate;
+	}
+
+	public String getWorkFlowUnid() {
+		return workFlowUnid;
+	}
+
+	public void setWorkFlowUnid(String workFlowUnid) {
+		this.workFlowUnid = workFlowUnid;
+	}
+
+}

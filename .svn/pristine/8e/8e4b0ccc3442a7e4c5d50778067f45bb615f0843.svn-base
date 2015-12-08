@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+    <alldb>
+      <table_sql> 
+	        <![CDATA[
+				SELECT PFRP.ID,
+				       PI.PROJ_ID projid,
+				       PI.PROJECT_NAME 	projname,
+				       DOC_ID docid,
+				       QUOT_ID quotid,
+				       ONHIRE_ID onhtreid,
+				       RENT_LIST rentlist,
+				       PLAN_DATE plandate,
+				       PFRP.RENT rent,
+				       RENT_ADJUST rentadjust,
+				       CORPUS coupus,
+				       CORPUS_BUSINESS corpusbusiness,
+				       YEAR_RATE yearrate,
+				       INTEREST interest,
+				       INTEREST_BUSINESS interestbusiness,
+				       RENT_OVERAGE rentoverage,
+				       CORPUS_OVERAGE corpusoveage,
+				       INTEREST_OVERAGE interestoverage,
+				       PENALTY_OVERAGE penaltyoverage,
+				       PENALTY renalty, 
+				       STATUS_ status
+				       
+				FROM PROJ_FUND_RENT_PLAN PFRP 
+				LEFT JOIN PROJ_INFO PI ON PFRP.PROJ_ID = PI.ID
+				where 1 = 1 
+				/~projid: and PI.PROJ_ID like '%{projid}%'~/
+				/~projname: and PI.PROJECT_NAME like '%{projname}%'~/
+				/~rentlist: and RENT_LIST = '{rentlist}'~/
+				order by PI.PROJ_ID,RENT_LIST
+				
+			 ]]> 
+	  </table_sql>
+	  </alldb>
+      <dataSource>dataSource</dataSource>
+      <show_sql>false</show_sql>
+    </data>
+  </table>
+</table-root>

@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+    <alldb>
+      <table_sql> 
+	        <![CDATA[
+select * from (
+
+	SELECT 
+		AL.ID as id,
+	    CII.CUST_NAME as custname,
+	    CI.CONTRACT_ID as contractid,
+	    ci.contract_number as contractnumber,
+	    AL.FACT_DATE as factdate,
+	    AL.FACT_MONEY as dactmoney,
+	    AL.PAY_OBJ as payobj,
+	    DICT.NAME_ as feetype,
+	    DECODE(AL.INVOICE_STATUS,1,'等待确认',DECODE(AL.INVOICE_STATUS,2,'等待提交',DECODE(AL.INVOICE_STATUS,3,'等待导出',DECODE(AL.INVOICE_STATUS,4,'已导出','其他')))) as status,
+	    DECODE(CUST.tax_level,'tax_level_name.1','增值税专用发票','增值税普通发票') as taxlevel,
+	    CIID.CUST_NAME as dealername
+	FROM 
+	(
+	    SELECT ID,CFFC_ID,FACT_DATE,FACT_MONEY,PAY_OBJ,PAY_TYPE,INVOICE_STATUS,CONTRACT_ID FROM TAX_FUND_RECEIPT_INFO
+	    UNION ALL
+	    SELECT ID,ID,FACT_DATE,FACT_MONEY,FACT_OBJECT,FEE_TYPE,1 INVOICE_STATUS,CONTRACT_ID FROM CONTRACT_FUND_FUND_CHARGE CFFC 
+	    WHERE NOT EXISTS(SELECT TFRI.ID FROM TAX_FUND_RECEIPT_INFO TFRI WHERE CFFC.ID=TFRI.CFFC_ID) AND CFFC.PAY_TYPE='pay_type_in'
+	) AL
+	LEFT JOIN CONTRACT_INFO CI ON CI.ID=AL.CONTRACT_ID
+	LEFT JOIN CUST_INFO CII ON CI.CUST_ID=CII.ID
+	LEFT JOIN T_DICTS_DATAS DICT ON AL.PAY_TYPE = DICT.CODE_
+	LEFT JOIN (
+	    SELECT CIC.CUST_ID, CIC.TAX_LEVEL,CIC.DEALER_COMPANY FROM CUST_INFO_COMPANY CIC
+	    UNION ALL
+	    SELECT CIP.CUST_ID, CIP.TAX_LEVEL,CIP.DEALER_COMPANY FROM CUST_INFO_PERSON CIP
+	) CUST ON CII.ID=CUST.CUST_ID
+	LEFT JOIN CUST_INFO CIID ON CUST.DEALER_COMPANY=CIID.ID
+	
+	------------第一步开始----------------
+	--增加区域管理 cust_info关联
+	--增加区域管理第一步 CUST2为经销商
+	  LEFT JOIN CUST_INFO_DEALER CIDR
+	   ON CIDR.CUST_ID = CII.ID
+	
+	  LEFT JOIN MANAGER_DISTRICT MD
+	    ON MD.DISTRICT_ = CIDR.OWNER_DISTRICT AND MD.MANAGER_ = '{userid}'
+	------------第一结束步开始----------------
+	WHERE AL.INVOICE_STATUS IN (
+	    SELECT DECODE(TA.CODE_,'fund_invoice_qh',1,DECODE(TA.CODE_,'fund_invoice_cn',2,DECODE(TA.CODE_,'fund_invoice_exp',3,DECODE(TA.CODE_,'fund_invoice_isexp',4,0)))) CODE
+      FROM T_ACTIONS TA 
+	    WHERE EXISTS(  
+	        SELECT TUA.ACTION_ID_ 
+	        FROM T_USERS_ACTIONS TUA
+	        WHERE TA.ID_=TUA.ACTION_ID_
+	        /~userid: AND TUA.USER_ID_='{userid}' ~/
+	      UNION
+	        SELECT TAD.ACTION_ID_ 
+	        FROM T_ACTIONS_DEPTROLES TAD
+	        WHERE EXISTS(
+	            SELECT TUD.DEPTROLE_ID_ 
+	            FROM T_USERS_DEPTROLES TUD
+	            WHERE TAD.DEPTROLE_ID_=TUD.DEPTROLE_ID_ 
+	            /~userid: AND TUD.USER_ID_='{userid}' ~/
+	        ) AND TA.ID_=TAD.ACTION_ID_
+	    )
+	)
+	  ------------第二步开始----------------
+--增加区域管理第二步
+/~userid: ~/
+ AND ( MD.ID IN
+     (SELECT ID FROM MANAGER_DISTRICT WHERE MANAGER_ = '{userid}')
+         
+     OR 1 =(SELECT DECODE((SELECT COUNT(ID) FROM MANAGER_DISTRICT WHERE MANAGER_ = '{userid}'),0,1,0) FROM DUAL)
+  )
+  ------------第二步结束----------------
+  ----只开保证金收据,保险费,起租租金
+  and DICT.code_ in ('feetype2','feetype7','feetype5') 
+  --and AL.FACT_DATE>='2014-05-01'
+ --------增加开票合同判断-----
+             and CI.CUST_ID in
+    ( select 
+      ci.cust_id
+      from contract_info ci
+      left join cust_info cci on ci.cust_id=cci.id
+      where cci.cust_class='CUST_INFO_COMPANY'
+      union all
+      select 
+      ci1.cust_id
+      from invoice_contract_info ici 
+      left join contract_info ci1 on ici.contract_id=ci1.id
+      left join cust_info ccinfo on ci1.cust_id=ccinfo.id)
+      
+             ---------end----	
+
+) R where 1=1
+/~factdate_start: AND factdate >= '{factdate_start}'~/
+/~factdate_end: AND factdate <= '{factdate_end}'~/
+/~contractid: AND R.contractid like '%{contractid}%' ~/
+/~custname: AND R.custname like '%{custname}%' ~/
+/~status: AND R.status='{status}' ~/
+
+
+			 ]]> 
+	  </table_sql>
+	  </alldb>
+      <dataSource>dataSource</dataSource>
+      <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

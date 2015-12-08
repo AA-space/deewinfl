@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+  经销商起流程的XML
+  1.ID,经销商名称，合作经销商号，所属区域，办事处，登记人，登记时间,合同状态，经销商准入申请状态，是否是草稿
+ -->
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+     <alldb>
+      <table_sql> 
+	        <![CDATA[
+		        SELECT * FROM (
+				 select  
+				cx.credit_money creditmoney
+				,cx.credit_star_date creditstardate
+				,cx.credit_end_date creditenddate
+				,d.id  dealerid
+				,cust.id id
+				,cust.cust_name custname
+				,td1.name_    ownerdistrict
+				,td2.name_   owneroffice
+				,tu.realname_ creator
+				,d.create_date  createdate
+				 ,case when d.contract_num is null then '' else d.contract_num end contractnum
+				 ,case when cust.draft_  is null then '0' else cust.draft_ end draft
+				from cust_info_dealer d 
+				left join (select * from dealer_credit_info cx where cx.is_now=0)cx 
+				on d.cust_id=cx.cust_id
+				left join t_users tu on d.creator_=tu.id_
+				left join cust_info cust on d.cust_id=cust.id
+				left outer join  t_dicts_datas  td1
+				                 on td1.id_=d.owner_district
+				 left outer join  t_dicts_datas  td2
+				                 on td2.id_=d.owner_office
+		         )RS WHERE 1=1 
+		         /~custname: AND RS.custname LIKE '%{custname}%'~/
+		         /~dealerstatus: AND RS.dealerstatus <> '{dealerstatus}'~/
+		         /~draft: AND RS.draft = {draft}~/
+		         /~dealercreditstatus: AND RS.dealercreditstatus='{dealercreditstatus}'~/
+			 ]]> 
+	  </table_sql>
+	   </alldb>
+      <dataSource>dataSource</dataSource>
+      <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

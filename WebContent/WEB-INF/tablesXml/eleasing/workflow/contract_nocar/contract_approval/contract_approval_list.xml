@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+合同审批清单列表
+
+-->
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+     <alldb>
+      <table_sql> 
+	        <![CDATA[
+SELECT PI.ID,
+       PI.PROJ_ID,
+       PI.PROJECT_NAME,
+       CUST.CUST_NAME,
+       CI.CARD_NO,
+       TDD.NAME_       AS INDUSTRY_TYPE,
+       TU.REALNAME_    AS PROJMANAGE,
+       TD.NAME_        AS DEPARTMENT,
+       BCS.STATUS_NAME AS PROJ_STATUS
+  FROM PROJ_INFO PI
+  LEFT JOIN CUST_INFO CUST ON PI.CUST_ID = CUST.ID
+  LEFT JOIN (SELECT CIC.CUST_ID, CIC.ORG_CODE AS CARD_NO FROM CUST_INFO_COMPANY CIC
+             UNION ALL
+             SELECT CIP.CUST_ID, CIP.ID_CARD_NO FROM CUST_INFO_PERSON CIP
+             ) CI ON PI.CUST_ID = CI.CUST_ID
+  LEFT JOIN T_USERS TU ON PI.PROJ_MANAGE = TU.ID_
+  LEFT JOIN T_DEPTS TD ON PI.PROJ_DEPT = TD.ID_
+  LEFT JOIN T_DICTS_DATAS TDD ON PI.INDUSTRY_TYPE = TDD.ID_
+  LEFT JOIN BASE_CONTRACT_STATUS BCS ON PI.PROJ_STATUS = BCS.STATUS_CODE
+  where 1=1
+  /~projname: and PI.PROJECT_NAME like '%{projname}%' ~/
+				 /~projid:  AND PI.PROJ_ID like '%{projid}%'~/
+				 ]]> 
+	  </table_sql>
+	   </alldb>
+      <dataSource>dataSource</dataSource>
+      <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

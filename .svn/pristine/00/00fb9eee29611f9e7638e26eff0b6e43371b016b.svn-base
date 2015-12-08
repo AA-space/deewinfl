@@ -1,0 +1,23 @@
+package com.business.service.vouchersFactory;
+
+import java.math.BigDecimal;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+
+import com.business.entity.JBPMWorkflowHistoryInfo;
+import com.business.entity.asset.FundEbankData;
+import com.business.entity.contract.ContractInfo;
+import com.business.service.BaseService;
+
+/**
+ * 合同中途终止凭证
+ * @author Rovine
+ * @date 2013-12-5
+ * @info 
+ */
+public interface ContractTerminateService{
+	public void createVoucherPrepayment(ContractInfo cinfo,BigDecimal sum) throws Exception;
+	public void createVoucherPenalMoney(ContractInfo cinfo,BigDecimal sum) throws Exception;
+	public void createVoucherNominalPrice(ContractInfo cinfo, BigDecimal sum) throws Exception;
+}

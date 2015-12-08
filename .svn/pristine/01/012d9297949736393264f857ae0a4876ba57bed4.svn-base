@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+     <alldb>
+      <table_sql> 
+	        <![CDATA[
+			  select  
+          info.id
+          ,info.cust_id custid
+          ,info.project_name  projname
+          ,info.contract_number contractnumber
+          ,cust.cust_name custdealer
+          ,cust2.cust_name custname
+          ,nvl(rentpla.rent - income.rent,0.00) syrent
+          ,nvl(condition.caution_money,0.00) caution
+          ,nvl(condition.caution_money,0.00)- nvl(iu.sycaution,0.00)-nvl(iu.penalty,0.00)-nvl(outc.outfactmoney,0.00) sycaution
+          ,rp.plan_date incomeday
+            from  contract_info  info  
+            left join cust_info  cust on info.cust_dealer=cust.id
+            left join cust_info cust2 on info.cust_id=cust2.id
+            left join contract_condition condition on info.id=condition.contract_id
+            left join 
+            (
+            select  max(plan_date) plan_date ,contract_id from  contract_fund_rent_plan where to_date (plan_date, 'yyyy-mm-dd') <= sysdate group by contract_id
+            )rp on info.id=rp.contract_id
+          left join 
+          (
+          SELECT contract_id, SUM (rent) rent
+          FROM contract_fund_rent_plan  
+          GROUP BY contract_id
+          )rentpla on rentpla.contract_id=info.id
+          left join 
+          (
+          select contract_id
+          ,sum (rent) rent
+          ,sum (rent_adjust) rentadjust
+          FROM contract_fund_rent_income  
+          GROUP BY contract_id
+          )income on income.contract_id=info.id
+          left join 
+          (
+            select  sum(rent) sycaution,sum(penalty) penalty ,contract_id  from  contract_fund_rent_income where balance_mode='PayFund7' group by contract_id 
+          )iu on iu.contract_id=info.id
+          left join 
+          (
+          	select sum(fact_money) outfactmoney ,contract_id from contract_fund_fund_charge where fee_type='feetype2' and pay_type='pay_type_out'
+            group by contract_id 
+          )outc on outc.contract_id=info.id  
+          where 1=1
+          and  info.contract_status>30
+		     /~total: 
+		      and
+		      nvl(rentpla.rent - income.rent,0.00)/decode(nvl(condition.caution_money,0.00)- nvl(iu.sycaution,0.00),0,1,nvl(condition.caution_money,0.00)- nvl(iu.sycaution,0.00)) < 2
+		      and  info.contract_status not in ('201','111')
+		      and nvl(rentpla.rent - income.rent,0.00) <> '0' 
+		       ~/
+		       /~contractnumber: and info.contract_number   like '%{contractnumber}%'  ~/
+              /~custname: and cust2.cust_name    like '%{custname}%'  ~/  	    
+              /~projname: and info.project_name  like '%{projname}%'  ~/   
+			 ]]> 
+	  </table_sql>
+	   </alldb>
+      <dataSource>dataSource</dataSource>
+      <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

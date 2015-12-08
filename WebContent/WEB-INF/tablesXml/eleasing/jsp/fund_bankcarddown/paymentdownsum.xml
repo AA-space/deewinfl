@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--卡扣下载 custname[承租人],custid[承租人id],dealername[经销商],dealerid[经销商ID],contract_id[合同号],contractnumber[租赁合同号],contractstatusname[合同状态],cardnum[卡号] rentlist[期次],plandate[计划日期],rent[计划金额],ovrent[余额],memo[备注] -->
+<table-root xmlns="http://www.tracywindy.org/table" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+
+	<table>
+		<data>
+			<alldb>
+				<table_sql> 
+	        <![CDATA[
+	        
+	
+			SELECT ROWNUM, T.*
+			  FROM (SELECT SUM(PC.PLAN_MONEY) PLAN_MONEY,
+			               SUM(PC.CREDIT_MONEY) CREDIT_MONEY,
+			               SUM(PC.CREDIT_MONEY) + SUM(PC.PLAN_MONEY) TOTALMONEY,
+			               SUM(PC.EQUIP_COUNT) EQUIP_COUNT,
+			               CUST.CUST_NAME,
+			               PC.CLIENT_BANK,
+			               PC.CLIENT_ACCNUMBER,
+			               PC.EXPORT_FLAG
+			          FROM CONTRACT_FUND_FUND_PAY_COLLECT PC
+			        
+			          LEFT JOIN CONTRACT_INFO CI
+			            ON CI.ID = PC.CONTRACT_ID
+			          LEFT JOIN CUST_INFO CUST
+			            ON CUST.ID = CI.CUST_DEALER
+			         GROUP BY CUST.CUST_NAME,
+			                  PC.CLIENT_BANK,
+			                  PC.CLIENT_ACCNUMBER,
+			                  EXPORT_FLAG) T
+			
+		   
+		 /~export_flag: where export_flag = {export_flag}~/
+			        
+		  ]]>
+				</table_sql>
+			</alldb>
+			<dataSource>dataSource</dataSource>
+			<show_sql>true</show_sql>
+		</data>
+	</table>
+</table-root>

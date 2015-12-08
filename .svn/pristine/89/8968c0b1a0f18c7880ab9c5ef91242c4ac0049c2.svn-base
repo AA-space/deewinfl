@@ -1,0 +1,133 @@
+package com.business.action.leasing.fundPayEquipment;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.commons.lang3.StringUtils;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.springframework.stereotype.Component;
+
+import com.business.action.JbpmBaseAction;
+import com.business.entity.DictionaryData;
+import com.business.entity.JBPMWorkflowHistoryInfo;
+import com.business.entity.base.WorkFlowFlag;
+import com.business.entity.contract.ContractInfo;
+import com.business.entity.contract.fund.ContractFundFundCharge;
+import com.business.entity.util.OwnAccount;
+import com.business.service.BaseService;
+import com.business.service.vouchersFactory.FundPaymentService;
+import com.kernal.annotation.WorkflowAction;
+
+
+@WorkflowAction(name = "fundPayEquipmentEndAction", description = "流程结束动作", workflowName = "实际投放流程")
+@Component(value = "fundPayEquipmentEndAction")
+public class FundPayEquipmentEndAction implements JbpmBaseAction {
+	@Resource(name = "baseService")
+	private BaseService baseService;
+	
+	@Resource(name="fundPaymentService")
+	private FundPaymentService fundPaymentService;
+	
+	@Override
+	public String delete(HttpServletRequest request, Map<String, String> variablesMap,JBPMWorkflowHistoryInfo jbpmWorkflowHistoryInfo) throws Exception {
+		return null;
+	}
+
+	@Override
+	public void end(HttpServletRequest request, Map<String, String> variablesMap,JBPMWorkflowHistoryInfo jbpmWorkflowHistoryInfo) throws Exception {
+		String  contractid=variablesMap.get("contract_info.contractid");
+		String HQL=" from ContractInfo as c where c.contractId=?";
+		ContractInfo contractinfo;
+		contractinfo=(ContractInfo)this.baseService.findResultsByHSQL(HQL, contractid).get(0);
+		Map<String,String> propertiesMap = new HashMap<String,String>();
+		propertiesMap.put("DictionaryData", "code");
+		//propertiesMap.put("ContractFundFundPlan", "paymentId");
+		propertiesMap.put("ContractInfo", "contractId");
+		String jsonFundString = variablesMap.get("json_contract_fund_payment_now_str");//proj_info.projEquips
+		JSONArray jsonArray = new JSONArray(jsonFundString);
+		JSONArray newjsonArray = new JSONArray();
+		List<String> jsonFundList=new ArrayList<String>();
+		BigDecimal factmoney = BigDecimal.ZERO;
+		String ownAccNumber = null;
+		for(int i=0;i<jsonArray.length();i++){
+			JSONObject jsonObj = jsonArray.getJSONObject(i);
+			jsonObj.remove("id");
+			jsonFundList.add(jsonObj.toString());
+			String pid = jsonObj.optString("pid");
+			String rollback = jsonObj.optString("rollback");
+			if (jsonObj.optString("factmoney") != null) {
+				factmoney = factmoney.add(new BigDecimal(jsonObj.optString("factmoney")));
+			}
+			ownAccNumber = jsonObj.optString("accnumber");
+			
+			if(pid != null && rollback != null && rollback.equals("1")){
+				ContractFundFundCharge c = (ContractFundFundCharge) this.baseService.findEntityByID(ContractFundFundCharge.class, pid);
+				DictionaryData payFund9Dict = (DictionaryData) this.baseService.findEntityByID(DictionaryData.class, "PayFund9");
+				c.setRollBack("1");
+				c.setSettleMethod(payFund9Dict);
+				this.baseService.updateEntity(c);
+			}
+			
+		}
+		this.baseService.updateOneToManyCollectionsNoRemoved(contractinfo, "fundFundCharges", ContractFundFundCharge.class, "contractId", jsonFundList.toString(),propertiesMap);
+	
+		
+		/** 流程冲突第三步-结束 */
+		if (StringUtils.isNotEmpty(variablesMap.get("workFlowFlag"))) {
+			WorkFlowFlag w = this.baseService.findEntityByID(WorkFlowFlag.class, variablesMap.get("workFlowFlag"));
+			this.baseService.removeEntity(w);
+		}
+		/** 流程冲突第三步-结束 */
+		
+		/** 设备投放-凭证生成-开始*/
+		/*生成凭证：支付+客户+车款
+		 * */
+//		
+//		propertiesMap.clear();
+//		Map<String, Object> ownAccountMap = new HashMap<String, Object>();
+//		
+//		ownAccountMap.put("accNumber", ownAccNumber);
+//		OwnAccount ownacc = this.baseService.findEntityByProperties(OwnAccount.class, ownAccountMap).get(0);
+//		
+//		if(factmoney.compareTo(BigDecimal.ZERO)==1){
+//			fundPaymentService.createVoucherEquipMoney(contractinfo, factmoney.setScale(2,BigDecimal.ROUND_HALF_UP),ownacc);
+//		}
+		/** 凭证生成-结束*/
+		
+		/** 设备投放-凭证生成-开始*/
+		
+		
+
+	}
+
+	@Override
+	public String save(HttpServletRequest request, Map<String, String> variablesMap,JBPMWorkflowHistoryInfo jbpmWorkflowHistoryInfo) throws Exception {
+		return null;
+	}
+
+	@Override
+	public void start(HttpServletRequest request, Map<String, String> variablesMap,JBPMWorkflowHistoryInfo jbpmWorkflowHistoryInfo) throws Exception {
+
+	}
+
+	
+	 /**
+	 * (non-Javadoc)
+	 * @see com.business.action.JbpmBaseAction#back(javax.servlet.http.HttpServletRequest, java.util.Map)
+	 **/
+	
+	@Override
+	public void back(HttpServletRequest request,
+			Map<String, String> variablesMap,JBPMWorkflowHistoryInfo jbpmWorkflowHistoryInfo) throws Exception {
+		// TODO Auto-generated method stub
+		
+	}
+
+}

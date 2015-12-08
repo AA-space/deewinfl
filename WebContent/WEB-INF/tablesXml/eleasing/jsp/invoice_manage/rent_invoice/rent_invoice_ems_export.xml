@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+    <alldb>
+      <table_sql> 
+	        <![CDATA[
+	        SELECT ID as id, 
+	           contract_id as contractid, --合同编号
+	           cust_name as custname, --客户名称
+	           rent_List as rentlist,--期次
+	           income_date as plandate, --收款日期
+	           tax_money as cleartaxmoney, --销项税金
+	           RENT_TYPE as renttype,--金额类型
+	           invoice_type as taxtype, --开票类型
+	           invoice_no as invoicenum,  --发票号
+	           invoice_money as invoicemoney, --开票金额
+	           invoice_date as invoicedate, --开票日期
+	           ems_no as emsno, --快递单号
+	           SEND_DATE as emsdate,--寄送时间
+	           memo remark,
+	           tax_bank as taxbank, --开户行
+	           tax_acc as taxacc, --开户帐号
+	           tax_tel as taxphone, --电话
+	           tax_reg_code as taxregcode,--纳税人识别号 
+	           tax_addr as taxregadd --地址
+	           FROM tax_rent_upload_info
+	           WHERE 1=1 and id in ({ids})
+	           /~contractid: and contract_id like '%{contractid}%' ~/
+				  /~custname: and cust_name like '%{custname}%' ~/
+				  /~invoicemoney: and invoice_money like '%{invoicemoney}%' ~/
+	
+	           order by contract_id
+			 
+			 ]]> 
+	  </table_sql>
+	  </alldb>
+      <dataSource>dataSource</dataSource>
+      <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

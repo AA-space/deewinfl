@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+项目层的清单列表
+/~queryText://like全局搜索
+/~WORK_FLAG://判断是否在流程中
+/~user_id://传当前登录用户id 得到本账号挂名的经销商下面的自然人和法人 ；为经销商赋权限
+
+-->
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+     <alldb>
+      <table_sql> 
+	        <![CDATA[
+  select 
+ci.id contractid ,--合同Id
+ci.contract_number contractnumber,--合同号
+ci.contract_status contractStatus,--合同状态
+cust.id custid,--承租人ID
+cust2.cust_name dealer,--经销商
+cust.cust_name custname ,--承租人
+ci.equip_count equipcount, --租赁物台数
+ci.project_name projectname,--项目名称
+dicts.name_ projtype --项目类型
+from  contract_info  ci
+left join cust_info  cust on ci.cust_id=cust.id
+left join cust_info cust2 on ci.cust_dealer=cust2.id --经销商
+left join T_DICTS_DATAS dicts on dicts.id_=ci.proj_type
+--收了 租金 显示开票信息
+left join (
+select contract_id contractid,nvl(sum(rent),0) incomerent from contract_fund_rent_income group by contract_id 
+) M on M.contractid=ci.id
+left join (
+select contract_id contractid,nvl(sum(rent),0) planrent from contract_fund_rent_plan group by contract_id 
+) N ON N.contractid=ci.id
+--收款<首付款>---> 开资金发票
+left join (
+select  contract_id contractid,sum(plan_money) planmoney from contract_fund_fund_plan where 
+ pay_type='pay_type_in' group by contract_id
+) MM ON MM.contractid=ci.id
+
+left join (
+select  contract_id contractid,sum(fact_money) factmoney from contract_fund_fund_charge group by contract_id
+) NN ON NN.contractid=ci.Id
+
+where ci.contract_status>=21 
+and M.incomerent>0 
+and M.incomerent>=N.planrent
+and NN.factmoney>=MM.planmoney
+			 ]]> 
+	  </table_sql>
+	   </alldb>
+      <dataSource>dataSource</dataSource>
+      <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

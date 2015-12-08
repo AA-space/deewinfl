@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <!-- 上传,下载文件列表,文档管理 -->
+  <table>
+    <data>
+    <alldb>
+      <table_sql> 
+	        <![CDATA[   
+	            select * from (
+			    select b_file.id,model_name modelcode,td.name_ modelname,file_name filename,create_date createdate,T_USERS.Username_ creator  from b_file
+                 left outer join T_USERS
+                 on T_USERS.id_=b_file.creator_
+                 left outer join t_dicts_datas td
+                 on td.id_=b_file.model_name
+                 )rs
+                 where 1=1
+                 /~modename: and rs.modename='modelname'~/
+                 /~creator: and rs.creator='creator'~/
+                 /~createdate_start: and rs.createdate>'createdate_start'~/
+                 /~createdate_end: and rs.createdate<'createdate_end'~/
+                 /~id: and rs.id='{id}'~/
+				 ]]> 
+	  </table_sql>
+	  </alldb>
+      <dataSource>dataSource</dataSource>
+    </data>
+  </table>
+</table-root>

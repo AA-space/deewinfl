@@ -1,0 +1,64 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+
+<script type="text/javascript">
+//isViewHistoryTask = false;
+jQuery(function(){
+	    new tracywindyMultiTable({
+	    renderTo:'id_table_leasing_proj_equip_container',
+	    width:formWidth,
+	    height:formHeight,
+	    isAutoHeight:true,
+	    isRemoteSortable:false,
+	    isFit:true,
+	    tools:'修改',
+	    datas:JsonUtil.decode('${empty json_proj_gps_str ? "[]" : json_proj_gps_str }'),
+	    columns:[
+				{header:'车型号',name:'model_'},
+				{header:'车架号',name:'chassis_num'},
+				//{header:'设备名称',name:'equip_name'},
+				/*{header:'GPS是否安装',name:'isgpsname',type:'combobox',nullable:false,hiddenName:'isgps',
+					 config:{
+	  				width:165,
+					isNewLine:true,
+					colSpan:3, 
+					loadMode:'local',
+					datas:[{title:'是',name:'0'},{title:'否',name:'1'}],
+		            displayField:'title',
+		            valueField:'name'
+				     }
+					},*/
+			    {header:'gpsid',name:'isgps',hidden:true},
+			    //{header:'GPS是否安装',name:'isgpsname'},
+				{header:'车架号id',name:'equipid',hidden:true},
+				{header:'经销商id',name:'custdealer',hidden:true},
+				{header:'客户名称id',name:'custid',hidden:true},
+				{header:'合同id',name:'contractid',hidden:true},
+				{header:'GPS软件网址/软件名',name:'gpsname',width:140,renderer:showCustName},
+				{header:'GPS用户名',name:'gpsuser',width:100},
+				{header:'GPS密码',name:'gpspassword',width:100},
+				{name:'memo',header:'备注',width:100}
+				
+				
+	    ]
+	 });
+	    
+});
+function showCustName(value,tableObj,columnName,columnIndex,rowData){
+	//<a href="http://www.w3school.com.cn/">Visit W3School</a>
+	var base = "<a href='"+rowData.gpsname+"' target='_blank' onclick='return testname(\""+rowData.gpsname+"\")'>{1}</a>{2}";
+    var separator = "&nbsp;&nbsp;";
+    var updateFlag=value;
+    // var updateClickFunc="other";
+    var field=base.replace("{1}",updateFlag).replace("{2}",separator);
+    return field;
+  }
+ function testname(field){
+	 if(field.indexOf("http://")<0){
+	    	alert("不是有效的网址,不能链接,例如：http://www.deewinfl.com/");
+	    	return false;
+	    }else{
+	    	return true;
+	    }
+ } 
+</script>

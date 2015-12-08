@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+    <alldb>
+      <table_sql> 
+	        <![CDATA[
+				SELECT 
+					BF.ID,
+					BF.FILE_NAME filename, 
+					TU.REALNAME_ username, 
+					CREATE_DATE createdate,
+					EXPORT_NUMBER exp
+					
+				  FROM B_FILE BF
+				  LEFT JOIN T_USERS TU ON (BF.CREATOR_ = TU.ID_)
+				where 1=1
+				/~modelname: and model_name in ('{modelname}')~/
+				order by CREATE_DATE desc
+			 ]]> 
+			 </table_sql>
+	  </alldb>
+      <dataSource>dataSource</dataSource>
+      <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

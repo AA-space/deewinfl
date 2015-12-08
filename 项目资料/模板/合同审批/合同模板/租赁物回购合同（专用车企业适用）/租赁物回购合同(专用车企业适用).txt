@@ -1,0 +1,50 @@
+1.
+关键字：contract_info
+数据类型：字段
+数据来源：页面
+多行控件：空
+数据列名：contractnumber
+数据Sql：空
+说明：空
+
+2.
+关键字：contract_signatory
+数据类型：字段
+数据来源：页面
+多行控件：空
+数据列名：client
+数据Sql：空
+说明：空
+
+3.
+关键字：json_contract_supplier_strs
+数据类型：列表
+数据来源：数据库
+多行控件：json_contract_supplier_str
+数据列名：seller,sellerlegalperson,sellerregisteraddr,sellerpostcode,sellertel
+数据Sql：select pi.id id,
+			ci.cust_name seller,
+			cd.legal_representative sellerlegalperson,
+			cd.reg_addr sellerregisteraddr,
+			cd.mail_add selleraddr,
+			cd.post_code sellerpostcode,
+			cd.phone_ sellertel,
+			cd.fax_number  sellerfax,
+			cd.tax_acc selleraccnumber,
+			cd.tax_bank selleraccbank
+
+			from proj_info pi
+			left join cust_info ci on pi.cust_dealer=ci.id
+			left join cust_info_dealer cd on ci.id=cd.cust_id
+
+			where pi.id= '{proj_id}'
+说明：空
+
+4.
+关键字：contract_other_info
+数据类型：字段
+数据来源：页面
+多行控件：空
+数据列名：signdate
+数据Sql：空
+说明：空

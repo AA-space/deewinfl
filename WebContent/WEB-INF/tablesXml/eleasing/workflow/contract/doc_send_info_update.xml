@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+合同登记信息专用，必须传入contract_id参数
+
+ -->
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+     <alldb>
+      <table_sql> 
+	        <![CDATA[
+	        SELECT nvl(dict.name_,CDOC.DOC_NAME) AS rowvalue_docname,
+	        CDOC.DOC_NAME AS rowvalue_doc,
+       CDOC.CONTRACT_PERSON AS contractperson,
+       CDOC.Doc_Part as docpart,
+       CDOC.CONTRACT_A AS contracta,
+       CDOC.CONTRACT_B AS contractb,
+       CDOC.SEND_PART  AS sendpart,
+       CDOC.SEND_NO  AS sendno,
+       CDOC.maincount,
+       CDOC.gcount,
+       CDOC.sdy,
+       cdoc.ID id
+       From CONTRACT_DOC_SEND_INFO cdoc
+       left join   t_dicts_datas dict on cdoc.doc_name=dict.id_
+       where 1=1
+       /~contract_id: AND cdoc.contract_id ='{contract_id}'~/
+			 ]]> 
+	  </table_sql>
+	   </alldb>
+      <dataSource>dataSource</dataSource>
+      <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

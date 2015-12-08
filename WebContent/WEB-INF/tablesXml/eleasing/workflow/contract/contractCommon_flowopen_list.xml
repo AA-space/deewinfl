@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+租金计划变更流程
+
+ -->
+<table-root  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+    <alldb>
+      <table_sql> 
+	        <![CDATA[
+		         SELECT 
+		         	C.ID AS ID,
+		            C.CONTRACT_ID AS CONTRACTID,
+					C.CUST_ID AS CUSTID,
+					C.PROJ_ID AS PID,
+					P.PROJ_ID AS  PROJ_ID,
+					CI1.CUST_NAME CUSTNAME,
+					CI2.CUST_NAME CUSTDEALER,
+					C.PROJECT_NAME PROJNAME,
+					C.CONTRACT_NUMBER CONTRACTNUMBER,
+					DICT.NAME_ AS PROJTYPE,
+					DICT2.NAME_ AS PROJSOURCE,
+					DICT3.NAME_ AS PROJSCALE ,
+					DICT4.NAME_ AS INDUSTRYTYPE,
+					DICT5.NAME_ AS  LEASFORM ,
+					DICT6.NAME_ AS BUSINESSTYPE,
+					DICT7.NAME_ AS BUSINESSMODE,
+					T.REALNAME_ AS PROJMANAGE
+				 FROM CONTRACT_INFO C
+				 LEFT JOIN CUST_INFO CI1 ON CI1.ID = C.CUST_ID
+				 LEFT JOIN CUST_INFO CI2 ON CI2.ID = C.CUST_DEALER
+				 LEFT JOIN T_DICTS_DATAS DICT ON C.PROJ_TYPE=DICT.ID_
+				 LEFT JOIN T_DICTS_DATAS DICT2 ON C.PROJ_SOURCE=DICT2.ID_
+				 LEFT JOIN T_DICTS_DATAS DICT3 ON C.PROJ_SCALE=DICT3.ID_
+				 LEFT JOIN T_DICTS_DATAS DICT4 ON C.LEAS_TYPE=DICT4.ID_
+				 LEFT JOIN T_DICTS_DATAS DICT5 ON C.LEAS_FORM=DICT5.ID_
+				 LEFT JOIN T_DICTS_DATAS DICT6 ON C.BUSINESS_TYPE=DICT6.ID_
+				 LEFT JOIN T_DICTS_DATAS DICT7 ON C.BUSINESS_MODE=DICT7.ID_
+				 LEFT JOIN T_USERS T ON C.PROJ_MANAGE=T.ID_
+				 LEFT JOIN PROJ_INFO P ON P.ID=C.PROJ_ID  
+				 
+				 
+				 WHERE 1=1 
+				 --and p.proj_id not like '%P%'
+	         	 /~CONTRACT_STATUS_LessThan:  and C.CONTRACT_STATUS < '{CONTRACT_STATUS_LessThan}'~/
+	         	 /~CONTRACT_STATUS_GreaterThan:  and C.CONTRACT_STATUS > '{CONTRACT_STATUS_GreaterThan}'~/
+				 /~custdealer: and ci2.cust_name like '%{custdealer}%'  ~/
+				 /~custdealerid: and ci2.id='{custdealerid}'~/
+				 /~custname: and ci1.cust_name like '%{custname}%' ~/
+				 /~contractid: and C.CONTRACT_ID like '%{contractid}%' ~/
+				 /~contractnumber: and C.CONTRACT_NUMBER like '%{contractnumber}%' ~/
+				 /~projname: and C.PROJECT_NAME like '%{projname}%' ~/   
+				 /~projmanage: and T.REALNAME_ like '%{projmanage}%' ~/  
+				      ------------经销商初始权限判断----------------
+			      --注：传入当前userid，不做其他关联
+			      --员工在经销部门里, 如果是经销商则是1，如果不是则为0
+			      AND (1 =
+			       --员工在经销部门里, 如果是经销商则是1，如果不是则为0
+			       (SELECT DECODE(NUM, 0, 0, 1)
+			           FROM (SELECT COUNT(*) AS NUM
+			                    FROM DUAL
+			                   WHERE
+			                  --用户部门是经销商部门
+			                   (SELECT DEPT_ID_
+			                      FROM T_USERS_DEPTS
+			                     WHERE USER_ID_ = '{user_id}') IN
+			                   (SELECT D.ID_
+			                      FROM T_DEPTS D
+			                     START WITH D.PID_ = '402881ef409b4bfa01409b9ce7fb01e6'
+			                    CONNECT BY PRIOR D.ID_ = D.PID_)
+			                  --经销商用户对应的部门在<经销商用户对应表>里为不为空
+			                AND (SELECT DEALER_DEPT D1
+			                      FROM DEALER_DEPT_INFO T
+			                     WHERE DEALER_DEPT IN
+			                           (SELECT DEPT_ID_
+			                              FROM T_USERS_DEPTS
+			                             WHERE USER_ID_ = '{user_id}')
+			                             AND ENABLE_ = '0') IS NOT NULL
+			                  
+			                  )) OR
+			       0 =
+			       --不是经销部门
+			       (SELECT COUNT(*) AS NUM
+			           FROM DUAL
+			          WHERE
+			         --用户部门是经销商部门
+			          (SELECT DEPT_ID_
+			             FROM T_USERS_DEPTS
+			            WHERE USER_ID_ = '{user_id}') IN
+			          (SELECT D.ID_
+			             FROM T_DEPTS D
+			            START WITH D.PID_ = '402881ef409b4bfa01409b9ce7fb01e6'
+			           CONNECT BY PRIOR D.ID_ = D.PID_))
+			       
+			       )
+			
+				/~currentDealerCustInfoId: AND C.CUST_DEALER = '{currentDealerCustInfoId}'~/
+	             
+			 ]]> 
+	  </table_sql>
+	  </alldb>
+      <dataSource>dataSource</dataSource>
+      <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

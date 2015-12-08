@@ -1,0 +1,28 @@
+1.
+word对应填写字段：公司
+关键字：stockholder
+数据类型：列表
+数据来源：数据库
+多行控件名：不填
+数据列名：stockholdername,orgcode
+数据SQL:select stock.stockholder_name as stockholdername,stock.org_code as orgcode
+          from cust_info info
+          left join cust_info_dealer dealer on info.id = dealer.cust_id
+         left join cust_stockholder stock on info.id=stock.cust_id
+         where cust_id = '{cust_info.id}'
+说明：不填
+
+
+
+2.
+word对应填写字段：人数
+关键字：stock
+数据类型：列表
+数据来源：数据库
+多行控件名：不填
+数据列名：peoples
+数据SQL:select count(*) as peoples  from cust_info info
+          left join cust_info_dealer dealer on info.id = dealer.cust_id
+         left join cust_stockholder stock on info.id=stock.cust_id
+         where cust_id = '{cust_info.id}'
+说明：不填

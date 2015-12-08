@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+    <alldb>
+      <table_sql> 
+	        <![CDATA[
+				SELECT 
+		          C.ID ID,
+		          C.CUST_ID CUSTID,
+		          CUST.CUST_NAME CUSTNAME,
+		          C.ID_CARD_NO IDCARDNO,
+		          C.SPOUSE_IDCARDNO SPOUSEIDCARDNO,
+		          C.DEALER_COMPANY DEALERORCOMPANY,
+		          C.CUST_ETHNIC CUSTETHNIC,
+		          D6.NAME_ CUSTETHNICNAME,
+		          C.DRIVER_LICENSE_DATE DRIVERLICENSEDATE,
+		          C.SPOUSE_NAME SPOUSENAME,
+		          C.SPOUSE_CONTACT SPOUSECONTACT,
+		          C.SPOUSE_AGE SPOUSEAGE,
+		          C.SPOUSE_CHILD SPOUSECHILD,
+		          C.SPOUSE_WORK SPOUSEWORK,
+		          CUST.CUST_NUMBER CUSTNUMBER,
+		          C.OWNER_VEHICLE OWNERVEHICLE,
+		          C.OWNER_ESTATE OWNERESTATE,
+		          C.OWNER_LAND OWNERLAND,
+		          C.OWNER_OTHER OWNEROTHER,
+		          C.OWNERSHIP_TOTAL OWNERSHIPTOTAL,
+		          C.CEIMEMO CEIMEMO,
+		          SUBSTR(C.CREATE_DATE,0,10) CREATEDATE,
+		          SUBSTR(C.modify_date,0,10) modifydate,
+		          USER4.REALNAME_  AS modificatorname,
+		          C.SEX_ SEX,
+		          CASE  C.SEX_ WHEN '1' THEN '男'  ELSE '女'  END  SEXNAME,
+		          C.BRITH_DATE BRITHDATE,
+		          CT.CUST_TYPE_NAME CUSTTYPENAME,
+		          CT.CUST_TYPE CUSTTYPE,
+		          D1.NAME_ CUSTSCALENAME,
+		          C.CUST_SCALE CUSTSCALE, 
+		          D2.NAME_ TAXLEVELNAME,
+		          C.TAX_LEVEL TAXLEVEL, 
+		          C.TAX_REG_CODE TAXREGCODE,
+		          C.TAX_PHONE TAXPHONE,
+		          C.TAX_REG_ADD TAXREGADD,
+		          C.TAX_BANK TAXBANK,
+		          C.TAX_ACC TAXACC,
+		          D3.NAME_ REDITORRIGHTNAME,
+		          C.REDITOR_RIGHT REDITORRIGHT, 
+		          D4.NAME_ ASSURORRIGHTNAME,
+		          C.ASSUROR_RIGHT ASSURORRIGHT, 
+		          D5.NAME_ CUSTKINDNAME,
+		          C.CUST_KIND CUSTKIND, 
+		          C.INDUSTRY_,
+		          TI.NAME INDUSTRYNAME,
+		          C.INDUSTRY_LEVEL_BIG INDUSTRYLEVELBIG,
+		          TB.NAME INDUSTRYLEVELBIGNAME,
+		          C.INDUSTRY_LEVEL_MIDDLE INDUSTRYLEVELMIDDLE,
+		          TM.NAME INDUSTRYLEVELMIDDLENAME,
+		          C.INDUSTRY_LEVEL_SMALL INDUSTRYLEVELSMALL,
+		          TS.NAME INDUSTRYLEVELSMALLNAME,
+		          C.PROVINCE_ PROVINCE,
+		          PR.NAME PROVINCENAME,
+		          C.CITY_ CITY,
+		          CT.NAME CITYNAME,
+		          C.COUNTY_ COUNTY,
+		          CO.NAME COUNTYNAME,
+		          C.DOMICILE_PLACE DOMICILEPLACE, 
+		          C.MAIL_ADD MAILADD,
+		          C.HOME_ADD HOMEADD,
+		          C.POST_CODE POSTCODE,
+		          C.EMAIL_ EMAIL,
+		          C.MOBILE_NUMBER MOBILENUMBER,
+		          C.PHONE_ PHONE,
+		          C.MARITAL_STATUS MARITALSTATUS,
+		          D7.NAME_ MARITALSTATUSNAME,
+		          C.SCHOOL_ SCHOOL,
+		          D8.NAME_ SCHOOLNAME,
+		          C.UNIT_NAME UNITNAME,
+		          C.UNIT_POSITION UNITPOSITION, 
+		          D9.NAME_ UNITPOSITIONNAME,
+		          C.FAX_NUMBER FAXNUMBER,
+		          CASE CUST.DRAFT_ WHEN '0' THEN '是'  ELSE '否'  END  DRAFTNAME,
+		          CASE WHEN CUST.DRAFT_ IS NULL THEN '1' ELSE CUST.DRAFT_ END DRAFT,
+		          CASE CUST.INVALID_ WHEN '0' THEN '是'  ELSE '否'  END  INVALIDNAME,
+		          CASE WHEN CUST.INVALID_ IS NULL THEN '1' ELSE CUST.INVALID_ END INVALID,
+		          CASE C.IS_ASSOCIATED WHEN '0' THEN '是'  ELSE '否'  END  ISASSOCIATEDNAME,
+		          CASE WHEN C.IS_ASSOCIATED IS NULL THEN '0' ELSE C.IS_ASSOCIATED END  ISASSOCIATED,
+		          CASE  C.SPOUSE_CHILD WHEN '0' THEN '有'  ELSE '无'  END  SPOUSECHILDNAME,
+		          USER1.REALNAME_ CREATORNAME,
+		          TDEPT.NAME_ CREATORDEPTNAME,
+		          TDEPT.ID_ CREATORDEPT,
+		          CUST2.CUST_NAME DEALERORCOMPANYNAME
+		        FROM CUST_INFO_PERSON C 
+		        LEFT JOIN CUST_INFO CUST ON C.CUST_ID = CUST.ID
+		        LEFT JOIN CUST_INFO CUST2 ON C.DEALER_COMPANY = CUST2.ID
+		        
+		        
+				------------第一步开始----------------
+				--增加区域管理 cust_info关联
+				--增加区域管理第一步 CUST2为经销商
+				  LEFT JOIN CUST_INFO_DEALER CIDR
+				    ON CIDR.CUST_ID = CUST2.ID
+				
+				  LEFT JOIN MANAGER_DISTRICT MD
+				    ON MD.DISTRICT_ = CIDR.OWNER_DISTRICT AND MD.MANAGER_ = '{loginuser}'
+				------------第一结束步开始----------------
+					
+
+    
+		        LEFT JOIN T_DICTS_DATAS D1 ON C.CUST_SCALE=D1.ID_
+		        LEFT JOIN T_DICTS_DATAS D2 ON C.TAX_LEVEL=D2.ID_
+		        LEFT JOIN T_DICTS_DATAS D3 ON C.REDITOR_RIGHT=D3.ID_
+		        LEFT JOIN T_DICTS_DATAS D4 ON C.ASSUROR_RIGHT=D4.ID_
+		        LEFT JOIN T_DICTS_DATAS D5 ON C.CUST_KIND=D5.ID_
+		        LEFT JOIN T_DICTS_DATAS D6 ON C.CUST_ETHNIC=D6.ID_  
+		        LEFT JOIN T_DICTS_DATAS D7 ON C.MARITAL_STATUS=D7.ID_  
+		        LEFT JOIN T_DICTS_DATAS D8 ON C.SCHOOL_=D8.ID_ 
+		        LEFT JOIN T_DICTS_DATAS D9 ON C.UNIT_POSITION=D9.ID_  
+		        LEFT JOIN T_DEPTS TDEPT ON TDEPT.ID_=C.CREATOR_DEPT
+		        LEFT JOIN T_USERS USER1 ON C.CREATOR_=USER1.ID_
+		        LEFT JOIN T_USERS USER4 ON C.MODIFICATOR_ =USER4.ID_                 
+		        LEFT JOIN (
+		          SELECT 
+		          CUST_ID,
+		          WMSYS.WM_CONCAT(CTI.CUST_TYPE) CUST_TYPE,
+		          WMSYS.WM_CONCAT(D17.NAME_) CUST_TYPE_NAME 
+		          FROM  CUST_TYPE_INFO CTI
+		          LEFT JOIN T_DICTS_DATAS D17 ON CTI.CUST_TYPE =D17.ID_
+		          GROUP BY CUST_ID
+		        ) CT ON (CUST.ID=CT.CUST_ID) 
+		        LEFT JOIN T_DISTRICT PR ON (C.PROVINCE_=PR.ID)
+		        LEFT JOIN T_DISTRICT CT ON (C.CITY_=CT.ID)
+		        LEFT JOIN T_DISTRICT CO ON (C.COUNTY_=CO.ID)
+		        LEFT JOIN T_INDUSTRY TI ON (C.INDUSTRY_=TI.ID)
+		        LEFT JOIN T_INDUSTRY TB ON (C.INDUSTRY_LEVEL_BIG=TB.ID)
+		        LEFT JOIN T_INDUSTRY TM ON (C.INDUSTRY_LEVEL_MIDDLE=TM.ID)
+		        LEFT JOIN T_INDUSTRY TS ON (C.INDUSTRY_LEVEL_SMALL=TS.ID)  
+		        WHERE 1=1
+				/~CUST_ID: and C.CUST_ID like '%{CUST_ID}%'~/
+				/~dealer_id: and CUST2.ID = '{dealer_id}'~/
+				/~custname: AND cust.cust_name like '%{custname}%' ~/
+				/~idcardno: AND C.ID_CARD_NO like '%{idcardno}%' ~/
+				/~custtypename: AND CT.CUST_TYPE like '%{custtypename}%' ~/
+				/~draftname: and CUST.DRAFT_ = '{draftname}'~/
+				/~enabled: AND CUST.INVALID_ = '{enabled}'~/
+				/~mobilenumber: AND C.MOBILE_NUMBER = '{mobilenumber}'~/ 
+				/~CID: and C.ID like '%{CID}%'~/
+				/~dealerorcompanyname: AND CUST2.CUST_NAME like '%{dealerorcompanyname}%' ~/
+				
+				------------第二步开始----------------
+				--增加区域管理第二步
+				/~loginuser: ~/
+				 AND ( MD.ID IN
+				     (SELECT ID FROM MANAGER_DISTRICT WHERE MANAGER_ = '{loginuser}')
+				         
+				     OR 1 =(SELECT DECODE((SELECT COUNT(ID) FROM MANAGER_DISTRICT WHERE MANAGER_ = '{loginuser}'),0,1,0) FROM DUAL)
+				  )
+				------------第二步结束----------------
+				/~queryText: 
+					AND (
+					cust.cust_name like '%{queryText}%' 
+					OR  CT.CUST_TYPE_NAME like '%{queryText}%' 
+					OR  c.cust_id like '%{queryText}%' 
+				)~/
+				
+				      ------------第二步结束----------------
+      
+      ------------经销商初始权限判断----------------
+      --注：传入当前userid，不做其他关联
+      --员工在经销部门里, 如果是经销商则是1，如果不是则为0
+      AND (1 =
+       --员工在经销部门里, 如果是经销商则是1，如果不是则为0
+       (SELECT DECODE(NUM, 0, 0, 1)
+           FROM (SELECT COUNT(*) AS NUM
+                    FROM DUAL
+                   WHERE
+                  --用户部门是经销商部门
+                   (SELECT DEPT_ID_
+                      FROM T_USERS_DEPTS
+                     WHERE USER_ID_ = '{loginuser}') IN
+                   (SELECT D.ID_
+                      FROM T_DEPTS D
+                     START WITH D.PID_ = '402881ef409b4bfa01409b9ce7fb01e6'
+                    CONNECT BY PRIOR D.ID_ = D.PID_)
+                  --经销商用户对应的部门在<经销商用户对应表>里为不为空
+                AND (SELECT DEALER_DEPT D1
+                      FROM DEALER_DEPT_INFO T
+                     WHERE DEALER_DEPT IN
+                           (SELECT DEPT_ID_
+                              FROM T_USERS_DEPTS
+                             WHERE USER_ID_ = '{loginuser}')
+                             AND ENABLE_ = '0') IS NOT NULL
+                  
+                  )) OR
+       0 =
+       --不是经销部门
+       (SELECT COUNT(*) AS NUM
+           FROM DUAL
+          WHERE
+         --用户部门是经销商部门
+          (SELECT DEPT_ID_
+             FROM T_USERS_DEPTS
+            WHERE USER_ID_ = '{loginuser}') IN
+          (SELECT D.ID_
+             FROM T_DEPTS D
+            START WITH D.PID_ = '402881ef409b4bfa01409b9ce7fb01e6'
+           CONNECT BY PRIOR D.ID_ = D.PID_))
+       
+       )
+
+       ------------经销商初始权限判断结束----------------
+				
+				
+				
+				
+				
+				ORDER BY CUST.CUST_NAME DESC,CUST.CUST_NUMBER ASC		
+									
+			 ]]> 
+	  </table_sql>
+	  </alldb>
+      <dataSource>dataSource</dataSource>
+      <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

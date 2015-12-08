@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+项目层的清单列表
+/~queryText://like全局搜索
+/~WORK_FLAG://判断是否在流程中
+/~user_id://传当前登录用户id 得到本账号挂名的经销商下面的自然人和法人 ；为经销商赋权限
+
+-->
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+     <alldb>
+      <table_sql> 
+	        <![CDATA[
+				select 
+				pi.project_name,
+				pi.id,
+		        case when ci.id is null then '合同审批中'
+		           else  '合同审批' end  proj_status,
+		        pr.proj_credit_pass_time,
+		        cic.cust_name as custname,
+		        cid.cust_name as dealername,
+		        list.dbid
+				from 
+				(
+	                 SELECT MAX(WII.KEY_TWO_) PROJNAME,MAX(HP.DBID_) DBID
+	                 FROM T_JBPM_WORKFLOW_INFO WII
+	                 LEFT JOIN T_JBPM_ACTIVITY_DETAIL TJAD ON TJAD.ID_ = WII.ACTIVITY_DETAIL_ID_
+	                 LEFT JOIN JBPM4_HIST_ACTINST HAC ON HAC.DBID_ = WII.JBPM4_HIST_ACTINST_DBID_
+	                 LEFT JOIN(
+	                    SELECT 
+	                        DBID_, DBVERSION_, ID_, PROCDEFID_, KEY_, START_, END_, 
+	                        DURATION_, STATE_, ENDACTIVITY_, NEXTIDX_ 
+	                    FROM JBPM4_HIST_PROCINST 
+	                 )HP ON HAC.HPROCI_ = HP.DBID_
+	                 WHERE WII.workflow_name_='合同审批流程'  
+	                  and WII.JBPM4_HIST_ACTINST_DBID_ IS NOT NULL
+	                  
+	                  GROUP BY WII.KEY_TWO_,HP.DBID_
+                  ) list
+                  left join proj_info pi on list.PROJNAME=pi.project_name
+                  left join cust_info cic on pi.cust_id=cic.id
+                  left join cust_info cid on pi.cust_dealer=cid.id
+                  left join proj_credit_result pr on pi.id=pr.proj_id
+                  left join contract_info  ci on list.PROJNAME=ci.project_name
+                  left join (
+	                  select ti.key_two_ from T_JBPM_WORKFLOW_INFO ti
+	                  where  ti.workflow_name_='合同起租流程'
+	                  group by ti.key_two_
+                  ) con on pi.project_name=con.key_two_
+			       where   con.key_two_ is null and nvl(ci.contract_status,21)=21
+		
+		  --项目状态
+          /~project_name:     AND pi.project_name like '%{project_name}%'~/
+          /~custname:    AND cic.cust_name like'%{custname}%'~/
+          /~dealername:  AND cid.cust_name like '%{dealername}%'~/
+          /~proj_credit_pass_time:  AND pr.proj_credit_pass_time < '{proj_credit_pass_time}'~/
+		         
+			 ]]> 
+	  </table_sql>
+	   </alldb>
+      <dataSource>dataSource</dataSource>
+      <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

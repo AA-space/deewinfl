@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+    <alldb>
+      <table_sql>   
+	        <![CDATA[
+			             SELECT FE.ID,
+                    CI.ID CUSTID,
+                    CI.CUST_NAME CUSTNAME,
+                    FE.EBDATA_ID EBDATAID,
+                    FE.UP_ID UPID,
+                    OWN_BANK OWNBANK,
+                    FE.OWN_ACCOUNT OWNACCOUNT,
+                    FE.OWN_ACC_NUMBER OWNACCNUMBER,
+                    FE.CLIENT_BANK CLIENTBANK,
+                    FE.CLIENT_ACCOUNT CLIENTACCOUNT,
+                    FE.CLIENT_ACC_NUMBER CLIENTACCNUMBER,
+                    FE.CLIENT_NAME CLIENTNAME,
+                    FE.MONEY_TYPE MONEYTYPE,
+                    FE.FACT_MONEY FACTMONEY,
+                    ISNULL(FE.NO_WITH_MONEY, 0) NOWITHMONEY,
+                    ISNULL((SELECT SUM(RENT) + SUM(PENALTY)
+                             FROM CONTRACT_FUND_RENT_INCOME
+                            WHERE EBANK_NUMBER = FE.ID),
+                           0) + ISNULL((SELECT SUM(FACT_MONEY)
+                                         FROM CONTRACT_FUND_FUND_CHARGE
+                                        WHERE EBANK_NUMBER = FE.ID),
+                                       0) HIREMONEY,
+                    FE.FACT_DATE FACTDATE,
+                    FE.SN SN,
+                    FE.SUMMARY SUMMARY,
+                    FE.CREATOR_ AS CREATOR,
+                    BASE2.USERNAME_ AS CREATOR_NAME,
+                    FE.CREATE_DATE,
+                    FE.MODIFICATOR_,
+                    BASE3.USERNAME_ AS MODIFICATOR_NAME,
+                    FE.MODIFY_DATE
+               FROM FUND_EBANK_DATA FE
+               LEFT JOIN T_USERS BASE2
+                 ON FE.CREATOR_ = BASE2.ID_
+               LEFT JOIN T_USERS BASE3
+                 ON FE.MODIFICATOR_ = BASE3.ID_
+               LEFT JOIN CUST_INFO CI
+                 ON CI.ID = FE.CUST_ID
+               WHERE 1=1
+               /~custdealerid: AND CI.ID = '{custdealerid}'~/
+
+              ORDER BY FE.CREATE_DATE DESC
+			 ]]> 
+	  </table_sql>
+	  </alldb>
+      <dataSource>dataSource</dataSource>
+      <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

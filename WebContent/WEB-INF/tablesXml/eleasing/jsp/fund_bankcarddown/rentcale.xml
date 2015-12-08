@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<table-root xmlns="http://www.tracywindy.org/table"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+	<table>
+		<data>
+			<alldb>
+				<table_sql> 
+	        <![CDATA[
+				select cinfo.cust_name as c0,ci.contract_number as c1,cinfo1.cust_name as c2,
+cc.lease_term as c3,
+case when cc.is_registration=0 then '是' else '否' end as c4,
+cc.equip_amt as c5,
+cc.first_payment as c6,
+td1.name_ as c7,
+round(cc.first_payment_ratio,2)||'%' as c8,
+cc.caution_money as c9,
+tab1.equipnum as c10,
+round(cc.caution_money_ratio,2)||'%' as c11,
+cc.gps_money as c12,
+cc.lease_money as c13,
+cc.insure_money as c14,
+round(cc.year_rate,2)||'%' as c15,
+cc.nominal_price as c16,
+round(cc.handling_charge_money_ratio,2) ||'%' as c17,
+cc.handling_charge_money as c18,
+cc.start_date_ as c19,
+tab2.renttotal as c20,
+cc.first_payment_total as c21,
+tab2.renttotal as c22,
+tab2.interesttotal as c23,
+tab2.corpustotal as c24,
+cc.other_income as c25
+from contract_info ci
+left join cust_info cinfo on ci.cust_id=cinfo.id
+left join cust_info cinfo1 on ci.cust_dealer=cinfo1.id
+left join contract_condition cc on ci.id=cc.contract_id
+left join t_dicts_datas td1 on cc.income_number_year=td1.id_
+left join (
+select ce.contract_id,count(*) equipnum from contract_equip ce
+where ce.equip_class !='equip_class_2' 
+group by ce.contract_id
+)tab1 on ci.id=tab1.contract_id
+
+left join (
+select cfrp.contract_id,sum(cfrp.rent) renttotal,sum(cfrp.corpus) corpustotal,sum(cfrp.interest) interesttotal from contract_fund_rent_plan cfrp
+group by cfrp.contract_id
+)tab2 on ci.id=tab2.contract_id
+where ci.id='{contractid}'
+
+			 ]]>
+				</table_sql>
+			</alldb>
+			<dataSource>dataSource</dataSource>
+			<show_sql>true</show_sql>
+		</data>
+	</table>
+</table-root>

@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+    <alldb>
+      <table_sql>   
+      <!--网银余额,已核销金额,网银ID,客户ID,客户名称,网银编号,本方银行,本方账户,本方账号,客户银行,客户账户,客户账号,付款人,
+                    到账金额类型,到账金额,无关金额,租金,非租金,经销商保证金,过程中金额,到账日期,流水号,备注  -->
+	        <![CDATA[
+	        
+	        select ttt.* from (
+                        SELECT DISTINCT FE.ID,
+                                        CI.ID CUSTID,
+                                        CI.CUST_NAME CUSTNAME,
+                                        custs.cust_name kehu,
+                                        custs.id kehuid,
+                                        FE.EBDATA_ID EBDATAID,
+                                        FE.UP_ID UPID,
+                                        OWN_BANK OWNBANK,
+                                        FE.OWN_ACCOUNT OWNACCOUNT,
+                                        FE.OWN_ACC_NUMBER OWNACCNUMBER,
+                                        FE.CLIENT_BANK CLIENTBANK,
+                                        FE.CLIENT_ACCOUNT CLIENTACCOUNT,
+                                        FE.CLIENT_ACC_NUMBER CLIENTACCNUMBER,
+                                        FE.CLIENT_NAME CLIENTNAME,
+                                        FE.MONEY_TYPE MONEYTYPE,
+                                        NVL(FE.FACT_MONEY, 0) FACTMONEY,
+                                        NVL(FE.NO_WITH_MONEY, 0) NOWITHMONEY,
+                                        NVL(CFRI.RENT, 0) RENT,
+                                        NVL(CFFC.FACT_MONEY, 0) FUNDMONEY,
+                                        NVL(MFFC.FACT_MONEY, 0) FUNDMMONEY,
+                                        NVL(FEP.PROCESS_AMOUNT, 0) FUNDPMONEY,
+                                        FE.FACT_DATE FACTDATE,
+                                        FE.SN SN,
+                                        FE.USE_FOR USEFOR,
+                                        FE.CREATOR_ AS CREATOR,
+                                        BASE2.USERNAME_ AS CREATOR_NAME,
+                                        FE.CREATE_DATE,
+                                        FE.MODIFICATOR_,
+                                        FE.SUMMARY SUMMARY,
+                                        FE.SUMMARY_BAK SUMMARYBAK,
+                                        BASE3.USERNAME_ AS MODIFICATOR_NAME,
+                                        FE.MODIFY_DATE,
+                                        NVL(FE.ENABLED_, 0) ENABLED,
+                                        ROUND(NVL(FE.FACT_MONEY, 0) -
+                                              NVL(FE.NO_WITH_MONEY, 0) -
+                                              NVL(CFRI.RENT, 0) -
+                                              NVL(CFFC.FACT_MONEY, 0) -
+                                              NVL(MFFC.FACT_MONEY, 0) -
+                                              NVL(FEP.PROCESS_AMOUNT, 0),
+                                              2) OWMONEY,
+                                        ROUND(NVL(CFRI.RENT, 0) +
+                                              NVL(CFFC.FACT_MONEY, 0) +
+                                              NVL(MFFC.FACT_MONEY, 0) +
+                                              NVL(FEP.PROCESS_AMOUNT, 0),
+                                              2) HIREMONEY,
+                                        CASE
+                                          WHEN NVL(FE.ENABLED_, 0) = '0' THEN
+                                           '是'
+                                          ELSE
+                                           '否'
+                                        END ENABLEDNAME,
+                                        cdl.id   dealerid
+                          FROM FUND_EBANK_DATA FE
+                          LEFT JOIN T_USERS BASE2 ON FE.CREATOR_ = BASE2.ID_
+                          LEFT JOIN T_USERS BASE3 ON FE.MODIFICATOR_ = BASE3.ID_
+                          LEFT JOIN CUST_INFO CI ON CI.ID = FE.CUST_ID
+                          left join cust_info_dealer cdl on cdl.cust_id=ci.id 
+                          left join cust_info custs on custs.id=fe.kehu
+                          
+                          --LEFT JOIN DEALER_DEPT_INFO DD ON CI.ID=DD.CUST_ID
+					      --LEFT JOIN T_USERS_DEPTS UD ON DD.DEALER_DEPT=UD.DEPT_ID_
+                            LEFT JOIN CUST_INFO_PERSON CIP 
+				            ON CIP.CUST_ID = CI.ID
+				            LEFT JOIN CUST_INFO_COMPANY CIC
+				            ON CIC.CUST_ID = CI.ID
+                          
+                          LEFT JOIN 
+                          (
+                            SELECT EBANK_NUMBER,
+                                   SUM(FACT_MONEY) FACT_MONEY
+                            FROM CONTRACT_FUND_FUND_CHARGE
+                            GROUP BY EBANK_NUMBER
+                          ) CFFC ON (CFFC.EBANK_NUMBER = FE.ID)
+                          LEFT JOIN 
+                          (
+                            SELECT EBANK_NUMBER,
+                                  SUM(FACT_MONEY) FACT_MONEY
+                            FROM MFUND_FUND_CHARGE
+                            GROUP BY EBANK_NUMBER
+                          ) MFFC ON (MFFC.EBANK_NUMBER = FE.ID)
+                          LEFT JOIN 
+                          (
+                            SELECT EBDATA_ID,
+                                   SUM(PROCESS_AMOUNT) PROCESS_AMOUNT
+                            FROM FUND_EBANK_PROCESS
+                            WHERE WORK_FLAG = 0
+                            GROUP BY EBDATA_ID
+                           ) FEP ON (FEP.EBDATA_ID = FE.ID)
+                          LEFT JOIN 
+                          (
+                            SELECT EBANK_NUMBER,
+                                   NVL(SUM(RENT), 0) + NVL(SUM(PENALTY), 0) RENT
+                            FROM CONTRACT_FUND_RENT_INCOME
+                            GROUP BY EBANK_NUMBER
+                           ) CFRI ON (CFRI.EBANK_NUMBER = FE.ID)
+
+                        where 1=1  
+                         and  FE.INUSEFLAG = '0'
+                      /~enabled: AND  FE.ENABLED_={enabled} ~/
+                      /~custid: AND  (CIC.DEALER_COMPANY||CIP.DEALER_COMPANY = '{custid}' OR CI.ID ='{custid}')~/
+                      /~dealerid: AND  FE.CUST_ID='{dealerid}'~/
+                      /~kehu: AND  fe.kehu is null~/
+                      /~custordealer: AND (CI.ID='{cid}' or FE.CUST_ID='{did}')~/
+                      /~hasMoney: 
+                      		AND ROUND(
+                      				NVL(FE.FACT_MONEY, 0) -
+                                    NVL(FE.NO_WITH_MONEY, 0) -
+                                    NVL(CFRI.RENT, 0) -
+                                    NVL(CFFC.FACT_MONEY, 0) -
+                                    NVL(MFFC.FACT_MONEY, 0) -
+                                    NVL(FEP.PROCESS_AMOUNT, 0)
+                                 ,2)>0
+                      ~/
+                      /~sn: AND FE.SN like '%{sn}%' ~/ 
+                      /~clientname: AND FE.CLIENT_NAME like '%{clientname}%' ~/
+                      /~custname: AND CI.CUST_NAME like '%{custname}%'~/
+                      /~factdate_start: AND FE.FACT_DATE>='{factdate_start}' ~/
+                      /~factdate_end: AND FE.FACT_DATE<='{factdate_end}' ~/
+                      /~ebdataid: AND FE.EBDATA_ID like '%{ebdataid}%'~/
+                  ------------经销商初始权限判断----------------
+			      --注：传入当前userid，不做其他关联
+			      --员工在经销部门里, 如果是经销商则是1，如果不是则为0
+			      AND (1 =
+			       --员工在经销部门里, 如果是经销商则是1，如果不是则为0
+			       (SELECT DECODE(NUM, 0, 0, 1)
+			           FROM (SELECT COUNT(*) AS NUM
+			                    FROM DUAL
+			                   WHERE
+			                  --用户部门是经销商部门
+			                   (SELECT DEPT_ID_
+			                      FROM T_USERS_DEPTS
+			                     WHERE USER_ID_ = '{user_id}') IN
+			                   (SELECT D.ID_
+			                      FROM T_DEPTS D
+			                     START WITH D.PID_ = '402881ef409b4bfa01409b9ce7fb01e6'
+			                    CONNECT BY PRIOR D.ID_ = D.PID_)
+			                  --经销商用户对应的部门在<经销商用户对应表>里为不为空
+			                AND (SELECT DEALER_DEPT D1
+			                      FROM DEALER_DEPT_INFO T
+			                     WHERE DEALER_DEPT IN
+			                           (SELECT DEPT_ID_
+			                              FROM T_USERS_DEPTS
+			                             WHERE USER_ID_ = '{user_id}')
+			                             AND ENABLE_ = '0') IS NOT NULL
+			                  
+			                  )) OR
+			       0 =
+			       --不是经销部门
+			       (SELECT COUNT(*) AS NUM
+			           FROM DUAL
+			          WHERE
+			         --用户部门是经销商部门
+			          (SELECT DEPT_ID_
+			             FROM T_USERS_DEPTS
+			            WHERE USER_ID_ = '{user_id}') IN
+			          (SELECT D.ID_
+			             FROM T_DEPTS D
+			            START WITH D.PID_ = '402881ef409b4bfa01409b9ce7fb01e6'
+			           CONNECT BY PRIOR D.ID_ = D.PID_))
+			       
+			       )
+			
+			       ------------经销商初始权限判断结束----------------
+				
+                      
+                  /~currentDealerCustInfoId: --AND  (CIC.DEALER_COMPANY||CIP.DEALER_COMPANY = '{currentDealerCustInfoId}' OR CI.ID ='{currentDealerCustInfoId}')~/  
+                  /~currentDealerCustInfoId: and FE.CUST_ID  = '{currentDealerCustInfoId}'~/
+                      
+                      ORDER BY EBDATAID DESC, CI.CUST_NAME
+                      ) ttt
+                      where 1=1
+                      --------显示可核销金额大于0的记录
+                       /~owmoneythanzero: AND owmoney > {owmoneythanzero} ~/
+                       /~ebdataid: AND EBDATAID like '%{ebdataid}%' ~/
+                        /~custname: AND CUSTNAME like '%{custname}%' ~/
+                        /~summary: AND SUMMARY  like '%{summary}%' ~/
+                         /~clientname: AND CLIENTNAME like '%{clientname}%' ~/
+                         /~sn: AND SN like '%{sn}%' ~/
+                         /~factmoney: AND FACTMONEY like '%{factmoney}%' ~/
+                         /~factdate_start: and factdate>='{factdate_start}' ~/
+                         /~factdate_end: and factdate<='{factdate_end}' ~/
+       ]]> 
+    </table_sql>
+    </alldb>
+      <dataSource>dataSource</dataSource>
+      <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

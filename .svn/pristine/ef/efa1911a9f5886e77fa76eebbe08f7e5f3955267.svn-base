@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+     <alldb>
+      <table_sql> 
+	        <![CDATA[
+			     SELECT  
+			     	 P.ID , 
+		             p.PROJ_ID as projId ,
+		             p.EQIP_ID as eqipId , 
+		             P.EQIP_NAME as eqipName,
+	
+		             P.EQUIP_NUM as equipnum , 
+		             P.TOTAL as total,
+		             P.NOWTOTAL as nowtotal,
+		             P.SALE_PRICE as saleprice,
+		            
+		             CI.CUST_NAME as vndrname,
+	               ci.id as vndr,
+		             CI2.CUST_NAME as manufacturername ,
+	               ci2.id as manufacturer,
+		             DICT.NAME_ as devicetypename ,
+	               DICT.id_ as devicetype ,
+		             EQUIP_DELIVERY_PLACE as equipDeliveryPlace , 
+		             EQUIP_DELIVERY_DATE as equipDeliveryDate , 
+		             P.EQUIP_PLACE as equipPlace,
+		             CENOTE as cenote
+		             FROM PROJ_EQUIP P
+		             LEFT JOIN CUST_INFO CI ON P.VNDR = CI.ID
+			         LEFT JOIN CUST_INFO CI2 ON P. MANUFACTURER = CI2.ID
+			         LEFT JOIN T_DICTS_DATAS DICT ON P.DEVICE_TYPE = DICT.ID_
+	         WHERE P.PROJ_ID='{proj_id}'
+			 ]]> 
+	  </table_sql> </alldb>
+      <dataSource>dataSource</dataSource>
+	  <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

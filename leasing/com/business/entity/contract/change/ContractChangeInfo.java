@@ -1,0 +1,310 @@
+package com.business.entity.contract.change;
+
+import java.math.BigDecimal;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.GenericGenerator;
+
+import com.business.entity.User;
+import com.kernal.annotation.FieldName;
+
+/**
+ * 
+ * @author 孙传良
+ * @date 2013-7-29下午06:09:40
+ * @info 合同起租后变更记录表
+ * @Copyright 
+ * Tenwa
+ */
+@Entity
+@FieldName(name = "合同起租后变更记录表")
+@Table(name="CONTRACT_CHANGE_INFO")
+public class ContractChangeInfo {
+	@Id
+    @GeneratedValue(generator = "paymentableGenerator")     
+    @GenericGenerator(name = "paymentableGenerator", strategy = "uuid") 
+    @Column(length=32)
+	private String id;
+	
+	@FieldName(name="企业实际控制人")
+	@Column(name="CUST_HOST", length=50)	
+	private String custHost;
+	
+	@FieldName(name="购车融资信息/费用项目")
+	@Column(name="FEE_TYPE", length=500)	
+	private String feeType;
+	
+	@FieldName(name="购车融资信息/车辆规格")
+	@Column(name="CAR_MODE", length=500)	
+	private String carMode;
+	
+	@FieldName(name="所购车辆营运信息/车辆上牌照地")
+	@Column(name="CAR_NO_ADDR", length=200)	
+	private String carNoAddr;
+	
+	@FieldName(name="所购车辆营运信息/预计所购车月营动收入")
+	@Column(name="CAR_INCOME",precision=22,scale=2)	
+	private BigDecimal carIncome;
+	
+	@FieldName(name="所购车辆营运信息/车辆停驻/使用地")
+	@Column(name="CAR_ADDR",length=200)	
+	private String carAddr;
+	
+	@FieldName(name="所购车辆营运信息/预计所购车月营动费用")
+	@Column(name="CAR_FEE",precision=22,scale=2)	
+	private BigDecimal carFee;
+	
+	@FieldName(name="所购车辆营运信息/预计月行驶公里数")
+	@Column(name="CAR_RUN",length=50)	
+	private String carRun;
+	
+	@FieldName(name="所购车辆营运信息/预定运输线路")
+	@Column(name="CAR_LINE",length=50)	
+	private String carLine;
+	
+	@FieldName(name="所购车辆营运信息/车辆登记所有权人")
+	@Column(name="CAR_REG_OWN",length=50)	
+	private String carRegOwn;
+	
+	@FieldName(name="所购车辆营运信息/车辆实际所有权人")
+	@Column(name="CAR_OWN",length=50)	
+	private String carOwn;
+	
+	@FieldName(name="所购车辆营运信息/载货种类")
+	@Column(name="CAR_GOODS",length=200)	
+	private String carGoods;
+	
+	@FieldName(name="担保措施/个人连带担保")
+	@Column(name="ASSUROR_",length=200)	
+	private String assuror;
+	
+	@FieldName(name="担保措施/法人连带担保")
+	@Column(name="ASSUROR_LAW",length=200)	
+	private String assurorLaw;
+	
+	@FieldName(name="担保措施/抵押担保")
+	@Column(name="GUARANTEE_",length=200)	
+	private String guarantee;
+	
+	@FieldName(name="担保措施/其它担保")
+	@Column(name="GUARANTEE_OTHER",length=200)	
+	private String guaranteeOther;
+	
+	@FieldName(name="担保措施/担保人名称")
+	@Column(name="GUARANTEE_NAME",length=200)	
+	private String guaranteeName;
+	
+	@FieldName(name="担保措施/担保物")
+	@Column(name="GUARANTEE_EQUIP",length=200)	
+	private String guaranteeEquip;
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@FieldName(name="创建人")
+	@JoinColumn(name="CREATOR_")
+	private User creator;
+	
+	@FieldName(name="创建时间")
+	@Column(name="CREATE_DATE", length=20)	
+	private String createDate;
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@FieldName(name="修改人")
+	@JoinColumn(name="MODIFICATOR_")
+	private User modificator;
+	
+	@FieldName(name="修改时间")
+	@Column(name="MODIFY_DATE", length=20)	
+	private String modifyDate;
+
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	public String getCustHost() {
+		return custHost;
+	}
+
+	public void setCustHost(String custHost) {
+		this.custHost = custHost;
+	}
+
+	public String getFeeType() {
+		return feeType;
+	}
+
+	public void setFeeType(String feeType) {
+		this.feeType = feeType;
+	}
+
+	public String getCarMode() {
+		return carMode;
+	}
+
+	public void setCarMode(String carMode) {
+		this.carMode = carMode;
+	}
+
+	public String getCarNoAddr() {
+		return carNoAddr;
+	}
+
+	public void setCarNoAddr(String carNoAddr) {
+		this.carNoAddr = carNoAddr;
+	}
+
+	public BigDecimal getCarIncome() {
+		return carIncome;
+	}
+
+	public void setCarIncome(BigDecimal carIncome) {
+		this.carIncome = carIncome;
+	}
+
+	public String getCarAddr() {
+		return carAddr;
+	}
+
+	public void setCarAddr(String carAddr) {
+		this.carAddr = carAddr;
+	}
+
+	public BigDecimal getCarFee() {
+		return carFee;
+	}
+
+	public void setCarFee(BigDecimal carFee) {
+		this.carFee = carFee;
+	}
+
+	public String getCarRun() {
+		return carRun;
+	}
+
+	public void setCarRun(String carRun) {
+		this.carRun = carRun;
+	}
+
+	public String getCarLine() {
+		return carLine;
+	}
+
+	public void setCarLine(String carLine) {
+		this.carLine = carLine;
+	}
+
+	public String getCarRegOwn() {
+		return carRegOwn;
+	}
+
+	public void setCarRegOwn(String carRegOwn) {
+		this.carRegOwn = carRegOwn;
+	}
+
+	public String getCarOwn() {
+		return carOwn;
+	}
+
+	public void setCarOwn(String carOwn) {
+		this.carOwn = carOwn;
+	}
+
+	public String getCarGoods() {
+		return carGoods;
+	}
+
+	public void setCarGoods(String carGoods) {
+		this.carGoods = carGoods;
+	}
+
+	public String getAssuror() {
+		return assuror;
+	}
+
+	public void setAssuror(String assuror) {
+		this.assuror = assuror;
+	}
+
+	public String getAssurorLaw() {
+		return assurorLaw;
+	}
+
+	public void setAssurorLaw(String assurorLaw) {
+		this.assurorLaw = assurorLaw;
+	}
+
+	public String getGuarantee() {
+		return guarantee;
+	}
+
+	public void setGuarantee(String guarantee) {
+		this.guarantee = guarantee;
+	}
+
+	public String getGuaranteeOther() {
+		return guaranteeOther;
+	}
+
+	public void setGuaranteeOther(String guaranteeOther) {
+		this.guaranteeOther = guaranteeOther;
+	}
+
+	public String getGuaranteeName() {
+		return guaranteeName;
+	}
+
+	public void setGuaranteeName(String guaranteeName) {
+		this.guaranteeName = guaranteeName;
+	}
+
+	public String getGuaranteeEquip() {
+		return guaranteeEquip;
+	}
+
+	public void setGuaranteeEquip(String guaranteeEquip) {
+		this.guaranteeEquip = guaranteeEquip;
+	}
+
+	public User getCreator() {
+		return creator;
+	}
+
+	public void setCreator(User creator) {
+		this.creator = creator;
+	}
+
+	public String getCreateDate() {
+		return createDate;
+	}
+
+	public void setCreateDate(String createDate) {
+		this.createDate = createDate;
+	}
+
+	public User getModificator() {
+		return modificator;
+	}
+
+	public void setModificator(User modificator) {
+		this.modificator = modificator;
+	}
+
+	public String getModifyDate() {
+		return modifyDate;
+	}
+
+	public void setModifyDate(String modifyDate) {
+		this.modifyDate = modifyDate;
+	}
+}

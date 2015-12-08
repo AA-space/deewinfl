@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+     <alldb>
+      <table_sql> 
+	        <![CDATA[
+	        SELECT 
+	         	C.ID AS id,
+	            C.CONTRACT_ID AS contractid,
+				c.contract_number contractnumber,
+				C.CUST_ID AS custid,
+				C.PROJ_ID AS pid,
+				P.PROJ_ID AS  proj_id,
+				ci1.cust_name custname,
+				ci2.cust_name custdealer,
+				C.PROJECT_NAME projname,
+				DICT.NAME_ AS projtype,
+				DICT2.NAME_ AS projsource,
+				DICT3.NAME_ AS projscale ,
+				DICT4.NAME_ AS industrytype,
+				DICT5.NAME_ AS  leasform ,
+				DICT6.NAME_ AS businesstype,
+				DICT7.NAME_ AS businessmode,
+				T.REALNAME_ AS projmanage
+				 FROM CONTRACT_INFO C
+				 LEFT JOIN CUST_INFO CI1 ON CI1.ID = C.CUST_ID
+				 LEFT JOIN CUST_INFO CI2 ON CI2.ID = C.CUST_DEALER
+				 LEFT JOIN T_DICTS_DATAS DICT ON C.PROJ_TYPE=DICT.ID_
+				 LEFT JOIN T_DICTS_DATAS DICT2 ON C.PROJ_SOURCE=DICT2.ID_
+				 LEFT JOIN T_DICTS_DATAS DICT3 ON C.PROJ_SCALE=DICT3.ID_
+				 LEFT JOIN T_DICTS_DATAS DICT4 ON C.INDUSTRY_TYPE=DICT4.ID_
+				 LEFT JOIN T_DICTS_DATAS DICT5 ON C.LEAS_FORM=DICT5.ID_
+				 LEFT JOIN T_DICTS_DATAS DICT6 ON C.BUSINESS_TYPE=DICT6.ID_
+				 LEFT JOIN T_DICTS_DATAS DICT7 ON C.BUSINESS_MODE=DICT7.ID_
+				 LEFT JOIN T_USERS T ON C.PROJ_MANAGE=T.ID_
+				 LEFT JOIN PROJ_INFO P ON P.ID=C.PROJ_ID  
+				 where c.contract_status > 30  and  c.contract_status <100  
+				 /~projid: and ci1.cust_name like '%{projid}%'~/
+				 /~projname: and  C.PROJECT_NAME   like '%{projname}%'~/
+				 /~contractid: and C.CONTRACT_ID like '%{contractid}%'~/
+				 /~custname: and C.PROJECT_NAME like '%{custname}%'~/
+				 /~custdealer: and  ci2.cust_name  like '%{custdealer}%'~/
+				 /~projtype: and DICT.NAME_  = '{projtype}'~/
+				 /~contractnumber: and c.contract_number like '%{contractnumber}%' ~/
+			 ]]> 
+	  </table_sql>
+	   </alldb>
+      <dataSource>dataSource</dataSource>
+      <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

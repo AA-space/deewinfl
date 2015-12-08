@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+    <alldb>
+      <table_sql> 
+	        <![CDATA[   
+				select id,
+				       TEMPLATE_SHOW_NAME templateshowname,
+				       status_ status,
+                       TEMPLATE_NAME templatename,
+				       td.name_ oneclassify,
+				       td1.name_ twoclassify,
+				       td2.name_ threeclassify,
+				       td3.name_ fourclassify,
+				       td4.name_ fiveclassify,
+				       td5.name_ sixclassify,
+				       td6.name_ sevenclassify,
+				       td7.name_ eightclassify,
+				       td.code_ oneclassifycode,
+				       td1.code_ twoclassifycode,
+				       td2.code_ threeclassifycode,
+				       td3.code_ fourclassifycode,
+				       td4.code_ fiveclassifycode,
+				       td5.code_ sixclassifycode,
+				       td6.code_ sevenclassifycode,
+				       td7.code_ eightclassifycode,
+				       TEMPLATE_NO templateno,
+				       TEMPLATE_PATH templatePath,
+				       SOURCE_TEMPLATE_PATH souretemplatepath
+                       from B_FILE_TEMPLATE
+                       left join t_dicts_datas td on
+                       td.code_=B_FILE_TEMPLATE.ONE_CLASSIFY
+                       left join t_dicts_datas td1 on
+                       td1.code_=B_FILE_TEMPLATE.TWO_CLASSIFY
+                       left join t_dicts_datas td2 on
+                       td2.code_=B_FILE_TEMPLATE.THREE_CLASSIFY
+                       left join t_dicts_datas td3 on
+                       td3.code_=B_FILE_TEMPLATE.FOUR_CLASSIFY
+                       left join t_dicts_datas td4 on
+                       td4.code_=B_FILE_TEMPLATE.FIVE_CLASSIFY 
+                       left join t_dicts_datas td5 on
+                       td5.code_=B_FILE_TEMPLATE.SIX_CLASSIFY 
+                       left join t_dicts_datas td6 on
+                       td6.code_=B_FILE_TEMPLATE.SEVEN_CLASSIFY
+                       left join t_dicts_datas td7 on
+                       td7.code_=B_FILE_TEMPLATE.EIGHT_CLASSIFY
+                       
+                       where 1=1 
+                       --and td1.name_ ='直租'
+                       /~oneclassify: and td.name_ like '%{oneclassify}%' ~/
+                       /~twoclassify: and td1.name_ like '%{twoclassify}%' ~/
+                         /~threeclassify: and td2.name_ like '%{threeclassify}%' ~/
+                       /~fourclassify: and td3.name_ like '%{fourclassify}%' ~/
+                         /~fiveclassify: and td4.name_ like '%{fiveclassify}%' ~/
+                        /~sixclassify: and td5.name_ = '{sixclassify}' ~/
+                         /~sevenclassify: and td6.name_ = '{sevenclassify}' ~/
+                          /~eightclassify: and td7.name_ = '{eightclassify}' ~/
+                        /~templatename: and TEMPLATE_NAME like '%{templatename}%' ~/                   
+                        order by td.name_ 
+                       
+				 ]]> 
+	  </table_sql>
+	  </alldb>
+      <dataSource>dataSource</dataSource>
+      <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

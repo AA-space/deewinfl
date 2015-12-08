@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<table-root xmlns="http://www.tracywindy.org/table"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+	<table>
+		<data>
+			<alldb>
+				<table_sql> 
+	        <![CDATA[				            
+select 
+pi.proj_id              as projid,
+pi.project_name         as projname,
+pi.contract_number      as contractnumber,
+bcs.status_name         as contractstatusname,
+pc.lease_money          as corpus,
+ci.cust_name            as custname,
+tdep.name_              as projdeptname,
+tu.realname_            as projmanagename,
+tab1.assuror            as assurors,
+nvl(need_rent.rents, 0.00) - nvl(has_rent.payrent, 0.00) as overrent,
+nvl(residueneed_rent.rents, 0.00) -nvl(residuehas_rent.payrent, 0.00) as residueoverrent,
+nvl(tab2.PENALTY,0.00)  as penalty,
+nvl(io.iocount,e.sjcount) equipcount,
+contract_equip_acceptance.accept_date appdate,
+status.status_name contractstatus
+from proj_info pi
+left join base_contract_status bcs on pi.proj_status=bcs.status_code
+left join proj_condition pc on pi.id=pc.proj_id
+left join (
+select e.proj_id proj_id ,count(*) sjcount from proj_equip e where e.equip_class <>'equip_class_2' group by e.proj_id
+) e on pi.id=e.proj_id
+left join cust_info ci on  pi.cust_id=ci.id
+left join T_DEPTS tdep on pi.proj_dept=tdep.id_
+left join t_users tu on pi.proj_manage=tu.id_
+left join 
+(
+select pg.proj_id as proj_id,wm_concat(ci1.cust_name) as assuror From proj_guarantee_method pg
+left join cust_info ci1 on pg.assuror=ci1.id
+group by pg.proj_id
+) tab1 on pi.id=tab1.proj_id
+
+left join contract_info cinfo on pi.id=cinfo.proj_id
+left join (
+select contract_id,count(*) iocount from contract_equip io where io.equip_class<>'equip_class_2' group by io.contract_id
+) io on cinfo.id=io.contract_id
+left join base_contract_status status on status.status_code=cinfo.contract_status
+left join contract_condition con on con.contract_id=cinfo.id
+left join  contract_equip_acceptance on contract_equip_acceptance.contract_id=cinfo.id
+left join (
+select cp.contract_id, nvl(sum(cp.PENALTY),0) as PENALTY  from contract_fund_rent_plan cp
+group by cp.contract_id
+) tab2 on cinfo.id=tab2.contract_id
+
+left join (select sum(rent) rents, rentplan.contract_id
+                         from contract_fund_rent_plan rentplan
+                        where PLAN_DATE <= to_char(sysdate, 'yyyy/mm/dd')
+                        group by rentplan.contract_id) need_rent
+              on need_rent.contract_id = cinfo.id
+            left join (select rentincome.contract_id,
+                              nvl(sum(rent), 0.00) + nvl(sum(RENT_ADJUST), 0.00) as payrent
+                         from contract_fund_rent_income rentincome
+                        where hire_date <= to_char(sysdate, 'yyyy/mm/dd')
+                        group by rentincome.contract_id) has_rent
+              on has_rent.contract_id = cinfo.id
+            left join (select sum(rent) rents, rentplan.contract_id
+                         from contract_fund_rent_plan rentplan
+                        where PLAN_DATE >= to_char(sysdate, 'yyyy/mm/dd')
+                        group by rentplan.contract_id) residueneed_rent
+              on residueneed_rent.contract_id = cinfo.id
+            left join (select rentincome.contract_id,
+                              nvl(sum(rent), 0.00) + nvl(sum(RENT_ADJUST), 0.00) as payrent
+                         from contract_fund_rent_income rentincome
+                        where hire_date >= to_char(sysdate, 'yyyy/mm/dd')
+                        group by rentincome.contract_id) residuehas_rent
+              on residuehas_rent.contract_id = cinfo.id
+
+              WHERE 1=1 and pi.proj_status  in ('11','101','19','102')
+           /~CUST_ID: AND pi.cust_id = '{CUST_ID}'~/
+              
+			 ]]>
+				</table_sql>
+			</alldb>
+			<dataSource>dataSource</dataSource>
+			<show_sql>true</show_sql>
+		</data>
+	</table>
+</table-root>

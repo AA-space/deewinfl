@@ -1,0 +1,43 @@
+﻿1.
+word对应填写字段：尚欠甲方债务共计人民币
+关键字：framework_condition
+数据类型：字段
+数据来源：页面
+多行控件名：不填
+数据列名：renttotalmoney
+数据SQL:不填
+说明：不填
+
+2.
+word对应填写字段：合同编号
+关键字：contract_info
+数据类型：字段
+数据来源：页面
+多行控件名：不填
+数据列名：contractnumber
+数据SQL:不填
+说明：不填
+
+3.
+json_proj_equip_strs
+
+表格
+
+数据库
+
+json_proj_equip_str
+
+equipclassname,modelname,chassisnum
+
+SELECT 
+P.DICT3.NAME_ as equipclassname,
+p.model_ as modelname,
+P.CHASSIS_NUM as chassisnum,
+P.DICT2.NAME_ as equiptypename
+ FROM PROJ_EQUIP P 
+LEFT JOIN CUST_INFO CI2 ON P. MANUFACTURER = CI2.ID 
+LEFT JOIN CUST_INFO CI3 ON P. VNDR = CI3.ID 
+LEFT JOIN T_DICTS_DATAS DICT ON P.DEVICE_TYPE = DICT.ID_ 
+LEFT JOIN T_DICTS_DATAS DICT2 ON P.EQUIP_TYPE=DICT2.ID_ 
+LEFT JOIN T_DICTS_DATAS DICT3 ON P.EQUIP_CLASS=DICT3.ID_ WHERE P.PROJ_ID='{proj_id}'
+

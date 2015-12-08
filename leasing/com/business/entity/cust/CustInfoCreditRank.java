@@ -1,0 +1,143 @@
+package com.business.entity.cust;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.GenericGenerator;
+
+import com.business.entity.DictionaryData;
+import com.business.entity.User;
+import com.kernal.annotation.FieldName;
+
+/**
+ * 
+ * @author 孙传良
+ * @date 2013-7-28下午03:24:24
+ * @info 信用等级
+ * @Copyright 
+ * Tenwa
+ */
+@Entity
+@FieldName(name = "信用等级")
+@Table(name = "CUST_CREDIT_RANK")
+public class CustInfoCreditRank {
+	@Id
+	@GeneratedValue(generator = "paymentableGenerator")
+	@GenericGenerator(name = "paymentableGenerator", strategy = "uuid")
+	@Column(length = 32)
+	private String id;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@FieldName(name="客户ID")
+	@JoinColumn(name = "CUST_ID")
+	private CustInfo custId;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@FieldName(name = "信用等级")
+	@JoinColumn(name = "CREDIT_RANK")
+	private DictionaryData creditRank;
+
+	@FieldName(name = "变动日期")
+	@Column(name = "CHANGE_DATE", length = 20)
+	private String changeDate;
+
+	@FieldName(name = "备注")
+	@Column(name="CCRMEMO", length = 255)
+	private String ccrmemo;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@FieldName(name = "登记人")
+	@JoinColumn(name="CREATOR_")
+	private User creator;
+
+	@FieldName(name = "登记时间")
+	@Column(name="CREATE_DATE", length = 20)
+	private String createDate;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@FieldName(name = "更新人")
+	@JoinColumn(name="MODIFICATOR_")
+	private User modificator;
+
+	@FieldName(name = "更新时间")
+	@Column(name="MODIFY_DATE", length = 20)
+	private String modifyDate;
+
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	public CustInfo getCustId() {
+		return custId;
+	}
+
+	public void setCustId(CustInfo custId) {
+		this.custId = custId;
+	}
+
+	public DictionaryData getCreditRank() {
+		return creditRank;
+	}
+
+	public void setCreditRank(DictionaryData creditRank) {
+		this.creditRank = creditRank;
+	}
+
+	public String getChangeDate() {
+		return changeDate;
+	}
+
+	public void setChangeDate(String changeDate) {
+		this.changeDate = changeDate;
+	}
+
+	public String getCcrmemo() {
+		return ccrmemo;
+	}
+
+	public void setCcrmemo(String ccrmemo) {
+		this.ccrmemo = ccrmemo;
+	}
+
+	public User getCreator() {
+		return creator;
+	}
+
+	public void setCreator(User creator) {
+		this.creator = creator;
+	}
+
+	public String getCreateDate() {
+		return createDate;
+	}
+
+	public void setCreateDate(String createDate) {
+		this.createDate = createDate;
+	}
+
+	public User getModificator() {
+		return modificator;
+	}
+
+	public void setModificator(User modificator) {
+		this.modificator = modificator;
+	}
+
+	public String getModifyDate() {
+		return modifyDate;
+	}
+
+	public void setModifyDate(String modifyDate) {
+		this.modifyDate = modifyDate;
+	}
+}

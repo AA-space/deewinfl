@@ -1,0 +1,247 @@
+package com.business.action.leasing.contract.finish;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.commons.lang3.StringUtils;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
+
+import com.business.action.JbpmBaseAction;
+import com.business.entity.DictionaryData;
+import com.business.entity.JBPMWorkflowHistoryInfo;
+import com.business.entity.User;
+import com.business.entity.UserDepartment;
+import com.business.entity.base.BaseMessage;
+import com.business.entity.base.BaseMessageToUser;
+import com.business.entity.base.WorkFlowFlag;
+import com.business.entity.contract.ContractEndInfo;
+import com.business.entity.contract.ContractInfo;
+import com.business.entity.contract.doc.ContractDocSendInfo;
+import com.business.entity.contract.reckon.condition.ContractCondition;
+import com.business.entity.dealer.DealerDeptInfo;
+import com.business.service.TableService;
+import com.business.service.vouchersFactory.ContractTerminateService;
+import com.kernal.annotation.WorkflowAction;
+import com.kernal.utils.DateUtil;
+import com.kernal.utils.SecurityUtil;
+
+
+@WorkflowAction(name = "contractFinishEndAction", description = "流程结束动作", workflowName = "合同结束流程")
+@Component(value = "contractFinishEndAction")
+public class ContractFinishEndAction implements JbpmBaseAction {
+	@Resource(name = "tableService")
+	private TableService  tableService;
+	
+	@Resource(name="contractTerminateService")
+	private ContractTerminateService contractTerminateService;
+	
+	@Override
+	public void end(HttpServletRequest request, Map<String, String> variablesMap,JBPMWorkflowHistoryInfo jbpmWorkflowHistoryInfo) throws Exception {
+		/** 流程冲突第三步-结束 */
+		if (StringUtils.isNotEmpty(variablesMap.get("workFlowFlag"))) {
+			WorkFlowFlag w = this.tableService.findEntityByID(WorkFlowFlag.class, variablesMap.get("workFlowFlag"));
+			this.tableService.removeEntity(w);
+		}
+		/** 流程冲突第三步-结束 */
+
+		String  contractid=variablesMap.get("contract_info.contractid");
+	    String HQL="from ContractInfo as cp where cp.contractId=?";
+	    Map<String,Object> queryMainObjectMap = new HashMap<String,Object>();
+		queryMainObjectMap.put("contractid", contractid);
+	    //合同结束信息
+	    ContractInfo contractinfo=(ContractInfo)this.tableService.findResultsByHSQL(HQL, contractid).get(0);
+		contractinfo.setActualEndDate(variablesMap.get("contract_infoactualenddate"));
+		DictionaryData endtype=(DictionaryData)this.tableService.findEntityByID(DictionaryData.class,variablesMap.get("contract_info.endtype"));
+		if (!endtype.getCode().equals("finish_typetermination"))//是部分买断  状态不改合同状态
+		{
+			contractinfo.setEndType(endtype);
+			contractinfo.setContractStatus(201);
+			this.tableService.saveOrUpdateEntity(contractinfo);
+			//合同总结
+	 		Map<String,Object> properMap = new HashMap<String,Object>();
+	 		properMap.put("contractId", contractinfo);
+	 		ContractEndInfo endInfo;
+	 		List<ContractEndInfo> endInfos= this.tableService.findEntityByProperties(ContractEndInfo.class, properMap);
+	        if(endInfos.isEmpty()){
+	        	endInfo=new ContractEndInfo();
+	        	endInfo.setContractId(contractinfo);
+	        }else{
+	        	endInfo=endInfos.get(0);
+	        }
+	        this.tableService.copyAndOverrideExistedValueFromStringMap(variablesMap,endInfo, null,  "contract_end_info");
+	        this.tableService.saveOrUpdateEntity(endInfo);
+	        //合同租赁物件
+	//        Map<String,Object> proMap = new HashMap<String,Object>();
+	// 		properMap.put("contractId", contractinfo);
+	//        ContractEquip contractEquip;
+	        
+	        
+	        //合同结束的IRR 
+	        ContractCondition condition=contractinfo.getContractCondition();
+			try {
+				BigDecimal endirr = new BigDecimal(variablesMap
+						.get("contract_condition.endirr"));
+				if (endirr != null) {
+					condition.setEndIRR(endirr);
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			//发送消息
+			User user = (User) SecurityUtil.getPrincipal();
+			queryMainObjectMap.clear();
+			queryMainObjectMap.put("code", "msgtype.1");
+			BaseMessage baseMessage = new BaseMessage();
+			baseMessage.setMsgTitle(contractinfo.getContractNumber()+"合同结束");
+			baseMessage.setMsgType((DictionaryData)this.tableService.findEntityByProperties(DictionaryData.class, queryMainObjectMap).get(0));
+			baseMessage.setSendDate(DateUtil.getSystemDate());
+			baseMessage.setFromUser(user);
+			baseMessage.setCreateDate(DateUtil.getSystemDateTime());
+			baseMessage.setCreator(user);
+			baseMessage.setMsgText("合同编号为:"+contractinfo.getContractNumber()+",项目编号为:"+contractinfo.getProjId().getProjectName()+
+					"于"+variablesMap.get("contract_infoactualenddate")+"结束");
+			
+			List<DealerDeptInfo> dealerDeptInfos = new ArrayList<DealerDeptInfo>();
+			List<User> users = new ArrayList<User>();
+			Map<String, Object>	propertiesMap=new HashMap<String, Object>();
+			propertiesMap.put("custId", contractinfo.getCustDealer());
+			dealerDeptInfos = this.tableService.findEntityByProperties(DealerDeptInfo.class, propertiesMap);
+			if(dealerDeptInfos != null && dealerDeptInfos.size() > 0){
+				Set<UserDepartment> userDepartments = dealerDeptInfos.get(0).getDealerDept().getUserDepts();
+				Iterator<UserDepartment> it = userDepartments.iterator();
+				while(it.hasNext()) {
+					users.add(it.next().getUser());
+				}
+				if(contractinfo.getCustDealer() != null){
+					Set<BaseMessageToUser> set = new HashSet<BaseMessageToUser>();
+					BaseMessageToUser baseMessageToUser = null;
+					for (int i = 0; i < users.size(); i++) {
+						baseMessageToUser = new BaseMessageToUser();
+						baseMessageToUser.setMsgID(baseMessage);
+						baseMessageToUser.setReadStatus("1");
+						baseMessageToUser.setReadUser(users.get(i));
+						baseMessageToUser.setCreateDate(DateUtil.getSystemDateTime());
+						baseMessageToUser.setCreator(user);
+						set.add(baseMessageToUser);
+					}
+					this.tableService.saveEntity(baseMessage);
+					this.tableService.saveAllEntities(set);
+				}
+			}
+		}
+		//录入资料返还信息
+		docAction(request,variablesMap);
+		
+		BigDecimal NominalPrice=contractinfo.getContractCondition().getNominalPrice();
+		if(NominalPrice.compareTo(BigDecimal.ZERO)==1 ){
+			contractTerminateService.createVoucherNominalPrice(contractinfo, NominalPrice);
+		}
+	}
+	public void docAction(HttpServletRequest request,Map<String, String> variablesMap)
+	{
+		User user = null;
+		try {
+			user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+		List<ContractDocSendInfo> list = new ArrayList<ContractDocSendInfo>();
+		
+		String json_contract_doc_send_info_str = request.getParameter("json_reg_list_str");
+		JSONArray jsonArray = new JSONArray(json_contract_doc_send_info_str);
+		
+		String contractid = variablesMap.get("contract_id");
+		ContractInfo ci = this.tableService.findEntityByID(ContractInfo.class, contractid);
+		Map<String, Object> propertiesMap=new HashMap<String, Object>();
+		propertiesMap.put("contractID", ci);
+//		List<ContractDocSendInfo> condoclist=this.tableService.findEntityByProperties(ContractDocSendInfo.class, propertiesMap);
+//		System.out.println(condoclist.size());
+//		this.tableService.removeAllEntites(condoclist);
+//		this.tableService.updateFlush();
+		
+		for (int i = 0; i < jsonArray.length(); i++) {
+			JSONObject jsonObject = (JSONObject) jsonArray.opt(i);
+			ContractDocSendInfo si = new ContractDocSendInfo();
+			
+			si.setContractDate(jsonObject.optString("contractdate"));
+			si.setContractA(jsonObject.optString("contracta"));
+			si.setContractB(jsonObject.optString("contractb"));
+			//System.out.println(jsonObject.optString("contractid"));
+			
+			si.setContractID(ci);
+			si.setContractPerson(jsonObject.optString("contractperson"));
+			
+			
+			//DictionaryData dict = (DictionaryData) this.tableService.findEntityByID(DictionaryData.class, jsonObject.optString("docname"));
+			si.setDocName(jsonObject.optString("docname"));
+			//si.setDocName(dict);
+			si.setEquipInfo(jsonObject.optString("equipinfo"));
+			si.setSendNo(jsonObject.optString("sendno"));
+			si.setSendPart(jsonObject.optInt("sendpart"));
+			si.setDocPart(jsonObject.optInt("docpart"));
+			if ( jsonObject.has("maincount") && jsonObject.has("gcount") && jsonObject.has("sdy") )
+			{
+				si.setMaincount(jsonObject.optString("maincount"));
+				si.setGcount(jsonObject.optString("gcount"));
+				si.setSdy(jsonObject.optString("sdy"));
+			}
+			//String s = jsonObject.getString("id") ;
+			
+			if(StringUtils.isNotEmpty(jsonObject.optString("docnumber"))){
+				si.setDocNumber(jsonObject.optString("docnumber"));
+			}
+			
+			if(StringUtils.isNotEmpty(jsonObject.optString("id"))){
+				si.setId(jsonObject.optString("id"));
+				si.setModificator(user);
+				si.setModifyDate(DateUtil.getSystemDate());
+			}
+			si.setCreateDate(DateUtil.getSystemDate());
+			si.setCreator(user);
+			list.add(si);
+			this.tableService.saveOrUpdateAllEntities(list);
+			}
+		} 
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	@Override
+	public String delete(HttpServletRequest request, Map<String, String> variablesMap,JBPMWorkflowHistoryInfo jbpmWorkflowHistoryInfo) throws Exception {
+		return null;
+	}
+	@Override
+	public String save(HttpServletRequest request, Map<String, String> variablesMap,JBPMWorkflowHistoryInfo jbpmWorkflowHistoryInfo) throws Exception {
+		
+		return null;
+	}
+
+	@Override
+	public void start(HttpServletRequest request, Map<String, String> variablesMap,JBPMWorkflowHistoryInfo jbpmWorkflowHistoryInfo) throws Exception {
+
+	}
+
+	
+	 /**
+	 * (non-Javadoc)
+	 * @see com.business.action.JbpmBaseAction#back(javax.servlet.http.HttpServletRequest, java.util.Map)
+	 **/
+	
+	@Override
+	public void back(HttpServletRequest request,
+			Map<String, String> variablesMap,JBPMWorkflowHistoryInfo jbpmWorkflowHistoryInfo) throws Exception {
+		// TODO Auto-generated method stub
+		
+	}
+
+}

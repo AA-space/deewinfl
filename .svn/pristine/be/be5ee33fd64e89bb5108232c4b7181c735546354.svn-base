@@ -1,0 +1,171 @@
+package com.business.entity.contract;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.GenericGenerator;
+
+import com.business.entity.DictionaryData;
+import com.business.entity.User;
+import com.kernal.annotation.FieldName;
+
+/**
+ * 
+ * @author 孙传良
+ * @date 2013-3-6下午09:49:36
+ * @info 合同五级划分归属表
+ * @Copyright 
+ * Tenwa
+ */
+@Entity
+@FieldName(name = "合同五级划分归属表")
+@Table(name="CONTRACT_FIVE_CATEGORY")
+public class ContractFiveCategory {
+
+	@Id
+    @GeneratedValue(generator = "paymentableGenerator")     
+    @GenericGenerator(name = "paymentableGenerator", strategy = "uuid") 
+    @Column(length=32)
+	private String id;
+
+	@FieldName(name="合同编号")
+	@JoinColumn(name="CONTRACT_ID")
+	@ManyToOne
+	private ContractInfo contractId;
+	
+	@FieldName(name="流程编号")
+	@Column(name="DOC_ID")
+	private String docId;
+
+	@FieldName(name="合同五级分类类别(风控)")
+	@JoinColumn(name="CONTRACT_FIVE_NAME")
+	@ManyToOne
+	private DictionaryData contractFiveName;
+
+	@FieldName(name="合同五级分类日期(风控)")
+	@Column(name="CONTRACT_FIVE_DATE",length=20)
+	private String   contractFiveDate;
+
+	@FieldName(name="合同五级分类说明(风控)")
+	@Column(name="CONTRACT_FIVE_EXPLAIN")
+	private String contractFiveExplain;
+
+	@FieldName(name="合同五级分类类别(业务)")
+	@JoinColumn(name="SALE_FIVE_NAME")
+	@ManyToOne
+	private DictionaryData saleFiveName;
+
+	@FieldName(name="合同五级分类日期(业务)")
+	@Column(name="SALE_FIVE_DATE",length=20)
+	private String   saleFiveDate;
+
+	@FieldName(name="合同五级分类说明(业务)")
+	@Column(name="SALE_FIVE_EXPLAIN")
+	private String saleFiveExplain;
+	
+	@ManyToOne
+	@FieldName(name="登记人")
+	@JoinColumn(name="CREATOR_")
+	private User creator;
+	
+	@FieldName(name="登记时间")
+	@Column(name="CREATE_DATE", length=20)
+	private String createDate;
+
+	public String getId() {
+		return id;
+	}
+
+	public ContractInfo getContractId() {
+		return contractId;
+	}
+
+	public String getDocId() {
+		return docId;
+	}
+
+	public DictionaryData getContractFiveName() {
+		return contractFiveName;
+	}
+
+	public String getContractFiveDate() {
+		return contractFiveDate;
+	}
+
+	public String getContractFiveExplain() {
+		return contractFiveExplain;
+	}
+
+
+	public String getSaleFiveDate() {
+		return saleFiveDate;
+	}
+
+	public String getSaleFiveExplain() {
+		return saleFiveExplain;
+	}
+
+	public User getCreator() {
+		return creator;
+	}
+
+	public String getCreateDate() {
+		return createDate;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	public void setContractId(ContractInfo contractId) {
+		this.contractId = contractId;
+	}
+
+	public void setDocId(String docId) {
+		this.docId = docId;
+	}
+
+	public void setContractFiveName(DictionaryData contractFiveName) {
+		this.contractFiveName = contractFiveName;
+	}
+
+	public void setContractFiveDate(String contractFiveDate) {
+		this.contractFiveDate = contractFiveDate;
+	}
+
+	public void setContractFiveExplain(String contractFiveExplain) {
+		this.contractFiveExplain = contractFiveExplain;
+	}
+
+
+	public void setSaleFiveDate(String saleFiveDate) {
+		this.saleFiveDate = saleFiveDate;
+	}
+
+	public void setSaleFiveExplain(String saleFiveExplain) {
+		this.saleFiveExplain = saleFiveExplain;
+	}
+
+	public void setCreator(User creator) {
+		this.creator = creator;
+	}
+
+	public void setCreateDate(String createDate) {
+		this.createDate = createDate;
+	}
+
+	public DictionaryData getSaleFiveName() {
+		return saleFiveName;
+	}
+
+	public void setSaleFiveName(DictionaryData saleFiveName) {
+		this.saleFiveName = saleFiveName;
+	}
+
+	
+}

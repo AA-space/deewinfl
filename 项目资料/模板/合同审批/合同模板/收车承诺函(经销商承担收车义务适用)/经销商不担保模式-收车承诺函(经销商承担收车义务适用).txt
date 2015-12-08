@@ -1,0 +1,3 @@
+﻿${contract_infocontractnumber} 数据类型：字段；数据来源：页面；
+${contract_infocustdealername} 数据类型：字段；数据来源：页面；
+${contract_infocustname}       数据类型：字段；数据来源：页面；

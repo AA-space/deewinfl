@@ -1,0 +1,155 @@
+package com.business.entity.cust;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.GenericGenerator;
+
+import com.business.entity.User;
+import com.kernal.annotation.FieldName;
+
+/**
+ * 
+ * @author 孙传良
+ * @date 2013-7-28下午03:27:11
+ * @info
+ * @Copyright 
+ * Tenwa
+ */
+@Entity
+@FieldName(name = "客户移交")
+@Table(name = "CUST_TRANSFER")
+public class CustTransfer {
+
+	@Id
+	@GeneratedValue(generator = "paymentableGenerator")
+	@GenericGenerator(name = "paymentableGenerator", strategy = "uuid")
+	@Column(length = 32)
+	private String id;
+	
+	@ManyToOne
+	@JoinColumn(name="CUST_ID")
+	private CustInfo custId;
+	
+	@ManyToOne
+	@FieldName(name="客户原项目经理")
+	@JoinColumn(name="OLD_MANAGER")
+	private User oldManager;
+	
+	@ManyToOne
+	@FieldName(name="客户现项目经理")
+	@JoinColumn(name="NOW_MANAGER")
+	private User nowManager;
+	
+	@FieldName(name="移交时间")
+	@Column(name="TRANSFER_DATE", length=20)
+	private String transferDate;
+	
+	@FieldName(name="备注")
+	@Column(name="CTMEMO", length=2000)
+	private String ctmemo;
+	
+	@ManyToOne
+	@FieldName(name = "登记人")
+	@JoinColumn(name = "CREATOR_")
+	private User creator;
+
+	@FieldName(name = "登记时间")
+	@Column(name = "CREATE_DATE", length = 20)
+	private String createDate;
+
+	@ManyToOne
+	@FieldName(name = "修改人")
+	@JoinColumn(name = "MODIFICATOR_")
+	private User modificator;
+
+	@FieldName(name = "修改时间")
+	@Column(name = "MODIFY_DATE", length = 20)
+	private String modifyDate;
+
+	public String getId() {
+		return id;
+	}
+
+	public CustInfo getCustId() {
+		return custId;
+	}
+
+	public User getOldManager() {
+		return oldManager;
+	}
+
+	public User getNowManager() {
+		return nowManager;
+	}
+
+	public String getTransferDate() {
+		return transferDate;
+	}
+
+	public String getCtmemo() {
+		return ctmemo;
+	}
+
+	public User getCreator() {
+		return creator;
+	}
+
+	public String getCreateDate() {
+		return createDate;
+	}
+
+	public User getModificator() {
+		return modificator;
+	}
+
+	public String getModifyDate() {
+		return modifyDate;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	public void setCustId(CustInfo custId) {
+		this.custId = custId;
+	}
+
+	public void setOldManager(User oldManager) {
+		this.oldManager = oldManager;
+	}
+
+	public void setNowManager(User nowManager) {
+		this.nowManager = nowManager;
+	}
+
+	public void setTransferDate(String transferDate) {
+		this.transferDate = transferDate;
+	}
+
+	public void setCtmemo(String ctmemo) {
+		this.ctmemo = ctmemo;
+	}
+
+	public void setCreator(User creator) {
+		this.creator = creator;
+	}
+
+	public void setCreateDate(String createDate) {
+		this.createDate = createDate;
+	}
+
+	public void setModificator(User modificator) {
+		this.modificator = modificator;
+	}
+
+	public void setModifyDate(String modifyDate) {
+		this.modifyDate = modifyDate;
+	}
+	
+}

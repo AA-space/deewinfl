@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+    <alldb>
+      <table_sql> 
+	        <![CDATA[
+	          select *from (
+			  SELECT CARD.ID,
+		             INFO.ID CONTRACTID,
+		            info.create_date  shdate,
+		             CI.CUST_NAME CUSTNAME,
+		             CID.CUST_NAME DEALERNAME,
+		             cip.id_card_no idcard,
+		             INFO.CONTRACT_ID CID,
+		             INFO.CONTRACT_NUMBER CONTRACTNUMBER,  
+		             INFO.PROJECT_NAME PROJECTNAME, 
+		             CARD.MEMO MEMo,    
+		             CASE CARD.IS_CARD
+		               WHEN 0 THEN
+		                '是'
+		               ELSE
+		                '否'
+		             END ISCARDNAME,
+		             CASE
+		               WHEN CARD.IS_CARD IS NULL THEN
+		                1
+		               ELSE
+		                CARD.IS_CARD
+		             END ISCARD,
+		             --CARD.CARD_NUM CARDNUM,
+		             --CARD.BANK_NAME BANKNAME,
+		             --CARD.CARD_NAME CARDNAME
+				      CASE NVL(CARD.CARD_NUM, 1)
+				         WHEN '1' THEN
+				          CA.ACC_NUMBER
+				         ELSE
+				          CARD.CARD_NUM
+				       END CARDNUM,
+				       CASE NVL(CARD.CARD_NUM, 1)
+				         WHEN '1' THEN
+				          CA.BANK_NAME
+				       
+				         ELSE
+				           CASE CARD.BANK_NAME
+                           WHEN  'card_hire_bank_agricultural' THEN '中国农业银行'
+                           WHEN  'card_hire_bank_construction' THEN '中国建设银行' 
+                           ELSE  
+                           CARD.BANK_NAME
+                           END
+				       END BANKNAME,
+				       CASE NVL(CARD.CARD_NUM, 1)
+				         WHEN '1' THEN
+				          CA.ACCOUNT
+				         ELSE
+				          CARD.CARD_NAME
+				       END CARDNAME
+		        FROM CONTRACT_INFO INFO
+		        LEFT JOIN CUST_INFO CI ON (INFO.CUST_ID = CI.ID)
+		        LEFT JOIN CUST_INFO_COMPANY CIC ON (CI.ID = CIC.CUST_ID)
+		        LEFT JOIN CUST_INFO_PERSON CIP ON (CI.ID = CIP.CUST_ID)
+		        left join cust_info_dealer cide on cide.cust_id=info.cust_dealer 
+		        left join cust_info cid on cid.id=cide.cust_id 
+		        --LEFT JOIN CUST_INFO CID ON (CIC.DEALER_COMPANY || CIP.DEALER_COMPANY =CID.ID)
+		        LEFT JOIN CONTRACT_CARD_FOR_RENT CARD ON INFO.ID = CARD.CONTRACT_ID
+		        --增加默认卡号为客户主卡号         
+		    	LEFT JOIN CUST_ACCOUNT CA
+            	ON CA.CUST_ID = CI.ID
+           		AND CA.IS_MAIN = '0'
+			
+			  WHERE INFO.contract_status>=21 and INFO.contract_status<100 and ci.cust_class = 'CUST_INFO_PERSON'
+			  	--全局搜索
+				  /~queryText: 
+				            AND( 
+				                  UPPER(INFO.ID) LIKE '%{queryText}%' 
+				               OR UPPER(CI.CUST_NAME) LIKE '%{queryText}%' 
+				               OR UPPER(CID.CUST_NAME) LIKE '%{queryText}%' 
+							   OR UPPER(INFO.CONTRACT_NUMBER) LIKE '%{queryText}%' 
+				               
+				            )
+				 ~/
+               ) rs
+             where  1=1
+             /~iscardname: AND rs.ISCARD={iscardname}~/
+             /~custname:  and CUSTNAME like '%{custname}%'~/
+             /~dealername: and DEALERNAME like '%{dealername}%'~/
+             /~cid: and CID like '%{cid}%'~/
+             /~contractnumber: and CONTRACTNUMBER like '%{contractnumber}%'~/
+             /~projectname: and PROJECTNAME like '%{projectname}%'~/
+             /~bankname: and BANKNAME like '%{bankname}%'~/
+             /~idcard: and  idcard  like '%{idcard}%'~/
+             /~shdate_start: AND  rs.shdate >= '{shdate_start}'~/
+             /~shdate_end: AND  rs.shdate <= '{shdate_end}'~/
+			 ]]> 
+	  </table_sql>
+	  </alldb>
+      <dataSource>dataSource</dataSource>
+        <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

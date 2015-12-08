@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+公用的合同号选择combox对应的XML配置文件
+统一使用在流程选择界面,用来选择合同号,如果在没有特别说明的情况下,所有选择合同的combox都用这个XML文件
+该文件的显示格式为  
+显示值: 合同号(contract_info中的contract_id)
+隐藏域: contract_info中的ID
+如果在选择合同的时候有其他的附加条件可以通过配置更多的参数来设置
+添加参数请记录:
+1.custID 通过客户编号检索该客户下的合同
+2.
+
+ -->
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+     <alldb>
+      <table_sql> 
+	        <![CDATA[
+	        select * from (
+	        select id value, contract_id name,cust_ID,CONTRACT_STATUS from contract_info 
+	        ) rs  where 1=1
+	         /~custID:  and cust_ID = '{custID}'~/
+	         /~CONTRACT_STATUS_LessThan:  and CONTRACT_STATUS < '{CONTRACT_STATUS_LessThan}'~/
+	         /~CONTRACT_STATUS_GreaterThan:  and CONTRACT_STATUS > '{CONTRACT_STATUS_GreaterThan}'~/
+	         /~currentRawValue: and name like '%{currentRawValue}%' ~/
+				ORDER BY name,value
+			 ]]> 
+	  </table_sql>
+	   </alldb>
+      <dataSource>dataSource</dataSource>
+      <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

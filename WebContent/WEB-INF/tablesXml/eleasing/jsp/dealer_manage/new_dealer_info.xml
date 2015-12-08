@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+    <alldb>
+      <table_sql> 
+	        <![CDATA[
+				select  
+cust_info.id cid
+,cust_info.cust_name custname
+,cust_info_dealer.legal_representative legalrepresentative
+,cust_info_dealer.mail_add mailadd
+,cust_info_dealer.phone_ phone
+ from  cust_info_dealer
+left join cust_info on cust_info_dealer.cust_id=cust_info.id
+
+			 ]]> 
+	  </table_sql>
+	  </alldb>
+      <dataSource>dataSource</dataSource>
+        <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

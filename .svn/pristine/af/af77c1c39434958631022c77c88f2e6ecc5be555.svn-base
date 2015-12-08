@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+    <alldb>
+      <table_sql> 
+	        <![CDATA[
+				SELECT 
+				CI.ID            AS ID,
+				       CI.PROJECT_NAME  AS PROJECTNAME,
+				       CI.CONTRACT_ID  AS CONTRACTID,
+				       CI.CONTRACT_NUMBER  AS CONTRACTNUMBER,
+				       DICT1.NAME_      AS BUSINESSMODE,
+				       CUST.CUST_NAME   AS CUSTNAME,
+				       CUST.ID          AS CUSTID,
+				       CDI.EQUIP_AMT    AS EQIUPAMT,
+				       COI.EQUIP_INFO   AS EQUIPINFO,
+				       COI.SIGN_DATE    AS SIGNDATE,
+				       CUST1.CUST_NAME  AS DEALERNAME,
+               		   e.zc zcs,
+                      sin.doc_number docnumber
+				  FROM CONTRACT_INFO CI
+				  LEFT JOIN T_DICTS_DATAS DICT1
+				    ON DICT1.ID_ = CI.BUSINESS_MODE
+				  LEFT JOIN CUST_INFO CUST
+				    ON CUST.ID = CI.CUST_ID
+				  LEFT JOIN CONTRACT_CONDITION CDI
+				    ON CDI.CONTRACT_ID = CI.ID
+				  LEFT JOIN CONTRACT_OTHER_INFO COI
+				    ON CI.ID = COI.CONTRACT_ID
+				  LEFT JOIN CUST_INFO CUST1
+				    ON CUST1.ID = CI.CUST_DEALER 
+				left join (
+		            select count(*) zc,contract_id from contract_equip  
+		            where equip_class <>'equip_class_2' group by contract_id)e
+          			on ci.id=e.contract_id
+          	    left join(
+			          select max(docs.id) did ,docs.contract_id  contract_id
+			           from contract_doc_send_info docs
+			           group by docs.contract_id
+                )docs on docs.contract_id=ci.id
+               left join   contract_doc_send_info sin on sin.id=docs.did
+				 WHERE 
+				 ci.contract_status>'21' and ci.contract_status not in ('111','101','71')
+          		 
+				 --CI.ID IN (SELECT CDSI.CONTRACT_ID
+				 --                  FROM CONTRACT_DOC_SEND_INFO CDSI
+				 --                GROUP BY CDSI.CONTRACT_ID)
+				                 
+	           /~contractid: AND CI.CONTRACT_ID like '%{contractid}%'~/
+	           /~contractnumber: AND CI.CONTRACT_NUMBER like '%{contractnumber}%'~/
+			   /~custname: AND CUST.CUST_NAME like '%{custname}%'~/
+			   /~dealername: AND CUST1.CUST_NAME    like '%{dealername}%'~/
+				ORDER BY CI.CONTRACT_NUMBER
+			 ]]> 
+	  </table_sql>
+	  </alldb>
+      <dataSource>dataSource</dataSource>
+      <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

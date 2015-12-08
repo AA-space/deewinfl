@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+    <alldb>
+      <table_sql> 
+	        <![CDATA[
+		
+				SELECT NVL (list1.bansc, '回租') AS bsc,
+         list1.ssqy,
+         list1.projmanage,
+         SUM (
+            CASE
+               WHEN TO_CHAR (TO_DATE (is_pass, 'yyyy-MM-dd'), 'yyyy-mm') =
+                       TO_CHAR (SYSDATE, 'yyyy-mm')
+               THEN
+                  equipcount
+               ELSE
+                  0
+            END)
+            m_app,
+         SUM (
+            CASE
+               WHEN EXTRACT (YEAR FROM TO_DATE (is_pass, 'yyyy-MM-dd')) =
+                       EXTRACT (YEAR FROM SYSDATE)
+               THEN
+                  equipcount
+               ELSE
+                  0
+            END)
+            y_app,
+         SUM (
+            CASE
+               WHEN TO_CHAR (TO_DATE (startdate, 'yyyy-MM-dd'), 'yyyy-mm') =
+                       TO_CHAR (SYSDATE, 'yyyy-mm')
+               THEN
+                  equipcount
+               ELSE
+                  0
+            END)
+            m_start,
+         SUM (
+            CASE
+               WHEN EXTRACT (YEAR FROM TO_DATE (startdate, 'yyyy-MM-dd')) =
+                       EXTRACT (YEAR FROM SYSDATE)
+               THEN
+                  equipcount
+               ELSE
+                  0
+            END)
+            y_start,
+         SUM (
+            CASE
+               WHEN TO_CHAR (TO_DATE (is_pass, 'yyyy-MM-dd'), 'yyyy-mm') =
+                       TO_CHAR (SYSDATE, 'yyyy-mm')
+               THEN
+                  leaseamt
+               ELSE
+                  0
+            END)
+            m_app_lease,
+         SUM (
+            CASE
+               WHEN EXTRACT (YEAR FROM TO_DATE (is_pass, 'yyyy-MM-dd')) =
+                       EXTRACT (YEAR FROM SYSDATE)
+               THEN
+                  leaseamt
+               ELSE
+                  0
+            END)
+            y_app_lease,
+         SUM (
+            CASE
+               WHEN TO_CHAR (TO_DATE (startdate, 'yyyy-MM-dd'), 'yyyy-mm') =
+                       TO_CHAR (SYSDATE, 'yyyy-mm')
+               THEN
+                  leaseamt
+               ELSE
+                  0
+            END)
+            m_start_lease,
+         SUM (
+            CASE
+               WHEN EXTRACT (YEAR FROM TO_DATE (startdate, 'yyyy-MM-dd')) =
+                       EXTRACT (YEAR FROM SYSDATE)
+               THEN
+                  leaseamt
+               ELSE
+                  0
+            END)
+            y_start_lease
+    FROM VI_PROJ_CONTRACT_COUNT list1
+    where   list1.usid='{user_id}'
+GROUP BY list1.bansc, list1.ssqy, list1.projmanage
+ORDER BY list1.ssqy
+				 	
+			 ]]> 
+	  </table_sql>
+	  </alldb>
+      <dataSource>dataSource</dataSource>
+	  <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

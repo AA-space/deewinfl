@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+    <alldb>
+      <table_sql> 
+	        <![CDATA[
+		select * from (
+				select  
+			list1.proj_id pid
+			,list1.pjname projname
+			,list1.custname ctname
+			,list1.custclass custclass
+			,list1.dealername  dname
+			,nvl(list1.equipnum,list1.nominalprice/100) eqnum
+			,list1.equipamt eqamt
+			,list1.leaseamt lamt
+			,list1.firstpaymentratio ||'%' firstratio
+			,list1.yearrate yrate
+			,list1.incomenumber  inumber
+			,list1.leaseterm  lzterm
+			,list1.paytype ptype
+			,list1.periodtype prdtype
+			,list1.insuremoney  iumoney
+			,list1.bxtype  btype
+			,list1.gpsmoney gpsfeet
+			,list1.IS_REGISTRATION  registration
+			,list1.is_guaranty guaranty
+			,list1.rent rt
+			,list1.firstrent ft
+			,list1.caution_money_ratio ||'%' cmr
+			,list1.handling_charge_money_ratio ||'%' hcmr
+			,list1.projstatus pstatus
+			,list1.assuror danb  
+			,list1.contract_number  contractnumber
+			,list1.contract_status contractstatus
+			,list2.appendate enddate
+			,list1.nominalprice nominalprice
+			,list1.sf sf
+			,list1.thirdpay thirdpay
+			,list1.classtra classtra
+			,list1.acceptdate acceptdate
+			,rx.rname,rx.rcount,rx.ad,
+			case 
+			when list1.equipclass ='equip_class_1'  then '载货车'
+			when list1.equipclass ='equip_class_3'  then '自卸车'
+			when list1.equipclass ='equip_class_4'  then '牵引车'
+			when list1.equipclass ='equip_class_5'  then '专用车'
+			when list1.equipclass ='equip_class_6'  then '越野车'
+			else ''
+			end  equipclass,
+			list1.projmanage pmanage
+			from 
+			(select 
+			      pi.proj_id proj_id
+			,pi.project_name pjname
+			      ,ct.cust_name custname
+			     ,cust2.cust_name dealername
+			     ,eq.eqcount equipnum
+			      ,pc.EQUIP_AMT equipamt
+			      ,pc.lease_money leaseamt
+			      ,pc.FIRST_PAYMENT_RATIO firstpaymentratio
+			      ,pc.YEAR_RATE yearrate
+			      ,pc.INCOME_NUMBER incomenumber
+			      ,pc.LEASE_TERM leaseterm
+			      
+			      ,t1.name_  paytype
+			      ,t2.name_  periodtype
+			      ,pc.INSURE_MONEY insuremoney
+			     ,t3.name_ bxtype
+			      ,pc.GPS_MONEY gpsmoney
+			      ,decode(pc.IS_REGISTRATION,0,'是','否') is_registration
+			      ,decode(pc.is_guaranty,0,'是','否') is_guaranty
+			      ,ww.rent rent
+			      ,kk.firstrent firstrent
+			      ,pc.caution_money_ratio caution_money_ratio
+			      ,pc.handling_charge_money_ratio    handling_charge_money_ratio
+			      ,CASE PI.PROJ_STATUS
+			           WHEN 1 THEN
+			            '项目立项'
+			            WHEN 11 THEN
+			            '项目信审'
+			           WHEN 12 THEN
+			            '项目复议'
+			           WHEN 101 THEN
+			            '项目撤销'
+			           WHEN 103 THEN
+			            '项目否决'
+			           ELSE
+			            ''
+			         END  as projstatus
+			         ,gurantee.cust_name assuror
+			         ,pi.contract_number contract_number
+			         ,case when contract.contract_status >= '21' then '已走合同审批'
+			          else '未走合同审批' end  contract_status ,
+			          pc.nominal_price nominalprice,
+			           ts.name_ sf,
+			           decode(pi.is_third_pay,0,'是','否') thirdpay,
+			           nvl(dict.name_ ,ot.class_of_traffic) classtra,
+			           app.accept_date  acceptdate,
+			           decode(ct.cust_class,'CUST_INFO_PERSON','自然人','法人') custclass,
+			           h.equip_class  equipclass,
+			           us.realname_ projmanage
+			 from proj_condition pc
+			 left join proj_info pi on pc.proj_id=pi.id
+			 left join contract_info info on pi.id=info.proj_id
+			 left join contract_equip_acceptance app on info.id=app.contract_id
+			 left join (
+			 select h.equip_class equip_class,h.proj_id proj_id from proj_equip h where
+			 h.equip_class <>'equip_class_2' 
+			 group by h.proj_id,h.equip_class
+			 )h on h.proj_id=pi.id
+			 left join proj_other_info ot on pi.id=ot.proj_id
+			 left join t_dicts_datas dict on ot.class_of_traffic=dict.id_
+			 left join(
+			 select count(*) eqcount ,proj_id from 
+			  proj_equip where equip_class <>'equip_class_2' group by proj_id )eq on pi.id=eq.proj_id
+			 left join cust_info_dealer dealer on pi.cust_dealer=dealer.cust_id
+			 left join t_dicts_datas ts on dealer.owner_district=ts.id_
+			 left join 
+			 (select  sum(nvl(pp.rent,0.00)) rent,proj_id from proj_fund_rent_plan pp group by proj_id)ww
+			   on pc.proj_id=ww.proj_id
+			 left join 
+			 (select  nvl(rr.rent,0.00) firstrent,proj_id from proj_fund_rent_plan rr where rr.rent_list='1' )kk
+			   on pc.proj_id=kk.proj_id
+			 left join T_DICTS_DATAS t1 on pc.income_number_year=t1.id_
+			 left join T_DICTS_DATAS t2 on pc.period_type=t2.id_
+			left join T_DICTS_DATAS t3 on pc.insurer_type=t3.id_
+			 left join cust_info_dealer cd on pi.cust_id=cd.cust_id
+			 left join 
+			 (
+			  select  cust_info.id cid,cust_info.cust_name cust_name ,cust_class from  cust_info where  cust_info.cust_class !='CUST_INFO_DEALER'
+			 )ct on ct.cid=pi.cust_id
+			 left join cust_info cust2 on pi.cust_dealer=cust2.id
+			 left join  
+			 (
+			      select  sum(proj_equip.equip_num) equip_num,proj_equip.proj_id  proj_id from  proj_equip group by proj_equip.proj_id
+			 )pe on pe.proj_id=pi.id
+			 left join 
+			 (select  wm_concat(cinfo.cust_name) cust_name,gurantee.proj_id proj_id from proj_guarantee_method gurantee
+			 left join cust_info cinfo on gurantee.assuror=cinfo.id
+			  group by  gurantee.proj_id)gurantee on pc.proj_id=gurantee.proj_id
+			  left join 
+			  (
+			     select contract.contract_status contract_status,contract.proj_id proj_id  from contract_info contract    where contract.contract_status  >= '21'    
+			  )contract on pc.proj_id=contract.proj_id
+			  left join cust_info_dealer de on info.cust_dealer = de.cust_id
+       left join t_dicts_datas dic on dic.id_ = de.owner_district
+       left join (select *
+                    from manager_district
+                   where manager_role = '402881824094f54f01409551aff2002c') t
+			          on dealer.owner_district = t.district_
+			       left join t_users us on t.manager_ = us.id_
+			      where us.id_ ='{user_id}'
+			 )list1
+			 left join 
+			 (
+			   select  
+			   t_jbpm_workflow_info.key_one_  key_one_
+			   ,TO_CHAR(jbpm4_hist_procinst.END_  ,'YYYY-MM-DD') appendate
+			  ,t_jbpm_workflow_info.workflow_name_  from  jbpm4_hist_procinst
+			  left join t_jbpm_workflow_info  on  jbpm4_hist_procinst.dbid_=t_jbpm_workflow_info.jbpm4_hist_procinst_dbid_
+			  where t_jbpm_workflow_info.jbpm4_hist_actinst_dbid_ is null and t_jbpm_workflow_info.workflow_name_='项目信审流程'
+			 )list2 on list1.proj_id=list2.key_one_
+			 left join 
+			 (
+			     select key_one_,max(realname_) rname,count(realname_) rcount,wm_concat(processed_advise_) ad
+			    from 
+			    (select ti.key_one_, tu.realname_,twu.processed_advise_ From T_JBPM_WORKFLOW_INFOS_USERS  twu 
+			    left join  t_users tu on twu.actual_actor_user_id_=tu.id_
+			    left join T_JBPM_WORKFLOW_INFO ti on twu.jbpmworkflowhistoryinfo_id_=ti.id_
+			    where ti.workflow_name_='项目立项流程' and (ti.history_activity_name_='03个人客户信用分析师检查资料' or ti.history_activity_name_='02法人客户信用分析师检查资料')
+			    )list group by key_one_
+			)rx on list1.proj_id=rx.key_one_
+			order by to_date(list2.appendate ,'YYYY-MM-DD') desc 
+
+			)rs 
+ 			where 1=1
+			/~projname: and rs.projname like '%{projname}%'~/
+			/~dname: and rs.dname like '%{dname}%'~/
+			/~pstatus: and rs.pstatus like '%{pstatus}%'~/
+			/~enddate_start: and rs.enddate >= '{enddate_start}'~/
+			/~enddate_end: and rs.enddate <= '{enddate_end}'~/
+			/~sf: and rs.sf like '%{sf}%'~/
+				 	
+			 ]]> 
+	  </table_sql>
+	  </alldb>
+      <dataSource>dataSource</dataSource>
+	  <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

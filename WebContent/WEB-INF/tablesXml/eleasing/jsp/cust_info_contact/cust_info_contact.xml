@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+    <alldb>
+      <table_sql> 
+	        <![CDATA[
+						SELECT     
+			      contact_.id  as id, 
+			      contact_.cust_id  as custId,
+			       cust_.cust_name AS custname, 
+			       contact_.contact_type as contactType, 
+			       dict_.name_ AS contacttypename, 
+			       contact_.contact_date as contactDate,
+			       contact_.contact_person as contactPerson,
+			       contact_.contact_phone as contactPhone,
+			       contact_.contact_add as contactAdd,
+			       contact_.ccmemo as CCMEMO,
+			       contact_.creator_ as creator,
+			      base1.Realname_ AS creatorname,
+			      SUBSTR(CONTACT_.CREATE_DATE,0,10) AS CREATEDATE,
+			      SUBSTR(CONTACT_.MODIFY_DATE,0,10) AS MODIFYDATE,
+			      CONtact_.modificator_ modificator,
+			      base2.Realname_ AS modificatorname,
+			      contact_.modify_date FROM   cust_contact  contact_
+			      left join cust_info  cust_ on contact_.cust_id=cust_.id
+			      left join t_dicts_datas  dict_ on contact_.contact_type=dict_.id_
+			      left join  t_users  base1 on contact_.creator_=base1.id_
+			      left join t_users  base2 on contact_.modificator_=base2.id_
+             where 1=1
+           /~CUST_ID: and contact_.cust_id like '%{CUST_ID}%'~/
+				
+				
+			 ]]> 
+	  </table_sql>
+	  </alldb>
+      <dataSource>dataSource</dataSource>
+    </data>
+  </table>
+</table-root>

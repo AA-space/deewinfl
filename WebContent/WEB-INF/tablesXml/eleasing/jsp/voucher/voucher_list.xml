@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+    <alldb>
+    <!-- 2013-11-29 15:15 修改人 陈兴 增加凭证信息查询条件 -->
+      <table_sql> 
+	        <![CDATA[
+			SELECT       
+             iv.id,
+             iv.voucherNumber AS vouchernumber,
+             iv.modleName AS modlename,
+             dict.name_ AS vouchertype,
+             contractinfo.contract_number,
+             custinfod.cust_name as dealname,
+             custinfo.id as custid,
+             custinfo.cust_name as custname,
+             (select cust_name_f from intereas_custid_join  where cust_id_b = custinfo.id) as custnamef,
+             iv.bookedDate AS bookeddate,
+             iv.bizDate AS bizdate,
+             iv.status_ status,
+             (case iv.eas_flag when '1' then '已导出' else '未导出' end) as easflag,
+             iv.eas_memo AS easmemo,
+             iv.generate_date as generatedate,
+             iv.exp_date as expdate ,
+             e.originalamount originalamount,
+             e.voucherabstract voucherabstract
+             from intereas_voucherhead iv
+             LEFT JOIN contract_info contractinfo on contractinfo.id= iv.contract_id 
+			 LEFT JOIN cust_info custinfo on custinfo.id=contractinfo.cust_id
+			  LEFT JOIN cust_info custinfod on custinfod.id=contractinfo.cust_dealer
+        	 LEFT JOIN t_dicts_datas dict ON dict.code_ =  iv.voucherType
+        	 left join (
+			     select   originalamount, vouchernumber,DBMS_LOB.SUBSTR(voucherabstract,4000,1) as voucherabstract  from  intereas_voucherentries 
+			       where  entryseq ='1'
+			     )e on e.vouchernumber=iv.id
+			 WHERE 1=1
+			   /~contract_number:and contractinfo.contract_number  like   '%{contract_number}%' ~/
+			   /~dealname:and custinfod.cust_name  like   '%{dealname}%' ~/
+			   /~vouchernumber:and iv.voucherNumber  like   '%{vouchernumber}%' ~/
+			   /~bookeddate_start: and iv.bookedDate>='{bookeddate_start}' ~/
+               /~bookeddate_end: and iv.bookedDate<='{bookeddate_end}' ~/
+               /~generatedate_start: and iv.generate_date>='{generatedate_start}' ~/
+               /~generatedate_end: and iv.generate_date<='{generatedate_end}' ~/
+               /~status: and status_='{status}' ~/
+               /~easflag: and iv.eas_flag='{easflag}' ~/
+               /~easflag: and iv.eas_flag='{easflag}' ~/
+               /~custname: and  custinfo.cust_name  like   '%{custname}%' ~/
+               /~modlename: and  iv.modleName='{modlename}' ~/
+               /~originalamount: and  e.originalamount  like   '%{originalamount}%' ~/
+               /~voucherabstract: and  e.voucherabstract  like   '%{voucherabstract}%' ~/
+               
+                
+               
+               
+               
+			   
+			]]> 
+	  </table_sql>
+	  </alldb>
+      <dataSource>dataSource</dataSource>
+      <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

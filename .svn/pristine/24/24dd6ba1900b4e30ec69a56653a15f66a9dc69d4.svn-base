@@ -1,0 +1,25 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"	pageEncoding="UTF-8"%>
+<script type="text/javascript" src="${pageContext.request.contextPath}/js/tracywindy/tracywindyTree2Table.js"></script>
+
+<script type="text/javascript">
+jQuery(function(){
+	/* */new tracywindyTree2Table({
+	   width:formWidth-1,
+	   isAutoHeight:true,
+	   refreshStatisticCallBack:window.setCreditLevel,
+ 	   renderTo:'id_table_leasing_proj_cust_creidt_container',
+ 	   id:'cust_credit',
+ 	   //rootDictId:'doc_code_1400',${requestScope['proj_info.cust_type']=='法人'}
+ 	   rootDictId:"${requestScope['proj_info.cust_type']=='法人'?'doc_code_1400':'doc_code_1300'}",
+ 	   savedDataKey:'cust_credit'+flowUnid,
+ 	   savedDataKey1:"${requestScope['cust_info.id'] }",
+	   savedDataKey2:"${requestScope['dealer_approval_info.approvalnum'] }",
+	   savedDataKey3:"${currentProcessInstanceDBID}",  //当前流程的ID
+	   savedDataKey4:"${requestScope['currentWorkFlowName']}",//流程名称
+ 	   height:document.documentElement.clientHeight-50,
+ 	   totalScoreGrantValueTo:"id_cust_credit_score",
+ 	   treeTableJson:'${empty json_cust_credit_str ? "[]" : json_cust_credit_str }'
+    });
+});
+
+</script>

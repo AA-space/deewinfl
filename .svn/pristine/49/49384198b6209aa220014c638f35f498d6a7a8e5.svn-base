@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+    <alldb>
+      <table_sql> 
+	        <![CDATA[
+									 select 
+						pro.proj_id projid,
+						pro.project_name projectname,
+						cust.cust_name custname,
+						cust2.cust_name dealer,
+						pro.proj_status projstatus,
+						sta.status_name projstatusname,
+						pro.proj_scale projscale,
+						d4.name_ projscalename,
+						CASE pro.is_third_pay WHEN 0 THEN '是'  ELSE '否'  END  isthirdpay,
+						pro.leas_type leastype, 
+						d3.name_ leastypename,
+						pro.proj_manage projmanage,
+						u1.realname_ projmanagename,
+						pro.proj_assist projassist,
+						u2.realname_ projassistname,
+						pro.proj_dept projdept,
+						dept.name_ projdeptname,
+						pro.business_type businesstype,
+						d1.name_ businesstypename,
+						pro.business_mode businessmode,
+						d2.name_ businessmodename
+						from proj_info pro 
+						 left join cust_info cust on pro.cust_id=cust.id 
+						 left join cust_info cust2 on pro.cust_dealer = cust2.id
+						 left join t_users u1 on pro.proj_manage=u1.id_ 
+						 left join t_users u2 on pro.proj_assist=u2.id_ 
+						 LEFT JOIN  T_DEPTS DEPT ON pro.proj_dept =DEPT.ID_
+						 left join T_DICTS_DATAS d1 on pro.business_type=d1.id_ 
+						 left join T_DICTS_DATAS d2 on pro.business_mode=d2.id_ 
+						 left join T_DICTS_DATAS d3 on pro.leas_type=d3.id_
+						 left join T_DICTS_DATAS d4 on pro.proj_scale=d4.id_ 
+						 left join base_contract_status sta on sta.status_code=pro.proj_status 
+						where 1 =1 
+						/~projid: and pro.proj_id like '%{projid}%'~/
+						/~projectname: and pro.project_name like '%{projectname}%'~/
+						/~custname: and cust.cust_name like '%{custname}%'~/
+						/~dealer: and cust2.cust_name like '%{dealer}%'~/
+			 ]]> 
+	  </table_sql>
+	  </alldb>
+      <dataSource>dataSource</dataSource>
+	  <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

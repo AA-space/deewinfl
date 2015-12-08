@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+    <alldb>
+      <table_sql> 
+	        <![CDATA[
+			SELECT     
+          credit.id as id, 
+          credit.cust_id as custid, 
+          base1.cust_name AS custname, 
+          credit.credit_rank as creditrank,
+          dict.name_ AS creditrankname, 
+          credit.change_date as changedate,
+          credit.ccrmemo as ccrmemo,
+          credit.creator_ as creator,
+          base2.Realname_ AS creatorname, 
+          substr(credit.create_date,0,10) as createdate,
+          credit. modificator_ as modificator,
+          base3.Realname_ AS modificatorname, 
+          substr(credit.modify_date,0,10) as modifydate
+          FROM  cust_credit_rank   credit
+          left join cust_info  base1 on credit.cust_id=base1.id
+          left join t_dicts_datas  dict on credit.credit_rank=dict.id_
+          left join t_users  base2 on  credit.creator_=base2.id_
+          left join t_users  base3 on credit.modificator_= base3.id_
+           where 1=1
+           /~CUST_ID: and credit.cust_id like '%{CUST_ID}%'~/
+			 ]]> 
+	  </table_sql>
+	  </alldb>
+      <dataSource>dataSource</dataSource>
+    </data>
+  </table>
+</table-root>

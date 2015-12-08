@@ -1,0 +1,578 @@
+package com.business.entity.proj;
+
+import java.math.BigDecimal;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.GenericGenerator;
+
+import com.business.entity.User;
+import com.kernal.annotation.FieldName;
+
+/**
+ * 
+ * @author 徐云龙
+ * @date 2013-3-5上午10:17:01
+ * @info 项目基本信息实体类
+ * @Copyright 
+ * Tenwa
+ */
+@Entity
+@FieldName(name = "项目流程其它信息")
+@Table(name="PROJ_OTHER_INFO")
+public class ProjOtherInfo {
+	@Id
+    @GeneratedValue(generator = "paymentableGenerator")     
+    @GenericGenerator(name = "paymentableGenerator", strategy = "uuid") 
+    @Column(length=32)
+	private String id;
+	
+	@FieldName(name="项目编号")
+	@ManyToOne(fetch=FetchType.LAZY)
+	@JoinColumn(name="PROJ_ID")
+	private ProjInfo projId;
+	
+	@FieldName(name="项目概况")
+	@Column(name="PROJ_SURVEY")
+	private String projSurvey;
+	
+	@FieldName(name="特殊行业说明")
+	@Column(name="SPECIAL_INDUSTRIES", length=2000)
+	private String  specialIndustries;
+	
+	@FieldName(name="是否提前准备资金")
+	@Column(name="IS_PER_MONEY", length=10)
+	private String IsperMoney;
+	
+	@FieldName(name="其它商务条件")
+	@Column(name="OTHER_CONDITION")
+	private String otherCondtion;
+	
+	@FieldName(name="风险防范措施")
+	@Column(name="risk_prevention_measures")
+	private String riskPreventionMeasures;
+	
+	@FieldName(name="项目变更日期")
+	@Column(name="PROJ_CHANGE_DATE", length=20)
+	private String projChangeDate;
+	
+	@FieldName(name="项目变更前内容")
+	@Column(name="PROJ_CHANGE_BEFORE_MEMO")
+	private String projChangeBeforMemo ;
+	
+	@FieldName(name="项目变更后内容")
+	@Column(name="PROJ_CHANGE_AFTER_MEMO")
+	private String projChangeAfterMemo;
+	
+	@FieldName(name="项目变更内容")
+	@Column(name="PROJ_CHANGE_MEMO")
+	private String projChangeMemo;
+	
+	@FieldName(name="单次所需时间(德银)")
+	@Column(name="SINGLE_TIME")
+	private String singleTime;
+
+	@FieldName(name="单次运输收入(德银)")
+	@Column(name="SINGLE_INCOME",precision=22,scale=2)
+	private BigDecimal singleIncome;
+	
+	@FieldName(name="单次运输费用(德银)")
+	@Column(name="SINGLE_FEE",precision=22,scale=2)
+	private BigDecimal singleFee;
+
+	@FieldName(name="油费(德银)")
+	@Column(name="OIL_FEE",precision=22,scale=2)
+	private BigDecimal oilFee;
+	
+	@FieldName(name="过路费(德银)")
+	@Column(name="TOLL_FEE",precision=22,scale=2)
+	private BigDecimal tollFee;
+	
+	@FieldName(name="人工费(德银)")
+	@Column(name="LABOR_FEE",precision=22,scale=2)
+	private BigDecimal laborFee;
+
+	@FieldName(name="维修保养费(德银)")
+	@Column(name="SERVICE_FEE",precision=22,scale=2)
+	private BigDecimal serviceFee;
+
+	@FieldName(name="其他(德银)")
+	@Column(name="OTHER_FEE",precision=22,scale=2)
+	private BigDecimal otherFee;
+
+	@FieldName(name="资产信息(德银)")
+	@Column(name="ASSETS_MEMO", length=2000)
+	private String  assetsMemo;
+	
+	@FieldName(name="资产清单(德银)")
+	@Column(name="ASSETS_LIST", length=2000)
+	private String assetsList;
+	
+	@FieldName(name="资产评估值(德银)")
+	@Column(name="ASSETS_ASSESS",precision=22,scale=2)
+	private BigDecimal assetsAssess;
+	
+	@FieldName(name="融资额(德银)")
+	@Column(name="LEASING_MONEY",precision=22,scale=2)
+	private BigDecimal leasingMoney;
+	
+	@FieldName(name="资产级别[资产评估值/融资额](德银)")
+	@Column(name="ASSETS_LEVEL",precision=22,scale=2)
+	private BigDecimal assetsLevel;
+	
+	@FieldName(name="平均月现金流(德银)")
+	@Column(name="MONTH_CASH",precision=22,scale=2)
+	private BigDecimal monthCash;
+	
+	@FieldName(name="月租金(德银)")
+	@Column(name="MONTH_RENT",precision=22,scale=2)
+	private BigDecimal monthRent;
+	
+	
+	@FieldName(name="现金流级别(德银)")
+	@Column(name="CASH_LEVEL",precision=22,scale=2)
+	private BigDecimal cashLevel;
+	
+	@FieldName(name="项目级别(德银)")
+	@Column(name="PROJECT_LEVEL" ,length=100)
+	private String projectLevel;
+	
+	@FieldName(name="评审结果备注(德银)")
+	@Column(name="APPROVE_MEMO", length=2000)
+	private String  approveMemo;
+
+	@FieldName(name="租赁物用途(德银)")
+	@Column(name="EQUIP_USEFULNESS", length=2000)
+	private String  equipUsefulness;
+	
+	@FieldName(name="使用地点(德银)")
+	@Column(name="USEFULNESS_ADDR", length=2000)
+	private String  usefulnessAddr;
+	
+	@FieldName(name="融资用途(德银)")
+	@Column(name="LEASING_USE", length=2000)
+	private String  leasingUse;
+	
+	@FieldName(name="资金用途(德银)")
+	@Column(name="FUND_USEING", length=2000)
+	private String  fundUseing;
+	
+	@FieldName(name="还款资金来源(德银)")
+	@Column(name="INCOME_RENT_FROM", length=2000)
+	private String  incomeRentFrom;
+	
+	@FieldName(name = "标的物详情(德银)")
+	@Column(name="EQUIP_INFO", length=2000)
+	private String equipInfo;
+	
+	@FieldName(name="自有车辆(德银)")
+	@Column(name="OWNER_VEHICLE", length=2000)
+	private String ownerVehicle;
+	
+	@FieldName(name="房产(德银)")
+	@Column(name="OWNER_ESTATE", length=2000)
+	private String ownerEstate;
+	
+	@FieldName(name="土地(德银)")
+	@Column(name="OWNER_LAND", length=2000)
+	private String ownerLand;
+	
+	@FieldName(name="其他(德银)")
+	@Column(name="OWNER_OTHER", length=2000)
+	private String ownerOther;
+	
+	@FieldName(name="运输种类")
+	@Column(name="CLASS_OF_TRAFFIC", length=200)
+	private String classOfTraffic;
+	
+	@FieldName(name="运输路线")
+	@Column(name="TRANSPORT_ROUTE", length=2000)
+	private String transportRoute;
+	
+	
+	public String getClassOfTraffic() {
+		return classOfTraffic;
+	}
+
+	public void setClassOfTraffic(String classOfTraffic) {
+		this.classOfTraffic = classOfTraffic;
+	}
+
+	public String getTransportRoute() {
+		return transportRoute;
+	}
+
+	public void setTransportRoute(String transportRoute) {
+		this.transportRoute = transportRoute;
+	}
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@FieldName(name="创建人")
+	@JoinColumn(name="CREATOR_")
+	private User creator;
+	
+	@FieldName(name="创建时间")
+	@Column(name="CREATE_DATE", length=20)	
+	private String createDate;
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@FieldName(name="修改人")
+	@JoinColumn(name="MODIFICATOR_")
+	private User modificator;
+	
+	@FieldName(name="修改时间")
+	@Column(name="MODIFY_DATE", length=20)	
+	private String modifyDate;
+
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	public ProjInfo getProjId() {
+		return projId;
+	}
+
+	public void setProjId(ProjInfo projId) {
+		this.projId = projId;
+	}
+
+	public String getProjSurvey() {
+		return projSurvey;
+	}
+
+	public void setProjSurvey(String projSurvey) {
+		this.projSurvey = projSurvey;
+	}
+
+	public String getSpecialIndustries() {
+		return specialIndustries;
+	}
+
+	public void setSpecialIndustries(String specialIndustries) {
+		this.specialIndustries = specialIndustries;
+	}
+
+	public String getIsperMoney() {
+		return IsperMoney;
+	}
+
+	public void setIsperMoney(String isperMoney) {
+		IsperMoney = isperMoney;
+	}
+
+	public String getOtherCondtion() {
+		return otherCondtion;
+	}
+
+	public void setOtherCondtion(String otherCondtion) {
+		this.otherCondtion = otherCondtion;
+	}
+
+	public String getRiskPreventionMeasures() {
+		return riskPreventionMeasures;
+	}
+
+	public void setRiskPreventionMeasures(String riskPreventionMeasures) {
+		this.riskPreventionMeasures = riskPreventionMeasures;
+	}
+
+	public String getProjChangeDate() {
+		return projChangeDate;
+	}
+
+	public void setProjChangeDate(String projChangeDate) {
+		this.projChangeDate = projChangeDate;
+	}
+
+	public String getProjChangeBeforMemo() {
+		return projChangeBeforMemo;
+	}
+
+	public void setProjChangeBeforMemo(String projChangeBeforMemo) {
+		this.projChangeBeforMemo = projChangeBeforMemo;
+	}
+
+	public String getProjChangeAfterMemo() {
+		return projChangeAfterMemo;
+	}
+
+	public void setProjChangeAfterMemo(String projChangeAfterMemo) {
+		this.projChangeAfterMemo = projChangeAfterMemo;
+	}
+
+	public String getProjChangeMemo() {
+		return projChangeMemo;
+	}
+
+	public void setProjChangeMemo(String projChangeMemo) {
+		this.projChangeMemo = projChangeMemo;
+	}
+
+	public String getSingleTime() {
+		return singleTime;
+	}
+
+	public void setSingleTime(String singleTime) {
+		this.singleTime = singleTime;
+	}
+
+	public BigDecimal getSingleIncome() {
+		return singleIncome;
+	}
+
+	public void setSingleIncome(BigDecimal singleIncome) {
+		this.singleIncome = singleIncome;
+	}
+
+	public BigDecimal getSingleFee() {
+		return singleFee;
+	}
+
+	public void setSingleFee(BigDecimal singleFee) {
+		this.singleFee = singleFee;
+	}
+
+	public BigDecimal getOilFee() {
+		return oilFee;
+	}
+
+	public void setOilFee(BigDecimal oilFee) {
+		this.oilFee = oilFee;
+	}
+
+	public BigDecimal getTollFee() {
+		return tollFee;
+	}
+
+	public void setTollFee(BigDecimal tollFee) {
+		this.tollFee = tollFee;
+	}
+
+	public BigDecimal getLaborFee() {
+		return laborFee;
+	}
+
+	public void setLaborFee(BigDecimal laborFee) {
+		this.laborFee = laborFee;
+	}
+
+	public BigDecimal getServiceFee() {
+		return serviceFee;
+	}
+
+	public void setServiceFee(BigDecimal serviceFee) {
+		this.serviceFee = serviceFee;
+	}
+
+	public BigDecimal getOtherFee() {
+		return otherFee;
+	}
+
+	public void setOtherFee(BigDecimal otherFee) {
+		this.otherFee = otherFee;
+	}
+
+	public String getAssetsMemo() {
+		return assetsMemo;
+	}
+
+	public void setAssetsMemo(String assetsMemo) {
+		this.assetsMemo = assetsMemo;
+	}
+
+	public BigDecimal getAssetsAssess() {
+		return assetsAssess;
+	}
+
+	public void setAssetsAssess(BigDecimal assetsAssess) {
+		this.assetsAssess = assetsAssess;
+	}
+
+	public BigDecimal getLeasingMoney() {
+		return leasingMoney;
+	}
+
+	public void setLeasingMoney(BigDecimal leasingMoney) {
+		this.leasingMoney = leasingMoney;
+	}
+
+	public BigDecimal getAssetsLevel() {
+		return assetsLevel;
+	}
+
+	public void setAssetsLevel(BigDecimal assetsLevel) {
+		this.assetsLevel = assetsLevel;
+	}
+
+	public BigDecimal getMonthCash() {
+		return monthCash;
+	}
+
+	public void setMonthCash(BigDecimal monthCash) {
+		this.monthCash = monthCash;
+	}
+
+	public BigDecimal getMonthRent() {
+		return monthRent;
+	}
+
+	public void setMonthRent(BigDecimal monthRent) {
+		this.monthRent = monthRent;
+	}
+
+	public BigDecimal getCashLevel() {
+		return cashLevel;
+	}
+
+	public void setCashLevel(BigDecimal cashLevel) {
+		this.cashLevel = cashLevel;
+	}
+
+	public String getApproveMemo() {
+		return approveMemo;
+	}
+
+	public void setApproveMemo(String approveMemo) {
+		this.approveMemo = approveMemo;
+	}
+
+	public String getEquipInfo() {
+		return equipInfo;
+	}
+
+	public void setEquipInfo(String equipInfo) {
+		this.equipInfo = equipInfo;
+	}
+
+	public User getCreator() {
+		return creator;
+	}
+
+	public void setCreator(User creator) {
+		this.creator = creator;
+	}
+
+	public String getCreateDate() {
+		return createDate;
+	}
+
+	public void setCreateDate(String createDate) {
+		this.createDate = createDate;
+	}
+
+	public User getModificator() {
+		return modificator;
+	}
+
+	public void setModificator(User modificator) {
+		this.modificator = modificator;
+	}
+
+	public String getModifyDate() {
+		return modifyDate;
+	}
+
+	public void setModifyDate(String modifyDate) {
+		this.modifyDate = modifyDate;
+	}
+
+	public String getProjectLevel() {
+		return projectLevel;
+	}
+
+	public void setProjectLevel(String projectLevel) {
+		this.projectLevel = projectLevel;
+	}
+
+	public String getAssetsList() {
+		return assetsList;
+	}
+
+	public String getOwnerVehicle() {
+		return ownerVehicle;
+	}
+
+	public void setOwnerVehicle(String ownerVehicle) {
+		this.ownerVehicle = ownerVehicle;
+	}
+
+	public String getOwnerEstate() {
+		return ownerEstate;
+	}
+
+	public void setOwnerEstate(String ownerEstate) {
+		this.ownerEstate = ownerEstate;
+	}
+
+	public String getOwnerLand() {
+		return ownerLand;
+	}
+
+	public void setOwnerLand(String ownerLand) {
+		this.ownerLand = ownerLand;
+	}
+
+	public String getOwnerOther() {
+		return ownerOther;
+	}
+
+	public void setOwnerOther(String ownerOther) {
+		this.ownerOther = ownerOther;
+	}
+
+	public void setAssetsList(String assetsList) {
+		this.assetsList = assetsList;
+	}
+
+	public String getEquipUsefulness() {
+		return equipUsefulness;
+	}
+
+	public void setEquipUsefulness(String equipUsefulness) {
+		this.equipUsefulness = equipUsefulness;
+	}
+
+	public String getUsefulnessAddr() {
+		return usefulnessAddr;
+	}
+
+	public void setUsefulnessAddr(String usefulnessAddr) {
+		this.usefulnessAddr = usefulnessAddr;
+	}
+
+	public String getLeasingUse() {
+		return leasingUse;
+	}
+
+	public void setLeasingUse(String leasingUse) {
+		this.leasingUse = leasingUse;
+	}
+
+	public String getFundUseing() {
+		return fundUseing;
+	}
+
+	public void setFundUseing(String fundUseing) {
+		this.fundUseing = fundUseing;
+	}
+
+	public String getIncomeRentFrom() {
+		return incomeRentFrom;
+	}
+
+	public void setIncomeRentFrom(String incomeRentFrom) {
+		this.incomeRentFrom = incomeRentFrom;
+	}
+
+}

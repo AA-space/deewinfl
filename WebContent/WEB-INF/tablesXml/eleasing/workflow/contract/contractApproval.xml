@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+公用的项目号选择combox对应的XML配置文件
+统一使用在流程选择界面,用来选择项目号,如果在没有特别说明的情况下,所有选择项目的combox都用这个XML文件
+该文件的显示格式为  
+显示值: 项目名称(proj_info中的proj_name)
+隐藏域: proj_info中的ID
+如果在选择项目的时候有其他的附加条件可以通过配置更多的参数来设置
+添加参数请记录:
+1.custID 通过客户编号检索该客户下的项目
+2.
+
+ -->
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+     <alldb>
+      <table_sql> 
+	        <![CDATA[
+	          select pi.id           value,
+			         pi.PROJECT_NAME name,
+			         pi.cust_ID,
+			         pi.PROJ_STATUS,
+			         pi.WORK_FLAG,
+			         pc.equip_amt    pamt,
+			         cq.sequip_amt
+			    from proj_info pi
+			    left join (select proj_id, equip_amt from proj_condition) pc
+			      on pi.id = pc.proj_id
+			    left join (select proj_id, sum(equip_amt) sequip_amt
+			                 from (select ci.proj_id, cc.equip_amt
+			                         from contract_condition cc
+			                         left join contract_info ci
+			                           on cc.contract_id = ci.id) cm
+			                group by proj_id) cq
+			      on cq.proj_id = pi.id
+			  
+			   where ((pi.proj_status > 10 and pi.proj_status<20)  or (cq.sequip_amt < pc.equip_amt and pi.proj_status = 21))
+			    /~custID:  and cust_ID = '{custID}'~/
+				
+				ORDER BY name,value      
+	        
+			 ]]> 
+	  </table_sql>
+	   </alldb>
+      <dataSource>dataSource</dataSource>
+      <show_sql>false</show_sql>
+    </data>
+  </table>
+</table-root>

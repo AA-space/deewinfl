@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<table-root xmlns="http://www.tracywindy.org/table"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+	<table>
+		<data>
+			<alldb>
+				<table_sql> 
+	        <![CDATA[
+	        select 
+list1.rent_list as c0,
+list1.plan_date as c1,
+list1.plan_penalty as c2,
+list1.income_penalty as c3,
+list1.penalty        as c4
+from 
+contract_info ci
+left join 
+(select pl.contract_id
+,pl.plan_date
+,pl.rent_list
+,round(sum(case when inc.hire_date-to_date(pl.plan_date,'yyyy-mm-dd')<=nvl(con.free_defa_inter_day,0) then 0 else nvl(inc.rent,0)*(inc.hire_date-to_date(pl.plan_date,'yyyy-mm-dd'))*nvl(pena_rate,5)/10000.0 end),2) plan_penalty
+,round(sum(inc.penalty),2) income_penalty
+,round(sum(case when (inc.hire_date-to_date(pl.plan_date,'yyyy-mm-dd'))<=nvl(con.free_defa_inter_day,0) then 0 else nvl(inc.rent,0)*(inc.hire_date-to_date(pl.plan_date,'yyyy-mm-dd'))*nvl(pena_rate,5)/10000.0 end)-sum(inc.penalty),2) penalty
+from contract_fund_rent_plan pl
+left join contract_condition  con on (pl.contract_id=con.contract_id)
+left join
+(
+select contract_id,plan_list,nvl(rent,0)+nvl(rent_adjust,0) rent ,nvl(penalty,0)+nvl(penalty_adjust,0)penalty,to_date(hire_date,'yyyy-mm-dd') hire_date from contract_fund_rent_income
+union all
+select pll.contract_id,rent_list,pll.rent-nvl(incc.rent,0) rent,0 penalty,to_date(to_char(sysdate,'yyyy-mm-dd'),'yyyy-mm-dd') hire_date from contract_fund_rent_plan pll
+left join (
+select contract_id,plan_list,nvl(sum(rent),0)+nvl(sum(rent_adjust),0)rent from contract_fund_rent_income group by  contract_id,plan_list
+) incc on (pll.contract_id=incc.contract_id and pll.rent_list=incc.plan_list) where pll.rent-nvl(incc.rent,0)>0
+) inc on (pl.contract_id=inc.contract_id and pl.rent_list=inc.plan_list)
+group by  pl.contract_id,pl.plan_date,pl.rent_list
+order by pl.contract_id,pl.rent_list
+
+)list1
+on ci.id=list1.contract_id
+where list1.penalty>0 
+and ci.contract_id='{contractid}'
+
+			 ]]>
+				</table_sql>
+			</alldb>
+			<dataSource>dataSource</dataSource>
+			<show_sql>true</show_sql>
+		</data>
+	</table>
+</table-root>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+    <alldb>
+      <table_sql> 
+	        <![CDATA[
+				SELECT 
+				       ID AS ID, 
+				       NAME_ AS DATASOURCENAME, 
+				       DATASOURCETYPE as DATASOURCETYPE, 
+				       JNDI as JNDI, 
+				       DRIVERNAME as DRIVERNAME, 
+				       URL as URL, 
+				       USERNAME as USERNAME, 
+				       PASSWORD as PASSWORD,
+				       DIALECT as DIALECT,
+				       DIALECTNAME as DIALECTNAME
+				  FROM REPORT_DATASOURCE WHERE 1=1
+				  ORDER BY NAME_
+				  
+			 ]]> 
+	  </table_sql>
+	  </alldb>
+      <dataSource>dataSource</dataSource>
+      <show_sql>false</show_sql>
+    </data>
+  </table>
+</table-root>

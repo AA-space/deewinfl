@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+     <alldb>
+      <table_sql> 
+	        <![CDATA[
+	         SELECT /*+ NO_USE_NL(CONTRACT_CONDITION_AMT,DICT5,CIC,DICT4) */ DISTINCT P.ID AS ID, 
+       P.ID AS PID, 
+       P.CUST_ID AS CUSTID, 
+       P.PROJ_ID AS PROJID, 
+       P.PROJ_STATUS AS PROJSTATUSNUM, 
+       CI1.CUST_NAME AS CUSTNAME, 
+       CI2.CUST_NAME AS CUSTDEALER, 
+       CI2.ID AS CUSTDEALERID, 
+       P.PROJECT_NAME PROJNAME, 
+       DICT3.NAME_ AS CUSTPROPERTY, 
+       CASE WHEN CI1.CUST_CLASS = 'CUST_INFO_PERSON' THEN CIP.ID_CARD_NO 
+            WHEN CI1.CUST_CLASS = 'CUST_INFO_COMPANY' THEN CIc.ORG_CODE 
+            ELSE '无' END AS ORGCODECARDNO, 
+       CASE WHEN CI1.CUST_CLASS = 'CUST_INFO_PERSON' THEN DICT4.NAME_ 
+            WHEN CI1.CUST_CLASS = 'CUST_INFO_COMPANY' THEN DICT5.NAME_ 
+            ELSE '无' END AS TAXPAYERTYPE, 
+       BCS.STATUS_NAME AS PROJSTATUS, 
+       DICT1.NAME_ AS BUSINESSTYPE, 
+       DICT2.NAME_ AS BUSINESSMODE, 
+       T1.REALNAME_ AS PROJMANAGE, 
+       D_.NAME_ AS PROJDEPT, 
+       T2.REALNAME_ AS PROJASSISTANT, 
+       PC.EQUIP_AMT AS PROJMONEY, 
+       EQUIP_AMT_c AS CONTRACTMONEY 
+  FROM PROJ_INFO P 
+       LEFT JOIN CUST_INFO CI1 
+         ON CI1.ID = P.CUST_ID 
+       LEFT JOIN CUST_INFO CI2 
+         ON CI2.ID = P.CUST_DEALER 
+       LEFT JOIN BASE_CONTRACT_STATUS BCS 
+         ON BCS.STATUS_CODE = P.PROJ_STATUS 
+       LEFT JOIN PROJ_CONDITION PC 
+         ON PC.PROJ_ID = P.ID 
+       LEFT JOIN T_DICTS_DATAS DICT1 
+         ON P.BUSINESS_TYPE = DICT1.ID_ 
+       LEFT JOIN T_DICTS_DATAS DICT2 
+         ON P.BUSINESS_MODE = DICT2.ID_ 
+       LEFT JOIN T_DICTS_DATAS DICT3 
+         ON CI1.CUST_CLASS = DICT3.ID_ 
+       LEFT JOIN T_USERS T1 
+         ON P.PROJ_MANAGE = T1.ID_ 
+       LEFT JOIN T_USERS T2 
+         ON P.PROJ_ASSIST = T2.ID_ 
+       LEFT JOIN T_DEPTS D_ 
+         ON P.PROJ_DEPT = D_.ID_ 
+       left join CUST_INFO_PERSON CIP 
+         on CIP.CUST_ID = P.CUST_ID 
+       LEFT JOIN T_DICTS_DATAS DICT4 
+         ON CIP.TAX_LEVEL = DICT4.ID_ 
+       left join CUST_INFO_COMPANY CIc 
+         on CIc.CUST_ID = P.CUST_ID 
+       LEFT JOIN T_DICTS_DATAS DICT5 
+         ON CIc.TAX_LEVEL = DICT5.ID_ 
+       left join (SELECT Ci.proj_id, 
+                         SUM(CC.EQUIP_AMT) as EQUIP_AMT_c 
+                    FROM CONTRACT_INFO CI 
+                         LEFT JOIN CONTRACT_CONDITION CC 
+                           ON CC.CONTRACT_ID = CI.ID 
+                   WHERE CI.CONTRACT_STATUS > '20' 
+                     AND CI.CONTRACT_STATUS < '100' 
+                   group by Ci.proj_id) CONTRACT_CONDITION_amt 
+         on CONTRACT_CONDITION_amt.proj_id = p.PROJ_id 
+ WHERE P.PROJ_STATUS < '15' 
+   AND P.PROJ_STATUS > '0' 
+ ORDER BY P.PROJ_ID
+					 
+				/~currentDealerCustInfoId: AND P.CUST_DEALER = '{currentDealerCustInfoId}'~/
+				/~custdealer: and CI2.CUST_NAME like '%{custdealer}%'  ~/
+				 /~custname: and CI1.CUST_NAME like '%{custname}%' ~/
+				 /~projname: and P.PROJECT_NAME like '%{projname}%' ~/
+				 /~projid:  AND P.PROJ_ID like '%{projid}%'~/
+			 ]]> 
+	  </table_sql>
+	   </alldb>
+      <dataSource>dataSource</dataSource>
+      <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+   使用地方。经销商收款流程
+           租金计划和实收表
+    id(资金计划表的ID),CONTRACT_ID(合同号),CUST_NUMBER(承租人编号),CUST_NAME(承租人名称),dealer_number(经销商编号),dealer_custname(经销商名称),payment_id(收付款编号)
+    plan_date(计划日期),plan_money(计划金额),fact_money(实收金额),ow_fact_money(余额),fee_type(费用code),raw_fee_type(费用),pay_type(收付款code),raw_pay_type(收付款)
+    plan_first_money(首付款),plan_first_fact_money(首付款实收)
+    
+ -->
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+     <alldb>
+      <table_sql> 
+	        <![CDATA[
+	           select tab1.contractid,tab1.planmoney as plan_money,nvl(tab2.factmoney,0) as plan_first_fact_money from 
+				(select cffp.contract_id as  contractid , sum(cffp.plan_money) as planmoney from contract_fund_fund_plan cffp
+				where cffp.pay_type='pay_type_in' 
+				group by cffp.contract_id)tab1
+
+				left join 
+				(select cffc.contract_id as contractid, nvl(sum(cffc.fact_money),0) as factmoney 
+				from contract_fund_fund_charge cffc
+				where cffc.pay_type='pay_type_in'
+				group by cffc.contract_id) tab2
+				on tab1.contractid=tab2.contractid
+	           where   1=1
+              /~contract_id: and tab1.contractid='{contract_id}'~/
+              
+			 ]]> 
+	  </table_sql>
+	   </alldb>
+      <dataSource>dataSource</dataSource>
+      <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>

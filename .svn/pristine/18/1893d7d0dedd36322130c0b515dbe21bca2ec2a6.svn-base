@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+项目层的清单列表
+/~queryText://like全局搜索
+/~WORK_FLAG://判断是否在流程中
+/~user_id://传当前登录用户id 得到本账号挂名的经销商下面的自然人和法人 ；为经销商赋权限
+
+-->
+<table-root 
+  xmlns="http://www.tracywindy.org/table" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.tracywindy.org/table http://www.tracywindy.org/table/table-1.0.xsd">
+  <table>
+    <data>
+     <alldb>
+      <table_sql> 
+	        <![CDATA[
+	        select pi.id,pi.proj_id,
+			pi.project_name,
+			'信审通过' as proj_status,
+			pr.proj_credit_pass_time,
+			cic.cust_name as custname,
+			cid.cust_name as dealername
+			
+			From proj_info pi
+			left join cust_info cic on pi.cust_id=cic.id
+			left join cust_info cid on pi.cust_dealer=cid.id
+			left join proj_credit_result pr on pi.id=pr.proj_id
+			left join contract_info ci on pi.id=ci.proj_id
+			left join (
+			select ti.key_two_ from T_JBPM_WORKFLOW_INFO ti
+			where  ti.workflow_name_='合同审批流程'
+			group by ti.key_two_
+			) con on pi.project_name=con.key_two_
+			where pi.proj_status=11
+			and ci.id is null and con.key_two_ is null
+		
+		  --项目状态
+          /~proj_id:     AND pi.proj_id like '%{proj_id}%'~/
+          /~custname:    AND cic.cust_name like'%{custname}%'~/
+          /~dealername:  AND cid.cust_name like '%{dealername}%'~/
+          /~proj_credit_pass_time:  AND pr.proj_credit_pass_time < '{proj_credit_pass_time}'~/
+		         
+			 ]]> 
+	  </table_sql>
+	   </alldb>
+      <dataSource>dataSource</dataSource>
+      <show_sql>true</show_sql>
+    </data>
+  </table>
+</table-root>
